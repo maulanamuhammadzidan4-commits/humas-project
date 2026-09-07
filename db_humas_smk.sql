@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Sep 07, 2026 at 07:11 AM
+-- Generation Time: Sep 07, 2026 at 07:24 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -20,6 +20,8 @@ SET time_zone = "+00:00";
 --
 -- Database: `db_humas_smk`
 --
+CREATE DATABASE IF NOT EXISTS `db_humas_smk` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `db_humas_smk`;
 
 -- --------------------------------------------------------
 
@@ -27,8 +29,8 @@ SET time_zone = "+00:00";
 -- Table structure for table `lowongan_kerja`
 --
 
-CREATE TABLE `lowongan_kerja` (
-  `id` int NOT NULL,
+CREATE TABLE IF NOT EXISTS `lowongan_kerja` (
+  `id` int NOT NULL AUTO_INCREMENT,
   `perusahaan_id` int NOT NULL,
   `judul_posisi` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `deskripsi_pekerjaan` text COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -36,7 +38,9 @@ CREATE TABLE `lowongan_kerja` (
   `batas_pendaftaran` date NOT NULL,
   `status_loker` enum('Buka','Tutup') COLLATE utf8mb4_unicode_ci DEFAULT 'Buka',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `fk_loker_perusahaan` (`perusahaan_id`)
 ) ;
 
 -- --------------------------------------------------------
@@ -45,8 +49,8 @@ CREATE TABLE `lowongan_kerja` (
 -- Table structure for table `perusahaan`
 --
 
-CREATE TABLE `perusahaan` (
-  `id` int NOT NULL,
+CREATE TABLE IF NOT EXISTS `perusahaan` (
+  `id` int NOT NULL AUTO_INCREMENT,
   `nama_perusahaan` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
   `sektor_bidang` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `alamat` text COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -55,7 +59,9 @@ CREATE TABLE `perusahaan` (
   `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `status_mou` enum('Aktif','Kadaluarsa','Proses') COLLATE utf8mb4_unicode_ci DEFAULT 'Proses',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -64,8 +70,8 @@ CREATE TABLE `perusahaan` (
 -- Table structure for table `pkl_penempatan`
 --
 
-CREATE TABLE `pkl_penempatan` (
-  `id` int NOT NULL,
+CREATE TABLE IF NOT EXISTS `pkl_penempatan` (
+  `id` int NOT NULL AUTO_INCREMENT,
   `siswa_id` int NOT NULL,
   `perusahaan_id` int NOT NULL,
   `pembimbing_guru` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -73,7 +79,10 @@ CREATE TABLE `pkl_penempatan` (
   `tanggal_selesai` date NOT NULL,
   `status_penempatan` enum('Draft','Disetujui','Selesai') COLLATE utf8mb4_unicode_ci DEFAULT 'Draft',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `fk_pkl_siswa` (`siswa_id`),
+  KEY `fk_pkl_perusahaan` (`perusahaan_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -82,15 +91,17 @@ CREATE TABLE `pkl_penempatan` (
 -- Table structure for table `siswa`
 --
 
-CREATE TABLE `siswa` (
-  `id` int NOT NULL,
+CREATE TABLE IF NOT EXISTS `siswa` (
+  `id` int NOT NULL AUTO_INCREMENT,
   `nisn` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
   `nama_siswa` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
   `kelas` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
   `jurusan` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `status_alumni` tinyint(1) DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `nisn` (`nisn`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -99,15 +110,17 @@ CREATE TABLE `siswa` (
 -- Table structure for table `tracer_study`
 --
 
-CREATE TABLE `tracer_study` (
-  `id` int NOT NULL,
+CREATE TABLE IF NOT EXISTS `tracer_study` (
+  `id` int NOT NULL AUTO_INCREMENT,
   `siswa_id` int NOT NULL,
   `tahun_lulus` year NOT NULL,
   `status_alumni` enum('Bekerja','Kuliah','Wirausaha','Mencari Kerja') COLLATE utf8mb4_unicode_ci NOT NULL,
   `nama_instansi` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `pendapatan_bulanan` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `siswa_id` (`siswa_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -116,101 +129,16 @@ CREATE TABLE `tracer_study` (
 -- Table structure for table `users`
 --
 
-CREATE TABLE `users` (
-  `id_user` int NOT NULL,
+CREATE TABLE IF NOT EXISTS `users` (
+  `id_user` int NOT NULL AUTO_INCREMENT,
   `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
   `nama_lengkap` varchar(100) NOT NULL,
   `jabatan` varchar(50) DEFAULT 'Staf Humas',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_user`),
+  UNIQUE KEY `username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `lowongan_kerja`
---
-ALTER TABLE `lowongan_kerja`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_loker_perusahaan` (`perusahaan_id`);
-
---
--- Indexes for table `perusahaan`
---
-ALTER TABLE `perusahaan`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `email` (`email`);
-
---
--- Indexes for table `pkl_penempatan`
---
-ALTER TABLE `pkl_penempatan`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_pkl_siswa` (`siswa_id`),
-  ADD KEY `fk_pkl_perusahaan` (`perusahaan_id`);
-
---
--- Indexes for table `siswa`
---
-ALTER TABLE `siswa`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `nisn` (`nisn`);
-
---
--- Indexes for table `tracer_study`
---
-ALTER TABLE `tracer_study`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `siswa_id` (`siswa_id`);
-
---
--- Indexes for table `users`
---
-ALTER TABLE `users`
-  ADD PRIMARY KEY (`id_user`),
-  ADD UNIQUE KEY `username` (`username`);
-
---
--- AUTO_INCREMENT for dumped tables
---
-
---
--- AUTO_INCREMENT for table `lowongan_kerja`
---
-ALTER TABLE `lowongan_kerja`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `perusahaan`
---
-ALTER TABLE `perusahaan`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `pkl_penempatan`
---
-ALTER TABLE `pkl_penempatan`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `siswa`
---
-ALTER TABLE `siswa`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `tracer_study`
---
-ALTER TABLE `tracer_study`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `users`
---
-ALTER TABLE `users`
-  MODIFY `id_user` int NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
