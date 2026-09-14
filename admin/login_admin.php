@@ -1,7 +1,7 @@
 <?php
 
 session_start();
-require_once '../../backend/connection.php';
+require_once '../backend/connection.php';
 
 if (isset($_SESSION['user_id']) && !isset($_SESSION['login_success_flash'])) {
     header("Location: index.php");
@@ -77,17 +77,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_locked) {
             $user = mysqli_fetch_assoc($result);
 
             mysqli_stmt_close($stmt);
-
-            /*
-            |--------------------------------------------------------------------------
-            | CEK PASSWORD
-            |--------------------------------------------------------------------------
-            |
-            | password_verify() digunakan jika password di database berupa hash.
-            | Perbandingan biasa digunakan jika password masih berupa teks biasa.
-            |
-            |--------------------------------------------------------------------------
-            */
             $password_benar = false;
 
             if ($user) {
@@ -102,12 +91,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_locked) {
                     $password_benar = true;
                 }
             }
-
-            /*
-            |--------------------------------------------------------------------------
-            | LOGIN BERHASIL
-            |--------------------------------------------------------------------------
-            */
             if ($password_benar) {
 
                 // Reset percobaan login
@@ -129,24 +112,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_locked) {
                 $show_success_popup = true;
 
             } else {
-
-                /*
-                |--------------------------------------------------------------------------
-                | LOGIN GAGAL
-                |--------------------------------------------------------------------------
-                */
-
                 $_SESSION['login_attempts']++;
-
-                /*
-                |--------------------------------------------------------------------------
-                | JIKA SALAH 3 KALI
-                |--------------------------------------------------------------------------
-                */
                 if ($_SESSION['login_attempts'] >= 3) {
-
                     $_SESSION['lockout_time'] = time();
-
                     $is_locked = true;
                     $remaining_seconds = 60;
 
@@ -644,7 +612,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_locked) {
                 <i class="fa-solid fa-user-shield"></i>
             </div>
             <h2>Humas SMK</h2>
-            <p>Portal Login Panel Administrator</p>
+            <p>Portal Login Panel Admin</p>
         </div>
         <!-- BODY -->
         <div class="login-body">
@@ -706,31 +674,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_locked) {
 
                     </div>
 
-                </div>
-                <div class="form-group">
-
-                    <label for="username">
-                        Username Admin
-                    </label>
-
-                    <div class="input-wrapper">
-
-                        <input
-                            type="text"
-                            id="username"
-                            name="username"
-                            class="form-control"
-                            placeholder="Masukkan username"
-                            required
-                            autofocus
-                            autocomplete="username"
-                            value="<?= htmlspecialchars($_POST['username'] ?? ''); ?>"
-                            <?= $is_locked ? 'disabled' : ''; ?>
-                        >
-
-                        <i class="fa-solid fa-user"></i>
-
-                    </div>
                 </div>
 
 
