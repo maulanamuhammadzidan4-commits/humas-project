@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'koneksi.php';
+require_once '../../backend/connection.php';
 $isAdmin = isset($_SESSION['user_id']);
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $berita = null;
@@ -70,7 +70,7 @@ if (!function_exists('formatTanggalIndo')) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="frontend/assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style_pages.css">
 </head>
 
 <body>
@@ -83,12 +83,12 @@ if (!function_exists('formatTanggalIndo')) {
         </div>
 
         <ul class="menu" id="navMenu">
-            <li><a href="index.html#beranda">Beranda</a></li>
-            <li><a href="index.html#tentang">Tentang</a></li>
-            <li><a href="index.html#kegiatan">Kegiatan</a></li>
-            <li><a href="index.html#berita">Berita</a></li>
-            <li><a href="index.html#staff">Staff</a></li>
-            <li><a href="index.html#kontak">Kontak</a></li>
+            <li><a href="../index.php#beranda">Beranda</a></li>
+            <li><a href="../index.php#tentang">Tentang</a></li>
+            <li><a href="../index.php#kegiatan">Kegiatan</a></li>
+            <li><a href="../index.php#berita">Berita</a></li>
+            <li><a href="../index.php#staff">Staff</a></li>
+            <li><a href="../index.php#kontak">Kontak</a></li>
             <li>
                 <a href="login.php" class="btn-login">
                     <i class="fa-solid fa-right-to-bracket"></i> Login Admin
@@ -111,7 +111,7 @@ if (!function_exists('formatTanggalIndo')) {
     </div>
 
 <?php endif; ?>
-                <a href="index.html#berita" class="back-btn">
+                <a href="../index.html#berita" class="back-btn">
                     <i class="fa-solid fa-arrow-left"></i> Kembali ke Berita
                 </a>
                 <div class="detail-header-title">
@@ -262,10 +262,10 @@ if (!function_exists('formatTanggalIndo')) {
             <div class="footer-col">
                 <h4>Navigasi Cepat</h4>
                 <ul class="footer-links">
-                    <li><a href="index.html#beranda"><i class="fa-solid fa-chevron-right"></i> Beranda</a></li>
-                    <li><a href="index.html#tentang"><i class="fa-solid fa-chevron-right"></i> Tentang Humas</a></li>
-                    <li><a href="index.html#kegiatan"><i class="fa-solid fa-chevron-right"></i> Kegiatan</a></li>
-                    <li><a href="index.html#berita"><i class="fa-solid fa-chevron-right"></i> Berita Terbaru</a></li>
+                    <li><a href="../index.php#beranda"><i class="fa-solid fa-chevron-right"></i> Beranda</a></li>
+                    <li><a href="../index.php#tentang"><i class="fa-solid fa-chevron-right"></i> Tentang Humas</a></li>
+                    <li><a href="../index.php#kegiatan"><i class="fa-solid fa-chevron-right"></i> Kegiatan</a></li>
+                    <li><a href="../index.php#berita"><i class="fa-solid fa-chevron-right"></i> Berita Terbaru</a></li>
                 </ul>
             </div>
 

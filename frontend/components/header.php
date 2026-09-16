@@ -9,7 +9,7 @@
             <li><a href="#tentang">Tentang</a></li>
 
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                <a class="nav-link dropdown-toggle" href="#kegiatan" role="button" data-bs-toggle="dropdown"
                     aria-expanded="false">
                     Kegiatan
                 </a>
@@ -30,7 +30,7 @@
             </li>
             <li><a href="#kontak">Kontak</a></li>
             <li>
-                <a href="../../pages/login.php" class="btn-login">
+                <a href="../pages/login.php" class="btn-login">
                     <i class="fa-solid fa-right-to-bracket"></i> Login Admin
                 </a>
             </li>
