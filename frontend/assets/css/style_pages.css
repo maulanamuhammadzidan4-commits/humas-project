@@ -2,8 +2,6 @@
 
 :root {
     --font-primary: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-
-    /* Colors */
     --primary-navy: #0f172a;
     --primary-slate: #1e293b;
     --brand-blue: #2563eb;
@@ -210,7 +208,7 @@ nav {
             rgba(15, 23, 42, 0.94) 0%,
             rgba(30, 41, 59, 0.88) 50%,
             rgba(15, 23, 42, 0.94) 100%),
-        url("../img/smk1maja.jpeg");
+        url("frontend/assets/css/smk1maja.jpeg");
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -1614,30 +1612,7 @@ footer {
 
 }
 
-/* ========================================
-   TABLE SCROLL KANAN - KIRI
-======================================== */
-
-.table-wrapper {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-}
-
-.table-wrapper table {
-    width: max-content;
-    min-width: 100%;
-    border-collapse: collapse;
-}
-
-.table-wrapper th,
-.table-wrapper td {
-    white-space: nowrap;
-}
-
-style {
+* {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
