@@ -1,17 +1,10 @@
 <?php
 session_start();
-
 require_once '../backend/connection.php';
 require_once 'includes/auth.php';
-
 $stats = [];
 
-/*
-|--------------------------------------------------------------------------
-| STATISTIK DASHBOARD
-|--------------------------------------------------------------------------
-*/
-
+/*--STATISTIK DASHBOARD--*/
 $queries = [
 
     // Jumlah perusahaan
@@ -80,17 +73,9 @@ $queries = [
     "
 ];
 
-
-/*
-|--------------------------------------------------------------------------
-| JALANKAN QUERY STATISTIK
-|--------------------------------------------------------------------------
-*/
-
+/*--JALANKAN QUERY STATISTIK--*/
 foreach ($queries as $key => $sql) {
-
     $res = mysqli_query($koneksi, $sql);
-
     if ($res) {
         $row = mysqli_fetch_assoc($res);
         $stats[$key] = $row['n'] ?? 0;
@@ -99,20 +84,7 @@ foreach ($queries as $key => $sql) {
     }
 }
 
-
-/*
-|--------------------------------------------------------------------------
-| LOWONGAN YANG AKAN SEGERA DITUTUP
-|--------------------------------------------------------------------------
-|
-| Sesuai database:
-| judul_posisi
-| perusahaan_id
-| batas_pendaftaran
-| status_loker
-|
-*/
-
+/*--LOWONGAN YANG AKAN SEGERA DITUTUP--*/
 $sql_expiring = "
     SELECT
         lk.judul_posisi AS posisi,
@@ -137,94 +109,39 @@ $sql_expiring = "
 ";
 
 $expiring = mysqli_query($koneksi, $sql_expiring);
-
-
-/*
-|--------------------------------------------------------------------------
-| PKL TERBARU
-|--------------------------------------------------------------------------
-|
-| Database menggunakan:
-| pkl_penempatan
-| siswa_id
-| perusahaan_id
-|
-*/
-
 $sql_pkl = "
     SELECT
-
         s.nama_siswa AS siswa,
-
         p.nama_perusahaan AS perusahaan,
-
         pk.pembimbing_guru,
-
         pk.status_penempatan,
-
         pk.tanggal_mulai,
-
         pk.tanggal_selesai
-
     FROM pkl_penempatan pk
-
     INNER JOIN siswa s
         ON s.id = pk.siswa_id
-
     INNER JOIN perusahaan p
         ON p.id = pk.perusahaan_id
-
     ORDER BY pk.created_at DESC
-
     LIMIT 6
 ";
-
 $pkl_terbaru = mysqli_query($koneksi, $sql_pkl);
-
-
-/*
-|--------------------------------------------------------------------------
-| DISTRIBUSI TRACER STUDY
-|--------------------------------------------------------------------------
-|
-| status_alumni berisi:
-| Bekerja
-| Kuliah
-| Wirausaha
-| Mencari Kerja
-|
-*/
-
 $sql_tracer_dist = "
     SELECT
         status_alumni,
         COUNT(*) AS n
-
     FROM tracer_study
-
     GROUP BY status_alumni
 ";
-
 $tracer_dist = mysqli_query($koneksi, $sql_tracer_dist);
-
 $tracer_data = [];
-
 if ($tracer_dist) {
-
     while ($r = mysqli_fetch_assoc($tracer_dist)) {
-
         $tracer_data[$r['status_alumni']] = $r['n'];
-
     }
 }
 
-
-/*
-|--------------------------------------------------------------------------
-| DEFAULT DATA TRACER
-|--------------------------------------------------------------------------
-*/
-
+/*--DEFAULT DATA TRACER--*/
 $tracer_data['Bekerja'] =
     $tracer_data['Bekerja'] ?? 0;
 
@@ -239,8 +156,6 @@ $tracer_data['Mencari Kerja'] =
 
 $tracer_data['Menikah'] =
     $tracer_data['Menikah'] ?? 0;
-
-
 $page_title = "Dashboard";
 ?>
 <!DOCTYPE html>
@@ -310,10 +225,8 @@ $page_title = "Dashboard";
 </head>
 <body>
 <?php include 'includes/sidebar.php'; ?>
-
 <div class="admin-main">
     <?php include 'includes/header.php'; ?>
-
     <main class="admin-content">
 
         <!-- Flash Messages -->
@@ -535,7 +448,6 @@ $page_title = "Dashboard";
 
     </main>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="assets/admin.js"></script>
 </body>

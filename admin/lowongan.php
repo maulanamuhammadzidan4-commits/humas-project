@@ -184,8 +184,7 @@ $page_title = "Lowongan Kerja";
                 <form method="GET" style="display:flex;gap:.5rem;align-items:center;">
                     <div class="search-box">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" name="search" value="<?= htmlspecialchars($search) ?>
-                            "placeholder="Cari posisi / perusahaan...">
+                        <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Cari posisi / perusahaan...">
                     </div>
 
                     <button type="submit" class="btn btn-outline btn-sm">
@@ -258,7 +257,7 @@ $page_title = "Lowongan Kerja";
                                 <td style="<?= $expired ? 'color:var(--red);font-weight:700;' : '' ?>">
                                     <?php if (
                                         !empty($row['batas_pendaftaran'])): ?>
-                                        <?= date('d M Y',strtotime($row['batas_pendaftaran'])) ?>
+                                        <?= date('d M Y', strtotime($row['batas_pendaftaran'])) ?>
                                     <?php else: ?>
                                         -
                                     <?php endif; ?>
@@ -285,7 +284,7 @@ $page_title = "Lowongan Kerja";
                                                 JSON_HEX_APOS |
                                                 JSON_HEX_AMP |
                                                 JSON_HEX_QUOT
-                                            ) ?>)'title="Edit">
+                                            ) ?>)' title="Edit">
                                             <i class="fa-solid fa-pen"></i>
                                         </button>
 
@@ -298,7 +297,7 @@ $page_title = "Lowongan Kerja";
                                                     JSON_HEX_APOS |
                                                     JSON_HEX_AMP |
                                                     JSON_HEX_QUOT
-                                                ) ?> )'title="Hapus">
+                                                ) ?>)' title="Hapus">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </div>
@@ -320,7 +319,7 @@ $page_title = "Lowongan Kerja";
                     </span>
                     <div class="pagination-btns">
                         <?php if ($page > 1): ?>
-                            <a href="?page=<?= $page - 1 ?>&search=<?= urlencode($search) ?>"class="page-btn">
+                            <a href="?page=<?= $page - 1 ?>&search=<?= urlencode($search) ?>" class="page-btn">
                                 <i class="fa-solid fa-chevron-left"></i>
                             </a>
                         <?php endif; ?>
@@ -331,7 +330,7 @@ $page_title = "Lowongan Kerja";
                             <a href="?page=<?= $p ?>&search=<?= urlencode($search) ?>" class="page-btn <?= $p == $page ? 'active' : '' ?>"><?= $p ?></a>
                         <?php endfor; ?>
                         <?php if ($page < $total_pages): ?>
-                            <a href="?page=<?= $page + 1 ?>&search=<?= urlencode($search) ?>"class="page-btn">
+                            <a href="?page=<?= $page + 1 ?>&search=<?= urlencode($search) ?>" class="page-btn">
                                 <i class="fa-solid fa-chevron-right"></i>
                             </a>
                         <?php endif; ?>
@@ -445,7 +444,7 @@ $page_title = "Lowongan Kerja";
 </div>
 
 <!--MODAL EDIT -->
-<divclass="modal-overlay"id="modalEdit">
+<div class="modal-overlay" id="modalEdit">
     <div class="modal modal-lg">
         <div class="modal-header">
             <span class="modal-title">
@@ -540,7 +539,7 @@ $page_title = "Lowongan Kerja";
 
 <!--FORM HAPUS -->
 <form method="POST" action="backend/lowongan_handler.php" id="formHapus">
-    <input Dtype="hidden" name="action" value="hapus">
+    <input type="hidden" name="action" value="hapus">
     <input type="hidden" name="id" id="hapus_id">
 </form>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

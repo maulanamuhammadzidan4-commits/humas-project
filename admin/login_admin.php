@@ -157,30 +157,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_locked) {
             <?php endif; ?>
             
             <!-- FORM LOGIN -->
-
             <form
                 action="login_admin.php"
                 method="POST"
                 id="loginForm">
                 <!-- USERNAME -->
                 <div class="form-group">
-
                     <label for="username">
                         Username Admin
                     </label>
-
                     <div class="input-wrapper">
-
-                        <input
-                            type="text"
-                            id="username"
-                            name="username"
-                            class="form-control"
-                            placeholder="Masukkan username"
-                            required
-                            autofocus
-                            autocomplete="username"
-                            value="<?= htmlspecialchars($_POST['username'] ?? ''); ?>"
+                        <input type="text" id="username" name="username" class="form-control" placeholder="Masukkan username" required autofocus autocomplete="username" value="<?= htmlspecialchars($_POST['username'] ?? ''); ?>"
                             <?= $is_locked ? 'disabled' : ''; ?>>
                         <i class="fa-solid fa-user"></i>
                     </div>
@@ -193,13 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_locked) {
                     </label>
                     <div class="input-wrapper">
                         <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            class="form-control"
-                            placeholder="Masukkan password"
-                            required
-                            autocomplete="current-password"
+                       type="password" id="password" name="password" class="form-control" placeholder="Masukkan password" required autocomplete="current-password"
                             <?= $is_locked ? 'disabled' : ''; ?>>
                         <i class="fa-solid fa-lock"></i>
                     </div>
@@ -222,8 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_locked) {
             </form>
 
             <!-- BACK -->
-            <a
-                href="../frontend/index.php" class="back-link">
+            <a href="../frontend/index.php" class="back-link"> 
                 <i class="fa-solid fa-arrow-left"></i>
                 Kembali ke Beranda Utama
             </a>

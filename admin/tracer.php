@@ -1,31 +1,10 @@
-```php
 <?php
-
 session_start();
-
 require_once '../backend/connection.php';
 require_once 'includes/auth.php';
-
-
-/*
-|--------------------------------------------------------------------------
-| PROSES TAMBAH / EDIT / HAPUS
-|--------------------------------------------------------------------------
-*/
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
     $action = $_POST['action'] ?? '';
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | TAMBAH DATA
-    |--------------------------------------------------------------------------
-    */
-
     if ($action === 'tambah') {
-
         $nama_siswa = trim($_POST['nama_siswa'] ?? '');
         $tahun_lulus = (int)($_POST['tahun_lulus'] ?? 0);
         $status_alumni = trim($_POST['status_alumni'] ?? '');
@@ -37,14 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         )
             ? (int)$_POST['pendapatan_bulanan']
             : null;
-
-
-        /*
-        | Cari ID siswa berdasarkan nama
-        */
-
         if ($nama_siswa === '') {
-
             header(
                 "Location: tracer.php?msg=" .
                 urlencode("Nama alumni wajib diisi.") .
@@ -75,11 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
 
         mysqli_stmt_execute($stmt_siswa);
-
         $result_siswa = mysqli_stmt_get_result($stmt_siswa);
-
         $siswa = mysqli_fetch_assoc($result_siswa);
-
         mysqli_stmt_close($stmt_siswa);
 
 
@@ -1825,11 +1794,6 @@ function hapusTracer(id, nama) {
     });
 
 }
-
 </script>
-
-
 </body>
-
 </html>
-```

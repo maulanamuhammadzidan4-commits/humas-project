@@ -796,577 +796,232 @@ $page_title = "Penempatan PKL";
             <button
                 type="button"
                 class="modal-close"
-                onclick="closeModal('modalTambah')"
-            >
-
+                onclick="closeModal('modalTambah')">
                 <i class="fa-solid fa-xmark"></i>
-
             </button>
-
         </div>
 
-
-        <form
-            method="POST"
-            action="backend/pkl_handler.php"
-        >
-
-            <input
-                type="hidden"
-                name="action"
-                value="tambah"
-            >
-
-
+        <form method="POST" action="backend/pkl_handler.php">
+            <input type="hidden" name="action" value="tambah">
             <div class="modal-body">
-
-
                 <!-- NAMA SISWA -->
-
                 <div class="form-group">
-
                     <label>
-
                         Nama Siswa
-
                         <span class="required">*</span>
-
                     </label>
-
-                    <input
-                        type="text"
-                        name="nama_siswa"
-                        class="form-control"
-                        maxlength="200"
-                        placeholder="Ketik nama siswa"
-                        autocomplete="off"
-                        required
-                    >
-
+                    <input type="text" name="nama_siswa" class="form-control" maxlength="200" placeholder="Ketik nama siswa" autocomplete="off" required>
                 </div>
-
 
                 <!-- NAMA PERUSAHAAN -->
-
                 <div class="form-group">
-
                     <label>
-
                         Nama Perusahaan / Instansi
-
                         <span class="required">*</span>
-
                     </label>
-
-                    <input
-                        type="text"
-                        name="nama_perusahaan"
-                        class="form-control"
-                        maxlength="200"
-                        placeholder="Ketik nama perusahaan / instansi"
-                        autocomplete="off"
-                        required
-                    >
-
+                    <input type="text" name="nama_perusahaan" class="form-control" maxlength="200" placeholder="Ketik nama perusahaan / instansi" autocomplete="off" required>
                 </div>
-
 
                 <!-- PEMBIMBING -->
-
                 <div class="form-group">
-
                     <label>
-
                         Nama Pembimbing
-
                         <span class="required">*</span>
-
                     </label>
-
-                    <input
-                        type="text"
-                        name="pembimbing"
-                        class="form-control"
-                        maxlength="200"
-                        placeholder="Nama pembimbing PKL"
-                        required
-                    >
-
+                    <input type="text" name="pembimbing" class="form-control" maxlength="200" placeholder="Nama pembimbing PKL" required>
                 </div>
-
 
                 <!-- TANGGAL -->
-
                 <div class="form-row">
-
-
                     <div class="form-group">
-
                         <label>
-
                             Tanggal Mulai
-
                             <span class="required">*</span>
-
                         </label>
-
-                        <input
-                            type="date"
-                            name="tanggal_mulai"
-                            class="form-control"
-                            required
-                        >
-
+                        <input type="date" name="tanggal_mulai" class="form-control" required>
                     </div>
-
-
                     <div class="form-group">
-
                         <label>
-
                             Tanggal Selesai
-
                             <span class="required">*</span>
-
                         </label>
-
-                        <input
-                            type="date"
-                            name="tanggal_selesai"
-                            class="form-control"
-                            required
-                        >
-
+                        <input type="date" name="tanggal_selesai" class="form-control" required>
                     </div>
-
-
                 </div>
 
-
                 <!-- STATUS -->
-
                 <div class="form-group">
-
                     <label>
                         Status Penempatan
                     </label>
-
-                    <select
-                        name="status_penempatan"
-                        class="form-control"
-                    >
-
+                    <select name="status_penempatan" class="form-control">
                         <option value="Draft">
                             Draft
                         </option>
-
                         <option value="Disetujui">
                             Disetujui
                         </option>
-
                         <option value="Selesai">
                             Selesai
                         </option>
-
                     </select>
-
                 </div>
-
-
             </div>
-
-
             <div class="modal-footer">
-
-
-                <button
-                    type="button"
-                    class="btn btn-outline"
-                    onclick="closeModal('modalTambah')"
-                >
-
+                <button type="button" class="btn btn-outline" onclick="closeModal('modalTambah')">
                     Batal
-
                 </button>
-
-
-                <button
-                    type="submit"
-                    class="btn btn-primary"
-                >
-
+                <button type="submit" class="btn btn-primary">
                     <i class="fa-solid fa-save"></i>
-
                     Simpan
-
                 </button>
-
-
             </div>
-
-
         </form>
-
     </div>
-
 </div>
 
-
-
-<!-- =====================================================
-     MODAL EDIT
-===================================================== -->
-
-<div
-    class="modal-overlay"
-    id="modalEdit"
->
-
+<!--MODAL EDIT -->
+<div class="modal-overlay" id="modalEdit">
     <div class="modal modal-lg">
-
-
         <div class="modal-header">
-
             <span class="modal-title">
-
                 <i class="fa-solid fa-pen-to-square"></i>
-
                 Edit Penempatan PKL
-
             </span>
-
-
-            <button
-                type="button"
-                class="modal-close"
-                onclick="closeModal('modalEdit')"
-            >
-
+            <button type="button" class="modal-close" onclick="closeModal('modalEdit')">
                 <i class="fa-solid fa-xmark"></i>
-
             </button>
-
         </div>
-
-
-        <form
-            method="POST"
-            action="backend/pkl_handler.php"
-        >
-
-            <input
-                type="hidden"
-                name="action"
-                value="edit"
-            >
-
-
-            <input
-                type="hidden"
-                name="id"
-                id="e_id"
-            >
-
-
+        <form method="POST" action="backend/pkl_handler.php">
+            <input type="hidden" name="action" value="edit">
+            <input type="hidden" name="id" id="e_id">
             <div class="modal-body">
 
-
                 <!-- NAMA SISWA -->
-
                 <div class="form-group">
-
                     <label>
-
                         Nama Siswa
-
                         <span class="required">*</span>
-
                     </label>
-
-                    <input
-                        type="text"
-                        name="nama_siswa"
-                        id="e_nama_siswa"
-                        class="form-control"
-                        maxlength="200"
-                        required
-                    >
-
+                    <input type="text" name="nama_siswa" id="e_nama_siswa" class="form-control" maxlength="200" required>
                 </div>
-
 
                 <!-- NAMA PERUSAHAAN -->
-
                 <div class="form-group">
-
                     <label>
-
                         Nama Perusahaan / Instansi
-
                         <span class="required">*</span>
-
                     </label>
-
-                    <input
-                        type="text"
-                        name="nama_perusahaan"
-                        id="e_nama_perusahaan"
-                        class="form-control"
-                        maxlength="200"
-                        required
-                    >
-
+                    <input type="text" name="nama_perusahaan" id="e_nama_perusahaan" class="form-control" maxlength="200" required>
                 </div>
-
 
                 <!-- PEMBIMBING -->
-
                 <div class="form-group">
-
                     <label>
-
                         Nama Pembimbing
-
                         <span class="required">*</span>
-
                     </label>
-
-                    <input
-                        type="text"
-                        name="pembimbing"
-                        id="e_pembimbing"
-                        class="form-control"
-                        maxlength="200"
-                        required
-                    >
-
+                    <input type="text" name="pembimbing" id="e_pembimbing" class="form-control" maxlength="200" required>
                 </div>
-
 
                 <!-- TANGGAL -->
-
                 <div class="form-row">
-
-
                     <div class="form-group">
-
                         <label>
-
                             Tanggal Mulai
-
                             <span class="required">*</span>
-
                         </label>
-
-                        <input
-                            type="date"
-                            name="tanggal_mulai"
-                            id="e_tanggal_mulai"
-                            class="form-control"
-                            required
-                        >
-
+                        <input type="date" name="tanggal_mulai" id="e_tanggal_mulai" class="form-control" required>
                     </div>
-
-
                     <div class="form-group">
-
                         <label>
-
                             Tanggal Selesai
-
                             <span class="required">*</span>
-
                         </label>
-
-                        <input
-                            type="date"
-                            name="tanggal_selesai"
-                            id="e_tanggal_selesai"
-                            class="form-control"
-                            required
-                        >
-
+                        <input type="date" name="tanggal_selesai" id="e_tanggal_selesai" class="form-control" required>
                     </div>
-
-
                 </div>
 
-
                 <!-- STATUS -->
-
                 <div class="form-group">
-
-                    <label>
-                        Status Penempatan
-                    </label>
-
-                    <select
-                        name="status_penempatan"
-                        id="e_status_penempatan"
-                        class="form-control"
-                    >
-
+                    <label>Status Penempatan</label>
+                    <select name="status_penempatan" id="e_status_penempatan" class="form-control">
                         <option value="Draft">
                             Draft
                         </option>
-
                         <option value="Disetujui">
                             Disetujui
                         </option>
-
                         <option value="Selesai">
                             Selesai
                         </option>
-
                     </select>
-
                 </div>
-
-
             </div>
-
-
             <div class="modal-footer">
-
-
-                <button
-                    type="button"
-                    class="btn btn-outline"
-                    onclick="closeModal('modalEdit')"
-                >
-
+                <button type="button" class="btn btn-outline" onclick="closeModal('modalEdit')">
                     Batal
-
                 </button>
-
-
-                <button
-                    type="submit"
-                    class="btn btn-primary"
-                >
-
+                <button type="submit" class="btn btn-primary">
                     <i class="fa-solid fa-save"></i>
-
                     Perbarui
-
                 </button>
-
-
             </div>
-
         </form>
-
     </div>
-
 </div>
-
-
 
 <!-- FORM HAPUS -->
-
-<form
-    method="POST"
-    action="backend/pkl_handler.php"
-    id="formHapus"
->
-
-    <input
-        type="hidden"
-        name="action"
-        value="hapus"
-    >
-
-    <input
-        type="hidden"
-        name="id"
-        id="hapus_id"
-    >
-
+<form method="POST" action="backend/pkl_handler.php" id="formHapus">
+    <input type="hidden" name="action" value="hapus">
+    <input type="hidden" name="id" id="hapus_id">
 </form>
-
-
-
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script src="assets/admin.js"></script>
-
-
 <script>
-
 function editPkl(data) {
-
     document.getElementById('e_id').value =
         data.id;
-
     document.getElementById('e_nama_siswa').value =
         data.nama_siswa || '';
-
     document.getElementById('e_nama_perusahaan').value =
         data.nama_perusahaan || '';
-
     document.getElementById('e_pembimbing').value =
         data.pembimbing || '';
-
     document.getElementById('e_tanggal_mulai').value =
         data.tanggal_mulai || '';
-
     document.getElementById('e_tanggal_selesai').value =
         data.tanggal_selesai || '';
-
     document.getElementById('e_status_penempatan').value =
         data.status_penempatan || 'Draft';
-
     openModal('modalEdit');
 }
 
-
 function hapusPkl(id, nama) {
-
     Swal.fire({
-
         title: 'Hapus Data PKL?',
-
         html:
             'Data PKL untuk <strong>' +
             nama +
             '</strong> akan dihapus!',
-
         icon: 'warning',
-
         showCancelButton: true,
-
         confirmButtonColor: '#ef4444',
-
         cancelButtonColor: '#64748b',
-
         confirmButtonText: 'Ya, Hapus!',
-
         cancelButtonText: 'Batal',
-
         reverseButtons: true
-
     }).then(function(result) {
-
         if (result.isConfirmed) {
-
             document.getElementById(
                 'hapus_id'
             ).value = id;
-
             document.getElementById(
                 'formHapus'
             ).submit();
-
         }
-
     });
-
 }
-
 </script>
-
-
 </body>
-
 </html>
