@@ -1,4 +1,10 @@
 <section id="kontak" class="contact-section">
+    <?php if (!empty($_SESSION['contact_flash'])): ?>
+        <?php $contactFlash = $_SESSION['contact_flash']; unset($_SESSION['contact_flash']); ?>
+        <div class="contact-feedback contact-feedback-<?= htmlspecialchars($contactFlash['type'], ENT_QUOTES, 'UTF-8'); ?>">
+            <?= htmlspecialchars($contactFlash['message'], ENT_QUOTES, 'UTF-8'); ?>
+        </div>
+    <?php endif; ?>
     <div class="section-title">
         <span class="section-tag">
             KONTAK & LOKASI

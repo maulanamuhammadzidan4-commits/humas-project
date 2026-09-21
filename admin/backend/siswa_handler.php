@@ -6,14 +6,8 @@
 session_start();
 
 require_once '../../backend/connection.php';
-
-/* =========================
-   CEK LOGIN ADMIN
-========================= */
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login_admin.php");
-    exit;
-}
+$authLoginPath = '../login_admin.php';
+require_once '../includes/auth.php';
 
 /* =========================
    CEK KONEKSI DATABASE

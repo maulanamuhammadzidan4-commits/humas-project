@@ -34,17 +34,6 @@ $page_title = "Manajemen User";
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/admin-style.css">
-    <style>
-        .user-avatar-cell {
-            width: 38px; height: 38px;
-            background: linear-gradient(135deg, var(--blue), var(--blue-dark));
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-weight: 700; font-size: .9rem;
-            flex-shrink: 0;
-        }
-        .user-cell { display: flex; align-items: center; gap: 10px; }
-    </style>
 </head>
 <body>
 <?php include 'includes/sidebar.php'; ?>

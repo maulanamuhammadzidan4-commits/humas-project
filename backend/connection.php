@@ -1,6 +1,6 @@
 <?php
 $hostname = "localhost";
-$username = "root";
+$username = "dev";
 $password = "";
 $dbname = "db_humas_smk";
 

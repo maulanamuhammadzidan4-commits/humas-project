@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../../backend/connection.php';
+require_once '../../backend/helpers.php';
 $isAdmin = isset($_SESSION['user_id']);
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $berita = null;
@@ -25,33 +26,6 @@ if ($id > 0) {
     }
 }
 
-$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-$berita = null;
-
-if ($id > 0) {
-    $stmt = mysqli_prepare($koneksi, "SELECT * FROM berita WHERE id_berita = ? LIMIT 1");
-    if ($stmt) {
-        mysqli_stmt_bind_param($stmt, "i", $id);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        if ($result && mysqli_num_rows($result) > 0) {
-            $berita = mysqli_fetch_assoc($result);
-        }
-        mysqli_stmt_close($stmt);
-    }
-}
-
-if (!function_exists('formatTanggalIndo')) {
-    function formatTanggalIndo($tanggal) {
-        if (empty($tanggal)) return '-';
-        $bulanIndo = [
-            1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-        ];
-        $split = explode('-', date('Y-m-d', strtotime($tanggal)));
-        return $split[2] . ' ' . $bulanIndo[(int)$split[1]] . ' ' . $split[0];
-    }
-}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -76,42 +50,23 @@ if (!function_exists('formatTanggalIndo')) {
 <body>
 
     <!-- NAVBAR -->
-    <nav>
-        <div class="logo">
-            <i class="fa-solid fa-graduation-cap"></i>
-            HUMAS <span>SMK</span>
-        </div>
+    <?php include __DIR__ . '/../components/header.php'; ?>
 
-        <ul class="menu" id="navMenu">
-            <li><a href="../index.php#beranda">Beranda</a></li>
-            <li><a href="../index.php#tentang">Tentang</a></li>
-            <li><a href="../index.php#kegiatan">Kegiatan</a></li>
-            <li><a href="../index.php#berita">Berita</a></li>
-            <li><a href="../index.php#staff">Staff</a></li>
-            <li><a href="../index.php#kontak">Kontak</a></li>
-            <li>
-                <a href="login.php" class="btn-login">
-                    <i class="fa-solid fa-right-to-bracket"></i> Login Admin
-                </a>
-            </li>
-        </ul>
-
-        <button class="mobile-toggle" id="menuToggle" aria-label="Toggle Mobile Navigation">
-            <i class="fa-solid fa-bars" id="toggleIcon"></i>
-        </button>
-    </nav>
-
-
-    <?php if ($berita): ?>
+    <?php if (isset($berita) && $berita): ?>
         <!-- DETAIL HEADER -->
         <header class="detail-header">
             <div class="detail-header-content">
                 <?php if ($isAdmin): ?>
-    <div class="admin-detail-actions">
-    </div>
-
-<?php endif; ?>
-                <a href="../index.html#berita" class="back-btn">
+                    <div class="admin-detail-actions">
+                        <a href="../login/edit-berita.php?id=<?= $berita['id_berita'] ?>" class="btn btn-edit">
+                            <i class="fa-solid fa-pen"></i> Edit
+                        </a>
+                        <a href="../login/delete-berita.php?id=<?= $berita['id_berita'] ?>" class="btn btn-delete" onclick="return confirm('Yakin ingin menghapus berita ini?')">
+                            <i class="fa-solid fa-trash"></i> Hapus
+                        </a>
+                    </div>
+                <?php endif; ?>
+                <a href="../index.php#berita" class="back-btn">
                     <i class="fa-solid fa-arrow-left"></i> Kembali ke Berita
                 </a>
                 <div class="detail-header-title">
@@ -119,7 +74,7 @@ if (!function_exists('formatTanggalIndo')) {
                         <i class="fa-solid fa-newspaper"></i>
                     </div>
                     <div class="detail-header-text">
-                        <span class="section-tag" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">
+                            <span class="section-tag detail-category">
                             <?= htmlspecialchars($berita['kategori'] ?? 'BERITA'); ?>
                         </span>
                         <h1><?= htmlspecialchars($berita['judul']); ?></h1>
@@ -209,12 +164,12 @@ if (!function_exists('formatTanggalIndo')) {
                         </div>
                     </div>
 
-                    <div class="sidebar-card" style="background: linear-gradient(135deg, var(--primary-navy), var(--primary-slate)); color: white;">
-                        <h4 style="color: white; border-color: rgba(255,255,255,0.1);"><i class="fa-solid fa-share-nodes" style="color: var(--brand-gold);"></i> Bagikan Informasi</h4>
-                        <p style="font-size: 14px; color: #cbd5e1; margin-bottom: 20px; line-height: 1.6;">
+                    <div class="sidebar-card sidebar-card-dark">
+                        <h4 class="sidebar-card-dark-title"><i class="fa-solid fa-share-nodes"></i> Bagikan Informasi</h4>
+                        <p class="sidebar-card-dark-text">
                             Bagikan berita resmi ini kepada rekan, siswa, dan wali murid.
                         </p>
-                        <a href="data_berita.php" class="btn" style="width: 100%; font-size: 14px; padding: 12px; background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                        <a href="../index.php#berita" class="btn sidebar-card-dark-button">
                             <i class="fa-solid fa-newspaper"></i> Lihat Berita Lainnya
                         </a>
                     </div>
@@ -232,7 +187,7 @@ if (!function_exists('formatTanggalIndo')) {
                 <p style="color: var(--text-muted); font-size: 16px; max-width: 500px; margin: 0 auto 30px;">
                     Maaf, berita yang Anda cari tidak ditemukan atau telah dihapus dari sistem kami.
                 </p>
-                <a href="index.html#berita" class="btn">
+                <a href="../index.php#berita" class="btn">
                     <i class="fa-solid fa-arrow-left"></i> Kembali ke Halaman Utama
                 </a>
             </div>
@@ -241,77 +196,9 @@ if (!function_exists('formatTanggalIndo')) {
 
 
     <!-- FOOTER -->
-    <footer>
-        <div class="footer-container">
-            <div class="footer-col">
-                <div class="logo" style="color: white; margin-bottom: 16px;">
-                    <i class="fa-solid fa-graduation-cap"></i> HUMAS <span style="color: var(--brand-gold);">SMK</span>
-                </div>
-                <p>
-                    Portal Resmi Hubungan Masyarakat SMK. Berkomitmen membangun sinergi antara dunia pendidikan
-                    kejuruan dan dunia kerja secara berkelanjutan.
-                </p>
-                <div class="footer-socials">
-                    <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-                    <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
-                    <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
-                </div>
-            </div>
+    <?php include __DIR__ . '/../components/footer.php'; ?>
 
-            <div class="footer-col">
-                <h4>Navigasi Cepat</h4>
-                <ul class="footer-links">
-                    <li><a href="../index.php#beranda"><i class="fa-solid fa-chevron-right"></i> Beranda</a></li>
-                    <li><a href="../index.php#tentang"><i class="fa-solid fa-chevron-right"></i> Tentang Humas</a></li>
-                    <li><a href="../index.php#kegiatan"><i class="fa-solid fa-chevron-right"></i> Kegiatan</a></li>
-                    <li><a href="../index.php#berita"><i class="fa-solid fa-chevron-right"></i> Berita Terbaru</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-col">
-                <h4>Program Utama</h4>
-                <ul class="footer-links">
-                    <li><a href="detail-kegiatan.html?id=kunjungan-industri"><i class="fa-solid fa-chevron-right"></i> Kunjungan Industri</a></li>
-                    <li><a href="detail-kegiatan.html?id=kerja-sama-industri"><i class="fa-solid fa-chevron-right"></i> Kemitraan Perusahaan</a></li>
-                    <li><a href="detail-kegiatan.html?id=pkl"><i class="fa-solid fa-chevron-right"></i> Program Magang PKL</a></li>
-                    <li><a href="login.php"><i class="fa-solid fa-chevron-right"></i> Portal Admin</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-col">
-                <h4>Hubungi Kami</h4>
-                <p><i class="fa-solid fa-location-dot" style="color: var(--brand-gold);"></i> Jl. Contoh No. 123, Jawa Barat</p>
-                <p><i class="fa-solid fa-phone" style="color: var(--brand-gold);"></i> (021) 555-0123</p>
-                <p><i class="fa-solid fa-envelope" style="color: var(--brand-gold);"></i> humas@smk.sch.id</p>
-            </div>
-        </div>
-
-        <div class="footer-bottom">
-            <p>&copy; 2026 Humas SMK. All Rights Reserved.</p>
-            <p>Website Hubungan Masyarakat & Kemitraan Industri Sekolah</p>
-        </div>
-    </footer>
-
-    <!-- Mobile Drawer JavaScript -->
-    <script>
-        const menuToggle = document.getElementById('menuToggle');
-        const navMenu = document.getElementById('navMenu');
-        const toggleIcon = document.getElementById('toggleIcon');
-
-        if (menuToggle) {
-            menuToggle.addEventListener('click', () => {
-                navMenu.classList.toggle('active');
-                if (navMenu.classList.contains('active')) {
-                    toggleIcon.classList.remove('fa-bars');
-                    toggleIcon.classList.add('fa-xmark');
-                } else {
-                    toggleIcon.classList.remove('fa-xmark');
-                    toggleIcon.classList.add('fa-bars');
-                }
-            });
-        }
-    </script>
+    <script src="../js/script.js"></script>
 
 </body>
 

@@ -1,5 +1,9 @@
 <?php
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 require_once '../../backend/connection.php';
 
 /* =====================================
@@ -10,6 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: ../index.php#kontak");
     exit;
 }
+
+$redirect = '../index.php#kontak';
 
 
 /* =====================================
@@ -27,12 +33,8 @@ $pesan  = trim($_POST['pesan'] ?? '');
 ===================================== */
 
 if ($nama === '' || $email === '' || $subjek === '' || $pesan === '') {
-
-    echo "<script>
-        alert('Semua data wajib diisi!');
-        window.history.back();
-    </script>";
-
+    $_SESSION['contact_flash'] = ['type' => 'error', 'message' => 'Semua data wajib diisi.'];
+    header("Location: $redirect");
     exit;
 }
 
@@ -42,12 +44,8 @@ if ($nama === '' || $email === '' || $subjek === '' || $pesan === '') {
 ===================================== */
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-
-    echo "<script>
-        alert('Format email tidak valid!');
-        window.history.back();
-    </script>";
-
+    $_SESSION['contact_flash'] = ['type' => 'error', 'message' => 'Format email tidak valid.'];
+    header("Location: $redirect");
     exit;
 }
 
@@ -81,11 +79,8 @@ try {
        BERHASIL
     ===================================== */
 
-    echo "<script>
-        alert('Terima kasih! Pesan Anda berhasil dikirim.');
-        window.location.href = '../index.php#kontak';
-    </script>";
-
+    $_SESSION['contact_flash'] = ['type' => 'success', 'message' => 'Terima kasih! Pesan Anda berhasil dikirim.'];
+    header("Location: $redirect");
     exit;
 
 
@@ -95,11 +90,7 @@ try {
        ERROR DATABASE
     ===================================== */
 
-    echo "<script>
-        alert('Pesan gagal disimpan ke database.');
-        window.history.back();
-    </script>";
-
+    $_SESSION['contact_flash'] = ['type' => 'error', 'message' => 'Pesan gagal disimpan ke database.'];
+    header("Location: $redirect");
     exit;
 }
-?>

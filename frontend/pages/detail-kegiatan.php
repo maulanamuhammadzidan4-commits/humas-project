@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/../config.php'; // Include the config.php file for BASE_URL and ROOT_PATH definitions
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -16,33 +20,12 @@
 </head>
 <body>
     <!-- NAVBAR -->
-    <nav>
-        <div class="logo">
-            <i class="fa-solid fa-graduation-cap"></i>
-            HUMAS <span>SMK</span>
-        </div>
-        <ul class="menu" id="navMenu">
-            <li><a href="index.html#beranda">Beranda</a></li>
-            <li><a href="index.html#tentang">Tentang</a></li>
-            <li><a href="index.html#kegiatan">Kegiatan</a></li>
-            <li><a href="index.html#berita">Berita</a></li>
-            <li><a href="index.html#staff">Staff</a></li>
-            <li><a href="index.html#kontak">Kontak</a></li>
-            <li>
-                <a href="login.php" class="btn-login">
-                    <i class="fa-solid fa-right-to-bracket"></i> Login Admin
-                </a>
-            </li>
-        </ul>
-        <button class="mobile-toggle" id="menuToggle" aria-label="Toggle Mobile Navigation">
-            <i class="fa-solid fa-bars" id="toggleIcon"></i>
-        </button>
-    </nav>
+    <?php include __DIR__ . '/../components/header.php'; ?>
 
     <!-- DETAIL HEADER -->
     <header class="detail-header">
         <div class="detail-header-content">
-            <a href="index.html#kegiatan" class="back-btn">
+            <a href="<?= BASE_URL ?>frontend/index.php#kegiatan" class="back-btn">
                 <i class="fa-solid fa-arrow-left"></i> Kembali ke Kegiatan
             </a>
             <div class="detail-header-title">
@@ -117,7 +100,7 @@
                     <p style="font-size: 14px; color: #cbd5e1; margin-bottom: 20px; line-height: 1.6;">
                         Ada pertanyaan mengenai program ini? Hubungi tim Humas SMK untuk konsultasi atau kemitraan.
                     </p>
-                    <a href="index.php" class="btn" style="width: 100%; font-size: 14px; padding: 12px;">
+                    <a href="../index.php#kontak" class="btn" style="width: 100%; font-size: 14px; padding: 12px;">
                         <i class="fa-solid fa-envelope"></i> Hubungi Humas
                     </a>
                 </div>
@@ -126,57 +109,7 @@
     </main>
 
     <!-- FOOTER -->
-    <footer>
-        <div class="footer-container">
-            <div class="footer-col">
-                <div class="logo" style="color: white; margin-bottom: 16px;">
-                    <i class="fa-solid fa-graduation-cap"></i> HUMAS <span style="color: var(--brand-gold);">SMK</span>
-                </div>
-                <p>
-                    Portal Resmi Hubungan Masyarakat SMK. Berkomitmen membangun sinergi antara dunia pendidikan
-                    kejuruan dan dunia kerja secara berkelanjutan.
-                </p>
-                <div class="footer-socials">
-                    <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-                    <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
-                    <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
-                </div>
-            </div>
-            <div class="footer-col">
-                <h4>Navigasi Cepat</h4>
-                <ul class="footer-links">
-                    <li><a href="index.html#beranda"><i class="fa-solid fa-chevron-right"></i> Beranda</a></li>
-                    <li><a href="index.html#tentang"><i class="fa-solid fa-chevron-right"></i> Tentang Humas</a></li>
-                    <li><a href="index.html#kegiatan"><i class="fa-solid fa-chevron-right"></i> Kegiatan</a></li>
-                    <li><a href="index.html#berita"><i class="fa-solid fa-chevron-right"></i> Berita Terbaru</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Program Utama</h4>
-                <ul class="footer-links">
-                    <li><a href="detail-kegiatan.html?id=kunjungan-industri"><i class="fa-solid fa-chevron-right"></i>
-                            Kunjungan Industri</a></li>
-                    <li><a href="detail-kegiatan.html?id=kerja-sama-industri"><i class="fa-solid fa-chevron-right"></i>
-                            Kemitraan Perusahaan</a></li>
-                    <li><a href="detail-kegiatan.html?id=pkl"><i class="fa-solid fa-chevron-right"></i> Program Magang
-                            PKL</a></li>
-                    <li><a href="login.php"><i class="fa-solid fa-chevron-right"></i> Portal Admin</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Hubungi Kami</h4>
-                <p><i class="fa-solid fa-location-dot" style="color: var(--brand-gold);"></i> Jl. Contoh No. 123, Jawa
-                    Barat</p>
-                <p><i class="fa-solid fa-phone" style="color: var(--brand-gold);"></i> (021) 555-0123</p>
-                <p><i class="fa-solid fa-envelope" style="color: var(--brand-gold);"></i> humas@smk.sch.id</p>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 Humas SMK. All Rights Reserved.</p>
-            <p>Website Hubungan Masyarakat & Kemitraan Industri Sekolah</p>
-        </div>
-    </footer>
+    <?php include __DIR__ . '/../components/footer.php'; ?>
 
     <!-- DYNAMIC SCRIPT -->
     <script>
@@ -295,21 +228,7 @@
         renderList('detailManfaat', data.manfaat);
         renderList('detailBentuk', data.bentuk);
 
-        // Mobile Menu Toggle
-        const menuToggle = document.getElementById('menuToggle');
-        const navMenu = document.getElementById('navMenu');
-        const toggleIcon = document.getElementById('toggleIcon');
-
-        menuToggle.addEventListener('click', () => {
-            navMenu.classList.toggle('active');
-            if (navMenu.classList.contains('active')) {
-                toggleIcon.classList.remove('fa-bars');
-                toggleIcon.classList.add('fa-xmark');
-            } else {
-                toggleIcon.classList.remove('fa-xmark');
-                toggleIcon.classList.add('fa-bars');
-            }
-        });
     </script>
+    <script src="../js/script.js"></script>
 </body>
 </html>

@@ -9,8 +9,8 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (!isset($_SESSION['user_id'])) {
-    // Semua halaman admin ada di folder admin/, login_admin.php juga di sana
-    header("Location: login_admin.php");
+    $authLoginPath = $authLoginPath ?? 'login_admin.php';
+    header("Location: $authLoginPath");
     exit;
 }
 

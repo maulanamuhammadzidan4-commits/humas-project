@@ -1,23 +1,33 @@
 <?php
 session_start();
 require_once '../../backend/connection.php';
-
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login_admin.php");
-    exit;
-}
+$authLoginPath = '../login_admin.php';
+require_once '../includes/auth.php';
 
 $action = $_POST['action'] ?? '';
 
 try {
+    $nama_perusahaan = trim($_POST['nama_perusahaan'] ?? '');
+    $sektor_bidang = trim($_POST['sektor_bidang'] ?? '');
+    $jurusan = trim($_POST['jurusan'] ?? '');
+    $alamat = trim($_POST['alamat'] ?? '');
+    $penanggung_jawab = trim($_POST['penanggung_jawab'] ?? '');
+    $no_telepon = trim($_POST['no_telepon'] ?? '');
+    $status_mou = trim($_POST['status_mou'] ?? '');
+    $perusahaan_id = (int)($_POST['id'] ?? 0);
+
+    if ($action !== 'hapus' && ($nama_perusahaan === '' || $sektor_bidang === '' || $jurusan === '' || $alamat === '' || $penanggung_jawab === '' || $no_telepon === '' || $status_mou === '')) {
+        throw new Exception('Semua data perusahaan wajib diisi.');
+    }
+
     if ($action === 'tambah') {
         $stmt = mysqli_prepare($koneksi,
             "INSERT INTO perusahaan (nama_perusahaan, sektor_bidang, jurusan, alamat, penanggung_jawab, no_telepon, status_mou)
              VALUES (?,?,?,?,?,?,?)"
         );
         mysqli_stmt_bind_param($stmt, 'sssssss',
-            $_POST['nama_perusahaan'], $_POST['sektor_bidang'], $_POST['jurusan'], $_POST['alamat'],
-            $_POST['penanggung_jawab'], $_POST['no_telepon'], $_POST['status_mou']
+            $nama_perusahaan, $sektor_bidang, $jurusan, $alamat,
+            $penanggung_jawab, $no_telepon, $status_mou
         );
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
@@ -30,10 +40,8 @@ try {
              WHERE id=?"
         );
         mysqli_stmt_bind_param($stmt, 'sssssssi',
-            $_POST['nama_perusahaan'], $_POST['sektor_bidang'], 
-            $_POST['jurusan'], $_POST['alamat'],
-            $_POST['penanggung_jawab'], $_POST['no_telepon'],
-            $_POST['status_mou'], $_POST['id']
+            $nama_perusahaan, $sektor_bidang, $jurusan, $alamat,
+            $penanggung_jawab, $no_telepon, $status_mou, $perusahaan_id
         );
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
