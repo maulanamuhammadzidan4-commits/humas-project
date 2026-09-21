@@ -50,6 +50,11 @@ function nav_active($pages) {
             <span>Data Siswa</span>
         </a>
 
+        <a href="pesan.php" class="nav-item <?= nav_active('pesan.php') ?>">
+    <i class="fa-solid fa-envelope"></i>
+    <span>Pesan Masuk</span>
+</a>
+
         <div class="nav-section-label">Program</div>
 
         <a href="pkl.php" class="nav-item <?= nav_active('pkl.php') ?>">

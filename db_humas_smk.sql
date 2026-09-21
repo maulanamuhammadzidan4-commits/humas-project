@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS `perusahaan` (
 -- Table structure for table `penempatan_pkl`
 --
 
-CREATE TABLE IF NOT EXISTS `penempatan_pkl` (
+CREATE TABLE IF NOT EXISTS `pkl_penempatan` (
   `id` int NOT NULL AUTO_INCREMENT,
   `id_siswa` int NOT NULL,
   `id_perusahaan` int NOT NULL,
@@ -153,7 +153,7 @@ ALTER TABLE `lowongan_kerja`
 --
 -- Constraints for table `penempatan_pkl`
 --
-ALTER TABLE `penempatan_pkl`
+ALTER TABLE `pkl_penempatan`
   ADD CONSTRAINT `fk_pkl_perusahaan` FOREIGN KEY (`id_perusahaan`) REFERENCES `perusahaan` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_pkl_siswa` FOREIGN KEY (`id_siswa`) REFERENCES `siswa` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 

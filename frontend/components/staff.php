@@ -13,7 +13,7 @@
                     <img src="assets/img/pa_rohim.jpg" alt="Kepala Humas">
                 </div>
                 <h3>Rohim Hermawan, S.Kom</h3>
-                <span class="staff-role">Wakasek Humas</span>
+                <span class="staff-role">Wakil Kepala Sekolah Bidang Humas</span>
                 <p>Mengendalikan kebijakan strategis kemitraan dan reputasi publik sekolah.</p>
                 <div class="staff-socials">
                     <a href="#" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>

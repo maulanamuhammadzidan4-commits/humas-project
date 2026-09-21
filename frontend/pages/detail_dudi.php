@@ -143,264 +143,142 @@ if ($id > 0) {
            id="toggleIcon"></i>
     </button>
 </nav>
-
 <?php if ($berita): ?>
 
-<!-- =========================================================
-     DETAIL HEADER
-========================================================= -->
-
+<!-- DETAIL HEADER-->
 <header class="detail-header">
-
     <div class="detail-header-content">
-
         <a href="index.html#berita"
            class="back-btn">
-
             <i class="fa-solid fa-arrow-left"></i>
-
             Kembali ke Berita
-
         </a>
-
-
         <div class="detail-header-title">
-
             <div class="detail-header-icon">
-
                 <i class="fa-solid fa-newspaper"></i>
-
             </div>
-
-
             <div class="detail-header-text">
-
-                <span
-                    class="section-tag"
-                    style="
-                        background: rgba(245, 158, 11, 0.2);
-                        color: #fbbf24;
-                    ">
-
+                <span class="section-tag" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">
                     <?= htmlspecialchars(
                         $berita['kategori'] ?? 'BERITA'
                     ); ?>
-
                 </span>
-
-
                 <h1>
-
                     <?= htmlspecialchars(
                         $berita['judul'] ?? 'Berita'
                     ); ?>
-
                 </h1>
-
-
                 <p>
-
                     <i class="fa-regular fa-calendar-check"></i>
-
                     <?= formatTanggalIndo(
                         $berita['tanggal'] ?? ''
                     ); ?>
-
                     &bull;
-
                     DIPUBLIKASIKAN OLEH HUMAS SMK
-
                 </p>
-
             </div>
-
         </div>
-
     </div>
-
 </header>
 
-
-<!-- =========================================================
-     DETAIL MAIN CONTENT
-========================================================= -->
-
+<!--DETAIL MAIN CONTENT-->
 <main class="detail-container">
-
     <div class="detail-grid">
-
-
-        <!-- =================================================
-             KONTEN UTAMA
-        ================================================== -->
-
+        <!-- KONTEN UTAMA -->
         <div class="detail-main">
-
-
             <?php if (!empty($berita['gambar'])): ?>
-
                 <img
                     src="<?= htmlspecialchars($berita['gambar']); ?>"
                     alt="<?= htmlspecialchars(
                         $berita['judul'] ?? 'Gambar Berita'
                     ); ?>"
                     class="detail-banner-img">
-
             <?php endif; ?>
 
-
             <!-- ALAMAT -->
-
             <?php if (!empty($berita['alamat'])): ?>
-
                 <div class="detail-block">
-
                     <h3>
-
                         <i class="fa-solid fa-location-dot"></i>
-
                         Alamat
-
                     </h3>
-
-
-                    <p
-                        style="
-                            font-size: 17px;
-                            font-weight: 600;
-                            color: var(--brand-blue);
-                            line-height: 1.7;
-                        ">
-
+                    <p style="font-size: 17px; font-weight: 600; color: var(--brand-blue); line-height: 1.7;">
                         <?= nl2br(
                             htmlspecialchars(
                                 $berita['alamat']
                             )
                         ); ?>
-
                     </p>
-
                 </div>
-
             <?php endif; ?>
 
-
             <!-- ISI BERITA -->
-
             <?php if (!empty($berita['isi'])): ?>
-
                 <div class="detail-block">
-
                     <h3>
-
                         <i class="fa-solid fa-align-left"></i>
-
                         Berita Selengkapnya
-
                     </h3>
-
-
                     <p>
-
                         <?= nl2br(
                             htmlspecialchars(
                                 $berita['isi']
                             )
                         ); ?>
-
                     </p>
-
                 </div>
-
             <?php endif; ?>
 
-
             <!-- PENANGGUNG JAWAB -->
-
             <?php if (!empty($berita['penanggung_jawab'])): ?>
-
                 <div class="detail-block">
-
                     <h3>
-
                         <i class="fa-solid fa-user-tie"></i>
-
                         Penanggung Jawab
-
                     </h3>
-
-
                     <ul class="detail-check-list">
-
                         <?php
-
                         $penanggungItems =
                             explode(
                                 '|',
                                 $berita['penanggung_jawab']
                             );
-
                         foreach (
                             $penanggungItems
                             as $item
                         ):
-
                             if (
                                 trim($item) === ''
                             ) {
                                 continue;
                             }
-
                         ?>
-
                             <li>
-
                                 <i class="fa-solid fa-check"></i>
-
                                 <span>
-
                                     <?= htmlspecialchars(
                                         trim($item)
                                     ); ?>
-
                                 </span>
-
                             </li>
-
                         <?php endforeach; ?>
-
                     </ul>
-
                 </div>
-
             <?php endif; ?>
-
-
             <!-- MANFAAT -->
-
             <?php if (!empty($berita['manfaat'])): ?>
-
                 <div class="detail-block">
-
                     <h3>
-
                         <i class="fa-solid fa-medal"></i>
-
                         Manfaat Utama
-
                     </h3>
-
-
                     <ul class="detail-check-list">
-
                         <?php
-
                         $manfaatItems =
                             explode(
                                 '|',
                                 $berita['manfaat']
                             );
-
                         foreach (
                             $manfaatItems
                             as $item
@@ -606,22 +484,10 @@ if ($id > 0) {
 
 
                 <a
-                    href="data_dudi.php"
+                    href="../index.php#kontak"
                     class="btn"
-                    style="
-                        width: 100%;
-                        font-size: 14px;
-                        padding: 12px;
-                        background:
-                        rgba(255,255,255,0.15);
-                        color: white;
-                        border:
-                        1px solid
-                        rgba(255,255,255,0.3);
-                    ">
-
-                    <i class="fa-solid fa-newspaper"></i>
-                    Lihat Berita Lainnya
+                    style=" width: 100%; font-size: 14px; padding: 12px; background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                    <i class="fa-solid fa-newspaper"></i>Hubungi Kami 
                 </a>
             </div>
         </aside>
@@ -630,64 +496,21 @@ if ($id > 0) {
 <?php else: ?>
 <main
     class="detail-container"
-    style="
-        margin-top: 60px;
-        margin-bottom: 120px;
-    ">
-
-
-    <div
-        class="detail-main"
-        style="
-            text-align: center;
-            padding: 80px 30px;
-        ">
-
-
-        <div
-            style="
-                width: 80px;
-                height: 80px;
-                background: #fee2e2;
-                color: #dc2626;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 36px;
-                margin: 0 auto 20px;
-            ">
-
+    style=" margin-top: 60px; margin-bottom: 120px;">
+    <div class="detail-main" style=" text-align: center; padding: 80px 30px;">
+        <div style=" width: 80px; height: 80px; background: #fee2e2; color: #dc2626; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; margin: 0 auto 20px;">
             <i class="fa-solid fa-newspaper"></i>
-
         </div>
-
-
         <h2
-            style="
-                font-size: 28px;
-                font-weight: 800;
-                color: var(--text-heading);
-                margin-bottom: 12px;
-            ">
-
+            style=" font-size: 28px; font-weight: 800; color: var(--text-heading); margin-bottom: 12px;">
             Berita Tidak Ditemukan
-
         </h2>
 
-
         <p
-            style="
-                color: var(--text-muted);
-                font-size: 16px;
-                max-width: 500px;
-                margin: 0 auto 30px;
-            ">
-
+            style=" color: var(--text-muted); font-size: 16px; max-width: 500px; margin: 0 auto 30px;">
             Maaf, berita yang Anda cari
             tidak ditemukan atau telah
             dihapus dari sistem kami.
-
         </p>
 
 
@@ -786,65 +609,47 @@ if ($id > 0) {
 
 
         <div class="footer-col">
-
             <h4>Program Utama</h4>
-
             <ul class="footer-links">
-
                 <li>
                     <a href="detail-kegiatan.html?id=kunjungan-industri">
                         <i class="fa-solid fa-chevron-right"></i>
                         Kunjungan Industri
                     </a>
                 </li>
-
                 <li>
                     <a href="detail-kegiatan.html?id=kerja-sama-industri">
                         <i class="fa-solid fa-chevron-right"></i>
                         Kemitraan Perusahaan
                     </a>
                 </li>
-
                 <li>
                     <a href="detail-kegiatan.html?id=pkl">
                         <i class="fa-solid fa-chevron-right"></i>
                         Program Magang PKL
                     </a>
                 </li>
-
                 <li>
                     <a href="login.php">
                         <i class="fa-solid fa-chevron-right"></i>
                         Portal Admin
                     </a>
                 </li>
-
             </ul>
-
         </div>
-
-
         <div class="footer-col">
-
             <h4>Hubungi Kami</h4>
-
             <p>
-
                 <i
                     class="fa-solid fa-location-dot"
                     style="
                         color: var(--brand-gold);
                     ">
                 </i>
-
                 Jl. Contoh No. 123,
                 Jawa Barat
-
             </p>
-
-
             <p>
-
                 <i
                     class="fa-solid fa-phone"
                     style="

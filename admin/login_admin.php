@@ -118,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_locked) {
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="frontend/assets/css/login_admin.css">
+    <link rel="stylesheet" href="../frontend/assets/css/login_admin.css">
 </head>
 <body>
     <div class="login-card">
@@ -223,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_locked) {
 
             <!-- BACK -->
             <a
-                href="index.html" class="back-link">
+                href="../frontend/index.php" class="back-link">
                 <i class="fa-solid fa-arrow-left"></i>
                 Kembali ke Beranda Utama
             </a>

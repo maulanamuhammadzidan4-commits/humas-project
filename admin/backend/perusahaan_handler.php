@@ -1,8 +1,4 @@
 <?php
-/**
- * Handler CRUD — Perusahaan Mitra
- * POST params: action (tambah|edit|hapus), lalu field tabel
- */
 session_start();
 require_once '../../backend/connection.php';
 
@@ -16,12 +12,12 @@ $action = $_POST['action'] ?? '';
 try {
     if ($action === 'tambah') {
         $stmt = mysqli_prepare($koneksi,
-            "INSERT INTO perusahaan (nama, sektor_bidang, alamat, penanggung_jawab, no_telepon, email, status_mou)
+            "INSERT INTO perusahaan (nama_perusahaan, sektor_bidang, jurusan, alamat, penanggung_jawab, no_telepon, status_mou)
              VALUES (?,?,?,?,?,?,?)"
         );
         mysqli_stmt_bind_param($stmt, 'sssssss',
-            $_POST['nama'], $_POST['sektor_bidang'], $_POST['alamat'],
-            $_POST['penanggung_jawab'], $_POST['no_telepon'], $_POST['email'], $_POST['status_mou']
+            $_POST['nama_perusahaan'], $_POST['sektor_bidang'], $_POST['jurusan'], $_POST['alamat'],
+            $_POST['penanggung_jawab'], $_POST['no_telepon'], $_POST['status_mou']
         );
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
@@ -30,12 +26,13 @@ try {
 
     } elseif ($action === 'edit') {
         $stmt = mysqli_prepare($koneksi,
-            "UPDATE perusahaan SET nama=?, sektor_bidang=?, alamat=?, penanggung_jawab=?, no_telepon=?, email=?, status_mou=?
+            "UPDATE perusahaan SET nama_perusahaan=?, sektor_bidang=?, jurusan=?, alamat=?, penanggung_jawab=?, no_telepon=?, status_mou=?
              WHERE id=?"
         );
         mysqli_stmt_bind_param($stmt, 'sssssssi',
-            $_POST['nama'], $_POST['sektor_bidang'], $_POST['alamat'],
-            $_POST['penanggung_jawab'], $_POST['no_telepon'], $_POST['email'],
+            $_POST['nama_perusahaan'], $_POST['sektor_bidang'], 
+            $_POST['jurusan'], $_POST['alamat'],
+            $_POST['penanggung_jawab'], $_POST['no_telepon'],
             $_POST['status_mou'], $_POST['id']
         );
         mysqli_stmt_execute($stmt);

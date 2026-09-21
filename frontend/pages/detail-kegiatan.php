@@ -1,33 +1,26 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detail Kegiatan Humas | Humas SMK</title>
-
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-
     <!-- FontAwesome 6 CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <!-- Custom Stylesheet -->
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
-
 <body>
-
     <!-- NAVBAR -->
     <nav>
         <div class="logo">
             <i class="fa-solid fa-graduation-cap"></i>
             HUMAS <span>SMK</span>
         </div>
-
         <ul class="menu" id="navMenu">
             <li><a href="index.html#beranda">Beranda</a></li>
             <li><a href="index.html#tentang">Tentang</a></li>
@@ -41,12 +34,10 @@
                 </a>
             </li>
         </ul>
-
         <button class="mobile-toggle" id="menuToggle" aria-label="Toggle Mobile Navigation">
             <i class="fa-solid fa-bars" id="toggleIcon"></i>
         </button>
     </nav>
-
 
     <!-- DETAIL HEADER -->
     <header class="detail-header">
@@ -68,37 +59,26 @@
         </div>
     </header>
 
-
     <!-- DETAIL MAIN CONTENT -->
     <main class="detail-container">
         <div class="detail-grid">
             <div class="detail-main">
                 <img src="" alt="Banner Kegiatan" class="detail-banner-img" id="detailBanner">
-
                 <div class="detail-block">
                     <h3><i class="fa-solid fa-file-lines"></i> Deskripsi Lengkap</h3>
                     <p id="detailDeskripsi">Memuat deskripsi kegiatan...</p>
                 </div>
-
                 <div class="detail-block">
                     <h3><i class="fa-solid fa-bullseye"></i> Tujuan Kegiatan</h3>
-                    <ul class="detail-check-list" id="detailTujuan">
-                        <!-- Dynamic list -->
-                    </ul>
+                    <ul class="detail-check-list" id="detailTujuan"></ul>
                 </div>
-
                 <div class="detail-block">
                     <h3><i class="fa-solid fa-medal"></i> Manfaat Utama</h3>
-                    <ul class="detail-check-list" id="detailManfaat">
-                        <!-- Dynamic list -->
-                    </ul>
+                    <ul class="detail-check-list" id="detailManfaat"></ul>
                 </div>
-
                 <div class="detail-block">
                     <h3><i class="fa-solid fa-list-check"></i> Bentuk Kegiatan</h3>
-                    <ul class="detail-check-list" id="detailBentuk">
-                        <!-- Dynamic list -->
-                    </ul>
+                    <ul class="detail-check-list" id="detailBentuk"></ul>
                 </div>
             </div>
 
@@ -114,7 +94,6 @@
                                 <span id="detailTarget">Siswa SMK</span>
                             </div>
                         </div>
-
                         <div class="sidebar-info-item">
                             <div class="sidebar-info-icon"><i class="fa-solid fa-calendar-days"></i></div>
                             <div class="sidebar-info-text">
@@ -122,7 +101,6 @@
                                 <span id="detailFrekuensi">Berkala</span>
                             </div>
                         </div>
-
                         <div class="sidebar-info-item">
                             <div class="sidebar-info-icon"><i class="fa-solid fa-user-tie"></i></div>
                             <div class="sidebar-info-text">
@@ -132,7 +110,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="sidebar-card"
                     style="background: linear-gradient(135deg, var(--primary-navy), var(--primary-slate)); color: white;">
                     <h4 style="color: white; border-color: rgba(255,255,255,0.1);"><i class="fa-solid fa-headset"
@@ -147,7 +124,6 @@
             </aside>
         </div>
     </main>
-
 
     <!-- FOOTER -->
     <footer>
@@ -167,7 +143,6 @@
                     <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
                 </div>
             </div>
-
             <div class="footer-col">
                 <h4>Navigasi Cepat</h4>
                 <ul class="footer-links">
@@ -177,7 +152,6 @@
                     <li><a href="index.html#berita"><i class="fa-solid fa-chevron-right"></i> Berita Terbaru</a></li>
                 </ul>
             </div>
-
             <div class="footer-col">
                 <h4>Program Utama</h4>
                 <ul class="footer-links">
@@ -190,7 +164,6 @@
                     <li><a href="login.php"><i class="fa-solid fa-chevron-right"></i> Portal Admin</a></li>
                 </ul>
             </div>
-
             <div class="footer-col">
                 <h4>Hubungi Kami</h4>
                 <p><i class="fa-solid fa-location-dot" style="color: var(--brand-gold);"></i> Jl. Contoh No. 123, Jawa
@@ -199,13 +172,11 @@
                 <p><i class="fa-solid fa-envelope" style="color: var(--brand-gold);"></i> humas@smk.sch.id</p>
             </div>
         </div>
-
         <div class="footer-bottom">
             <p>&copy; 2026 Humas SMK. All Rights Reserved.</p>
             <p>Website Hubungan Masyarakat & Kemitraan Industri Sekolah</p>
         </div>
     </footer>
-
 
     <!-- DYNAMIC SCRIPT -->
     <script>
@@ -341,5 +312,4 @@
         });
     </script>
 </body>
-
 </html>

@@ -3,13 +3,12 @@ session_start();
 require_once '../backend/connection.php';
 require_once 'includes/auth.php';
 
-// ── Ambil data perusahaan ──
 $search = trim($_GET['search'] ?? '');
 $page   = max(1, (int)($_GET['page'] ?? 1));
 $limit  = 10;
 $offset = ($page - 1) * $limit;
 
-$where = $search ? "WHERE nama LIKE ? OR sektor_bidang LIKE ? OR email LIKE ?" : "";
+$where = $search ? "WHERE nama_perusahaan LIKE ? OR sektor_bidang LIKE ?" : "";
 $params_type = "sss";
 $params_val  = ["%$search%", "%$search%", "%$search%"];
 
@@ -23,15 +22,24 @@ $total_pages = ceil($total / $limit);
 $data_sql = "SELECT * FROM perusahaan $where ORDER BY created_at DESC LIMIT ? OFFSET ?";
 $stmt_data = mysqli_prepare($koneksi, $data_sql);
 if ($search) {
-    $bind_params = array_merge([$params_type . 'ii'], $params_val, [$limit, $offset]);
-    mysqli_stmt_bind_param($stmt_data, $params_type . 'ii', ...$params_val, $limit, $offset);
+    $bind_params = array_merge($params_val, [$limit, $offset]);
+    mysqli_stmt_bind_param(
+        $stmt_data,
+        $params_type . 'ii',
+        ...$bind_params
+    );
 } else {
-    mysqli_stmt_bind_param($stmt_data, 'ii', $limit, $offset);
+    mysqli_stmt_bind_param(
+        $stmt_data,
+        'ii',
+        $limit,
+        $offset
+    );
 }
+
 mysqli_stmt_execute($stmt_data);
 $result = mysqli_stmt_get_result($stmt_data);
-$data   = mysqli_fetch_all($result, MYSQLI_ASSOC);
-
+$data = mysqli_fetch_all($result, MYSQLI_ASSOC);
 $page_title = "Perusahaan Mitra";
 ?>
 <!DOCTYPE html>
@@ -47,12 +55,9 @@ $page_title = "Perusahaan Mitra";
 </head>
 <body>
 <?php include 'includes/sidebar.php'; ?>
-
 <div class="admin-main">
     <?php include 'includes/header.php'; ?>
-
     <main class="admin-content">
-
         <!-- Flash -->
         <?php if (isset($_GET['msg'])): ?>
         <div class="alert alert-<?= htmlspecialchars($_GET['type'] ?? 'success') ?> flash-alert">
@@ -60,7 +65,7 @@ $page_title = "Perusahaan Mitra";
             <?= htmlspecialchars(urldecode($_GET['msg'])) ?>
         </div>
         <?php endif; ?>
-
+        
         <!-- Page Header -->
         <div class="page-header">
             <div class="page-header-left">
@@ -93,7 +98,9 @@ $page_title = "Perusahaan Mitra";
                         <tr>
                             <th width="40">No</th>
                             <th>Nama Perusahaan</th>
-                            <th>Sektor</th>
+                            <th>Sektor Bidang</th>
+                            <th>Jurusan</th>
+                            <th>Alamat</th>
                             <th>Penanggung Jawab</th>
                             <th>No. Telepon</th>
                             <th>Status MoU</th>
@@ -118,8 +125,10 @@ $page_title = "Perusahaan Mitra";
                         ?>
                         <tr>
                             <td class="td-no"><?= $offset + $i + 1 ?></td>
-                            <td style="font-weight:600;"><?= htmlspecialchars($row['nama']) ?></td>
+                            <td style="font-weight:600;"><?= htmlspecialchars($row['nama_perusahaan']) ?></td>
                             <td><?= htmlspecialchars($row['sektor_bidang']) ?></td>
+                            <td><?= htmlspecialchars($row['jurusan']) ?></td>
+                            <td><?= htmlspecialchars($row['alamat']) ?></td>
                             <td><?= htmlspecialchars($row['penanggung_jawab']) ?></td>
                             <td><?= htmlspecialchars($row['no_telepon']) ?></td>
                             <td><span class="badge <?= $badge ?>"><?= $row['status_mou'] ?></span></td>
@@ -131,7 +140,7 @@ $page_title = "Perusahaan Mitra";
                                         <i class="fa-solid fa-pen"></i>
                                     </button>
                                     <button class="btn btn-danger btn-sm btn-icon"
-                                        onclick="hapusPerusahaan(<?= $row['id'] ?>, '<?= htmlspecialchars($row['nama'], ENT_QUOTES) ?>')"
+                                        onclick="hapusPerusahaan(<?= $row['id'] ?>, '<?= htmlspecialchars($row['nama_perusahaan'], ENT_QUOTES) ?>')"
                                         title="Hapus">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
@@ -179,12 +188,16 @@ $page_title = "Perusahaan Mitra";
                 <div class="form-row">
                     <div class="form-group">
                         <label>Nama Perusahaan <span class="required">*</span></label>
-                        <input type="text" name="nama" class="form-control" required placeholder="PT. Contoh Maju">
+                        <input type="text" name="nama_perusahaan" class="form-control" required placeholder="PT. Contoh Maju">
                     </div>
                     <div class="form-group">
                         <label>Sektor / Bidang <span class="required">*</span></label>
                         <input type="text" name="sektor_bidang" class="form-control" required placeholder="Teknologi Informasi">
                     </div>
+                </div>
+                <div class="form-group">
+                    <label>Jurusan <span class="required">*</span></label>
+                    <textarea name="jurusan" class="form-control" required placeholder="Nama Jurusan"></textarea>
                 </div>
                 <div class="form-group">
                     <label>Alamat <span class="required">*</span></label>
@@ -201,10 +214,6 @@ $page_title = "Perusahaan Mitra";
                     </div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label>Email <span class="required">*</span></label>
-                        <input type="email" name="email" class="form-control" required placeholder="info@perusahaan.com">
-                    </div>
                     <div class="form-group">
                         <label>Status MoU <span class="required">*</span></label>
                         <select name="status_mou" class="form-control" required>
@@ -237,12 +246,16 @@ $page_title = "Perusahaan Mitra";
                 <div class="form-row">
                     <div class="form-group">
                         <label>Nama Perusahaan <span class="required">*</span></label>
-                        <input type="text" name="nama" id="edit_nama" class="form-control" required>
+                        <input type="text" name="nama_perusahaan" id="edit_nama_perusahaan" class="form-control" required>
                     </div>
                     <div class="form-group">
                         <label>Sektor / Bidang <span class="required">*</span></label>
                         <input type="text" name="sektor_bidang" id="edit_sektor_bidang" class="form-control" required>
                     </div>
+                </div>
+                <div class="form-group">
+                    <label>Jurusan <span class="required">*</span></label>
+                    <textarea name="jurusan" id="edit_jurusan" class="form-control" required></textarea>
                 </div>
                 <div class="form-group">
                     <label>Alamat <span class="required">*</span></label>
@@ -259,10 +272,6 @@ $page_title = "Perusahaan Mitra";
                     </div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label>Email <span class="required">*</span></label>
-                        <input type="email" name="email" id="edit_email" class="form-control" required>
-                    </div>
                     <div class="form-group">
                         <label>Status MoU <span class="required">*</span></label>
                         <select name="status_mou" id="edit_status_mou" class="form-control" required>
@@ -292,20 +301,20 @@ $page_title = "Perusahaan Mitra";
 <script>
 function editPerusahaan(data) {
     document.getElementById('edit_id').value            = data.id;
-    document.getElementById('edit_nama').value          = data.nama;
+    document.getElementById('edit_nama_perusahaan').value = data.nama_perusahaan;
     document.getElementById('edit_sektor_bidang').value = data.sektor_bidang;
+    document.getElementById('edit_jurusan').value        = data.jurusan;
     document.getElementById('edit_alamat').value        = data.alamat;
     document.getElementById('edit_penanggung_jawab').value = data.penanggung_jawab;
     document.getElementById('edit_no_telepon').value    = data.no_telepon;
-    document.getElementById('edit_email').value         = data.email;
     document.getElementById('edit_status_mou').value    = data.status_mou;
     openModal('modalEdit');
 }
 
-function hapusPerusahaan(id, nama) {
+function hapusPerusahaan(id, nama_perusahaan) {
     Swal.fire({
         title: 'Hapus Perusahaan?',
-        html: `Data <strong>${nama}</strong> akan dihapus beserta semua lowongan terkait!`,
+        html: `Data <strong>${nama_perusahaan}</strong> akan dihapus beserta semua lowongan terkait!`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
@@ -314,10 +323,12 @@ function hapusPerusahaan(id, nama) {
         cancelButtonText: 'Batal',
         reverseButtons: true
     }).then((result) => {
+
         if (result.isConfirmed) {
             document.getElementById('hapus_id').value = id;
             document.getElementById('formHapus').submit();
         }
+
     });
 }
 </script>

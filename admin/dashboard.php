@@ -1,53 +1,245 @@
 <?php
 session_start();
+
 require_once '../backend/connection.php';
 require_once 'includes/auth.php';
 
-// ── Ambil statistik dari database ──
 $stats = [];
 
+/*
+|--------------------------------------------------------------------------
+| STATISTIK DASHBOARD
+|--------------------------------------------------------------------------
+*/
+
 $queries = [
-    'perusahaan'  => "SELECT COUNT(*) as n FROM perusahaan",
-    'mou_aktif'   => "SELECT COUNT(*) as n FROM perusahaan WHERE status_mou = 'Aktif'",
-    'lowongan'    => "SELECT COUNT(*) as n FROM lowongan_kerja",
-    'loker_buka'  => "SELECT COUNT(*) as n FROM lowongan_kerja WHERE status_loker = 'Buka'",
-    'siswa'       => "SELECT COUNT(*) as n FROM siswa",
-    'alumni'      => "SELECT COUNT(*) as n FROM siswa WHERE status_alumni = 1",
-    'pkl'         => "SELECT COUNT(*) as n FROM penempatan_pkl",
-    'pkl_aktif'   => "SELECT COUNT(*) as n FROM penempatan_pkl WHERE status_penempatan = 'Disetujui'",
-    'tracer'      => "SELECT COUNT(*) as n FROM tracer_study",
-    'users'       => "SELECT COUNT(*) as n FROM users",
+
+    // Jumlah perusahaan
+    'perusahaan' => "
+        SELECT COUNT(*) AS n
+        FROM perusahaan
+    ",
+
+    // Jumlah perusahaan dengan status MOU
+    'mou_aktif' => "
+        SELECT COUNT(*) AS n
+        FROM perusahaan
+        WHERE status_mou IS NOT NULL
+        AND status_mou != ''
+    ",
+
+    // Jumlah semua lowongan
+    'lowongan' => "
+        SELECT COUNT(*) AS n
+        FROM lowongan_kerja
+    ",
+
+    // Jumlah lowongan yang masih buka
+    'loker_buka' => "
+        SELECT COUNT(*) AS n
+        FROM lowongan_kerja
+        WHERE status_loker = 'Buka'
+    ",
+
+    // Jumlah siswa
+    'siswa' => "
+        SELECT COUNT(*) AS n
+        FROM siswa
+    ",
+
+    // Jumlah alumni
+    'alumni' => "
+        SELECT COUNT(*) AS n
+        FROM siswa
+        WHERE status_alumni = 1
+    ",
+
+    // Jumlah penempatan PKL
+    'pkl' => "
+        SELECT COUNT(*) AS n
+        FROM pkl_penempatan
+    ",
+
+    // Jumlah PKL yang disetujui
+    'pkl_aktif' => "
+        SELECT COUNT(*) AS n
+        FROM pkl_penempatan
+        WHERE status_penempatan = 'Disetujui'
+    ",
+
+    // Jumlah data tracer study
+    'tracer' => "
+        SELECT COUNT(*) AS n
+        FROM tracer_study
+    ",
+
+    // Jumlah pengguna
+    'users' => "
+        SELECT COUNT(*) AS n
+        FROM users
+    "
 ];
 
+
+/*
+|--------------------------------------------------------------------------
+| JALANKAN QUERY STATISTIK
+|--------------------------------------------------------------------------
+*/
+
 foreach ($queries as $key => $sql) {
+
     $res = mysqli_query($koneksi, $sql);
-    $row = mysqli_fetch_assoc($res);
-    $stats[$key] = $row['n'] ?? 0;
+
+    if ($res) {
+        $row = mysqli_fetch_assoc($res);
+        $stats[$key] = $row['n'] ?? 0;
+    } else {
+        $stats[$key] = 0;
+    }
 }
 
-// ── Lowongan akan tutup dalam 7 hari ──
-$sql_expiring = "SELECT lk.posisi, p.nama AS perusahaan, lk.batas_daftar, lk.status_loker
-                 FROM lowongan_kerja lk
-                 JOIN perusahaan p ON p.id = lk.id_perusahaan
-                 WHERE lk.status_loker = 'Buka' AND lk.batas_daftar BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-                 ORDER BY lk.batas_daftar ASC LIMIT 5";
+
+/*
+|--------------------------------------------------------------------------
+| LOWONGAN YANG AKAN SEGERA DITUTUP
+|--------------------------------------------------------------------------
+|
+| Sesuai database:
+| judul_posisi
+| perusahaan_id
+| batas_pendaftaran
+| status_loker
+|
+*/
+
+$sql_expiring = "
+    SELECT
+        lk.judul_posisi AS posisi,
+        p.nama_perusahaan AS perusahaan,
+        lk.batas_pendaftaran,
+        lk.status_loker
+
+    FROM lowongan_kerja lk
+
+    INNER JOIN perusahaan p
+        ON p.id = lk.perusahaan_id
+
+    WHERE lk.status_loker = 'Buka'
+
+    AND lk.batas_pendaftaran
+        BETWEEN CURDATE()
+        AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+
+    ORDER BY lk.batas_pendaftaran ASC
+
+    LIMIT 5
+";
+
 $expiring = mysqli_query($koneksi, $sql_expiring);
 
-// ── PKL terbaru ──
-$sql_pkl = "SELECT s.nama AS siswa, p.nama AS perusahaan, pk.status_penempatan, pk.tanggal_mulai, pk.tanggal_selesai
-            FROM penempatan_pkl pk
-            JOIN siswa s ON s.id = pk.id_siswa
-            JOIN perusahaan p ON p.id = pk.id_perusahaan
-            ORDER BY pk.created_at DESC LIMIT 6";
+
+/*
+|--------------------------------------------------------------------------
+| PKL TERBARU
+|--------------------------------------------------------------------------
+|
+| Database menggunakan:
+| pkl_penempatan
+| siswa_id
+| perusahaan_id
+|
+*/
+
+$sql_pkl = "
+    SELECT
+
+        s.nama_siswa AS siswa,
+
+        p.nama_perusahaan AS perusahaan,
+
+        pk.pembimbing_guru,
+
+        pk.status_penempatan,
+
+        pk.tanggal_mulai,
+
+        pk.tanggal_selesai
+
+    FROM pkl_penempatan pk
+
+    INNER JOIN siswa s
+        ON s.id = pk.siswa_id
+
+    INNER JOIN perusahaan p
+        ON p.id = pk.perusahaan_id
+
+    ORDER BY pk.created_at DESC
+
+    LIMIT 6
+";
+
 $pkl_terbaru = mysqli_query($koneksi, $sql_pkl);
 
-// ── Distribusi tracer study ──
-$sql_tracer_dist = "SELECT status_alumni, COUNT(*) as n FROM tracer_study GROUP BY status_alumni";
+
+/*
+|--------------------------------------------------------------------------
+| DISTRIBUSI TRACER STUDY
+|--------------------------------------------------------------------------
+|
+| status_alumni berisi:
+| Bekerja
+| Kuliah
+| Wirausaha
+| Mencari Kerja
+|
+*/
+
+$sql_tracer_dist = "
+    SELECT
+        status_alumni,
+        COUNT(*) AS n
+
+    FROM tracer_study
+
+    GROUP BY status_alumni
+";
+
 $tracer_dist = mysqli_query($koneksi, $sql_tracer_dist);
+
 $tracer_data = [];
-while ($r = mysqli_fetch_assoc($tracer_dist)) {
-    $tracer_data[$r['status_alumni']] = $r['n'];
+
+if ($tracer_dist) {
+
+    while ($r = mysqli_fetch_assoc($tracer_dist)) {
+
+        $tracer_data[$r['status_alumni']] = $r['n'];
+
+    }
 }
+
+
+/*
+|--------------------------------------------------------------------------
+| DEFAULT DATA TRACER
+|--------------------------------------------------------------------------
+*/
+
+$tracer_data['Bekerja'] =
+    $tracer_data['Bekerja'] ?? 0;
+
+$tracer_data['Kuliah'] =
+    $tracer_data['Kuliah'] ?? 0;
+
+$tracer_data['Wirausaha'] =
+    $tracer_data['Wirausaha'] ?? 0;
+
+$tracer_data['Mencari Kerja'] =
+    $tracer_data['Mencari Kerja'] ?? 0;
+
+$tracer_data['Menikah'] =
+    $tracer_data['Menikah'] ?? 0;
+
 
 $page_title = "Dashboard";
 ?>
@@ -269,6 +461,7 @@ $page_title = "Dashboard";
                         'Kuliah'         => ['#2563eb','--card-color:#2563eb'],
                         'Wirausaha'      => ['#f59e0b','--card-color:#f59e0b'],
                         'Mencari Kerja'  => ['#ef4444','--card-color:#ef4444'],
+                        'Menikah'  => ['#2a06ad','--card-color:#ef4444'],
                     ];
                     $total_tracer = array_sum($tracer_data);
                     if ($total_tracer === 0):
