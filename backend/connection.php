@@ -1,7 +1,7 @@
-<?php
+<<?php
 $hostname = "localhost";
-$username = "dev";
-$password = "";
+$username = "humas_user";
+$password = "password_humas123";
 $dbname = "db_humas_smk";
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
