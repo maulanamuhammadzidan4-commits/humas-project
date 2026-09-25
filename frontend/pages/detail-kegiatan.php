@@ -1,5 +1,10 @@
 <?php
-require_once __DIR__ . '/../config.php'; // Include the config.php file for BASE_URL and ROOT_PATH definitions
+session_start();
+require_once '../../backend/connection.php';
+require_once '../../backend/helpers.php';
+
+$id = (int) ($_GET['id'] ?? 0);
+$berita = getBeritaById($koneksi, $id);
 ?>
 
 <!DOCTYPE html>
@@ -7,7 +12,7 @@ require_once __DIR__ . '/../config.php'; // Include the config.php file for BASE
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Kegiatan Humas | Humas SMK</title>
+    <title><?= $berita ? htmlspecialchars($berita['judul']) : 'Berita Tidak Ditemukan'; ?> | Humas SMK</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,97 +27,103 @@ require_once __DIR__ . '/../config.php'; // Include the config.php file for BASE
     <!-- NAVBAR -->
     <?php include __DIR__ . '/../components/header.php'; ?>
 
-    <!-- DETAIL HEADER -->
-    <header class="detail-header">
-        <div class="detail-header-content">
-            <a href="<?= BASE_URL ?>frontend/index.php#kegiatan" class="back-btn">
-                <i class="fa-solid fa-arrow-left"></i> Kembali ke Kegiatan
-            </a>
-            <div class="detail-header-title">
-                <div class="detail-header-icon" id="detailIcon">
-                    <i class="fa-solid fa-circle-info"></i>
-                </div>
-                <div class="detail-header-text">
-                    <span class="section-tag" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;"
-                        id="detailBadge">PROGRAM UNGGULAN</span>
-                    <h1 id="detailTitle">Detail Kegiatan Humas</h1>
-                    <p id="detailTagline">Informasi lengkap kegiatan dan program kemitraan Humas SMK</p>
+    <?php if ($berita): ?>
+        <header class="detail-header">
+            <div class="detail-header-content">
+                <a href="../index.php#berita" class="back-btn">
+                    <i class="fa-solid fa-arrow-left"></i> Kembali ke Berita
+                </a>
+                <div class="detail-header-title">
+                    <div class="detail-header-icon"><i class="fa-solid fa-newspaper"></i></div>
+                    <div class="detail-header-text">
+                        <span class="section-tag detail-category"><?= htmlspecialchars($berita['kategori'] ?? 'BERITA'); ?></span>
+                        <h1><?= htmlspecialchars($berita['judul']); ?></h1>
+                        <p><i class="fa-regular fa-calendar-check"></i> <?= formatTanggalIndo($berita['tanggal'] ?? ''); ?> &bull; DIPUBLIKASIKAN OLEH HUMAS SMK</p>
+                    </div>
                 </div>
             </div>
-        </div>
-    </header>
+        </header>
 
-    <!-- DETAIL MAIN CONTENT -->
-    <main class="detail-container">
-        <div class="detail-grid">
-            <div class="detail-main">
-                <img src="" alt="Banner Kegiatan" class="detail-banner-img" id="detailBanner">
-                <div class="detail-block">
-                    <h3><i class="fa-solid fa-file-lines"></i> Deskripsi Lengkap</h3>
-                    <p id="detailDeskripsi">Memuat deskripsi kegiatan...</p>
-                </div>
-                <div class="detail-block">
-                    <h3><i class="fa-solid fa-bullseye"></i> Tujuan Kegiatan</h3>
-                    <ul class="detail-check-list" id="detailTujuan"></ul>
-                </div>
-                <div class="detail-block">
-                    <h3><i class="fa-solid fa-medal"></i> Manfaat Utama</h3>
-                    <ul class="detail-check-list" id="detailManfaat"></ul>
-                </div>
-                <div class="detail-block">
-                    <h3><i class="fa-solid fa-list-check"></i> Bentuk Kegiatan</h3>
-                    <ul class="detail-check-list" id="detailBentuk"></ul>
-                </div>
-            </div>
+        <main class="detail-container">
+            <div class="detail-grid">
+                <div class="detail-main">
+                    <?php if (!empty($berita['gambar'])): ?>
+                        <img src="<?= htmlspecialchars($berita['gambar']); ?>" alt="<?= htmlspecialchars($berita['judul']); ?>" class="detail-banner-img">
+                    <?php endif; ?>
 
-            <!-- SIDEBAR -->
-            <aside class="detail-sidebar">
-                <div class="sidebar-card">
-                    <h4><i class="fa-solid fa-circle-info"></i> Informasi Tambahan</h4>
-                    <div class="sidebar-info-group">
-                        <div class="sidebar-info-item">
-                            <div class="sidebar-info-icon"><i class="fa-solid fa-users"></i></div>
-                            <div class="sidebar-info-text">
-                                <strong>Target Peserta</strong>
-                                <span id="detailTarget">Siswa SMK</span>
-                            </div>
+                    <?php if (!empty($berita['deskripsi'])): ?>
+                        <div class="detail-block">
+                            <h3><i class="fa-solid fa-file-lines"></i> Ringkasan Berita</h3>
+                            <p style="font-size: 17px; font-weight: 600; color: var(--brand-blue); line-height: 1.7;"><?= nl2br(htmlspecialchars($berita['deskripsi'])); ?></p>
                         </div>
-                        <div class="sidebar-info-item">
-                            <div class="sidebar-info-icon"><i class="fa-solid fa-calendar-days"></i></div>
-                            <div class="sidebar-info-text">
-                                <strong>Frekuensi / Pelaksanaan</strong>
-                                <span id="detailFrekuensi">Berkala</span>
-                            </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($berita['isi'])): ?>
+                        <div class="detail-block">
+                            <h3><i class="fa-solid fa-align-left"></i> Berita Selengkapnya</h3>
+                            <p><?= nl2br(htmlspecialchars($berita['isi'])); ?></p>
                         </div>
-                        <div class="sidebar-info-item">
-                            <div class="sidebar-info-icon"><i class="fa-solid fa-user-tie"></i></div>
-                            <div class="sidebar-info-text">
-                                <strong>Penanggung Jawab</strong>
-                                <span id="detailPenanggungJawab">Tim Humas SMK</span>
+                    <?php endif; ?>
+
+                    <?php if (!empty($berita['tujuan'])): ?>
+                        <div class="detail-block">
+                            <h3><i class="fa-solid fa-bullseye"></i> Tujuan Kegiatan</h3>
+                            <ul class="detail-check-list"><?= render_pipe_list($berita['tujuan']); ?></ul>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($berita['manfaat'])): ?>
+                        <div class="detail-block">
+                            <h3><i class="fa-solid fa-medal"></i> Manfaat Utama</h3>
+                            <ul class="detail-check-list"><?= render_pipe_list($berita['manfaat']); ?></ul>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <aside class="detail-sidebar">
+                    <div class="sidebar-card">
+                        <h4><i class="fa-solid fa-circle-info"></i> Informasi Publikasi</h4>
+                        <div class="sidebar-info-group">
+                            <div class="sidebar-info-item">
+                                <div class="sidebar-info-icon"><i class="fa-solid fa-tag"></i></div>
+                                <div class="sidebar-info-text">
+                                    <strong>Kategori</strong>
+                                    <span><?= htmlspecialchars($berita['kategori'] ?? 'BERITA'); ?></span>
+                                </div>
+                            </div>
+                            <div class="sidebar-info-item">
+                                <div class="sidebar-info-icon"><i class="fa-solid fa-calendar-days"></i></div>
+                                <div class="sidebar-info-text">
+                                    <strong>Tanggal Terbit</strong>
+                                    <span><?= formatTanggalIndo($berita['tanggal'] ?? ''); ?></span>
+                                </div>
+                            </div>
+                            <div class="sidebar-info-item">
+                                <div class="sidebar-info-icon"><i class="fa-solid fa-user-shield"></i></div>
+                                <div class="sidebar-info-text">
+                                    <strong>Penulis / Penerbit</strong>
+                                    <span>Tim Redaksi Humas SMK</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="sidebar-card sidebar-card-dark">
-                    <h4 class="sidebar-card-dark-title">
-                        <i class="fa-solid fa-headset"></i> Butuh Informasi?
-                    </h4>
-                    <p class="sidebar-card-dark-text">
-                        Ada pertanyaan mengenai program ini? Hubungi tim Humas SMK untuk konsultasi atau kemitraan.
-                    </p>
-                    <a href="../index.php#kontak" class="btn sidebar-card-dark-button">
-                        <i class="fa-solid fa-envelope"></i> Hubungi Humas
-                    </a>
-                </div>
-            </aside>
-        </div>
-    </main>
+                    <div class="sidebar-card sidebar-card-dark">
+                        <h4 class="sidebar-card-dark-title"><i class="fa-solid fa-share-nodes"></i> Bagikan Informasi</h4>
+                        <p class="sidebar-card-dark-text">Bagikan berita resmi ini kepada rekan, siswa, dan wali murid.</p>
+                        <a href="../index.php#berita" class="btn sidebar-card-dark-button">
+                            <i class="fa-solid fa-newspaper"></i> Lihat Berita Lainnya
+                        </a>
+                    </div>
+                </aside>
+            </div>
+        </main>
+    <?php else: ?>
+        <?php include __DIR__ . '/../components/detail-not-found.php'; ?>
+    <?php endif; ?>
 
     <!-- FOOTER -->
     <?php include __DIR__ . '/../components/footer.php'; ?>
 
-    <!-- DYNAMIC SCRIPT -->
-    <script src="../js/detail-kegiatan.js"></script>
     <script src="../js/script.js"></script>
 </body>
 </html>

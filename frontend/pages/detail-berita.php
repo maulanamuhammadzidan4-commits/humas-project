@@ -149,12 +149,9 @@ $berita = getBeritaById($koneksi, $id);
         <?php include __DIR__ . '/../components/detail-not-found.php'; ?>
     <?php endif; ?>
 
-
     <!-- FOOTER -->
     <?php include __DIR__ . '/../components/footer.php'; ?>
 
     <script src="../js/script.js"></script>
-
 </body>
-
 </html>
