@@ -4,28 +4,7 @@ require_once '../../backend/connection.php';
 require_once '../../backend/helpers.php';
 $isAdmin = isset($_SESSION['user_id']);
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-$berita = null;
-
-if ($id > 0) {
-    $stmt = mysqli_prepare(
-        $koneksi,
-        "SELECT * FROM berita WHERE id_berita = ? LIMIT 1"
-    );
-
-    if ($stmt) {
-        mysqli_stmt_bind_param($stmt, "i", $id);
-        mysqli_stmt_execute($stmt);
-
-        $result = mysqli_stmt_get_result($stmt);
-
-        if ($result && mysqli_num_rows($result) > 0) {
-            $berita = mysqli_fetch_assoc($result);
-        }
-
-        mysqli_stmt_close($stmt);
-    }
-}
-
+$berita = getBeritaById($koneksi, $id);
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -56,16 +35,6 @@ if ($id > 0) {
         <!-- DETAIL HEADER -->
         <header class="detail-header">
             <div class="detail-header-content">
-                <?php if ($isAdmin): ?>
-                    <div class="admin-detail-actions">
-                        <a href="../login/edit-berita.php?id=<?= $berita['id_berita'] ?>" class="btn btn-edit">
-                            <i class="fa-solid fa-pen"></i> Edit
-                        </a>
-                        <a href="../login/delete-berita.php?id=<?= $berita['id_berita'] ?>" class="btn btn-delete" onclick="return confirm('Yakin ingin menghapus berita ini?')">
-                            <i class="fa-solid fa-trash"></i> Hapus
-                        </a>
-                    </div>
-                <?php endif; ?>
                 <a href="../index.php#berita" class="back-btn">
                     <i class="fa-solid fa-arrow-left"></i> Kembali ke Berita
                 </a>
@@ -177,21 +146,7 @@ if ($id > 0) {
             </div>
         </main>
     <?php else: ?>
-        <!-- BERITA TIDAK DITEMUKAN -->
-        <main class="detail-container" style="margin-top: 60px; margin-bottom: 120px;">
-            <div class="detail-main" style="text-align: center; padding: 80px 30px;">
-                <div style="width: 80px; height: 80px; background: #fee2e2; color: #dc2626; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; margin: 0 auto 20px;">
-                    <i class="fa-solid fa-newspaper"></i>
-                </div>
-                <h2 style="font-size: 28px; font-weight: 800; color: var(--text-heading); margin-bottom: 12px;">Berita Tidak Ditemukan</h2>
-                <p style="color: var(--text-muted); font-size: 16px; max-width: 500px; margin: 0 auto 30px;">
-                    Maaf, berita yang Anda cari tidak ditemukan atau telah dihapus dari sistem kami.
-                </p>
-                <a href="../index.php#berita" class="btn">
-                    <i class="fa-solid fa-arrow-left"></i> Kembali ke Halaman Utama
-                </a>
-            </div>
-        </main>
+        <?php include __DIR__ . '/../components/detail-not-found.php'; ?>
     <?php endif; ?>
 
 

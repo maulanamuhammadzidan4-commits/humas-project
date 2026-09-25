@@ -540,58 +540,10 @@ $page_title = "Lowongan Kerja";
 
 <!--FORM HAPUS -->
 <form method="POST" action="backend/lowongan_handler.php" id="formHapus">
-    <input Dtype="hidden" name="action" value="hapus">
+    <input type="hidden" name="action" value="hapus">
     <input type="hidden" name="id" id="hapus_id">
 </form>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="assets/admin.js"></script>
-<script>
-
-/*--EDIT LOWONGAN--*/
-function editLoker(d) {
-    document.getElementById('e_id').value =
-        d.id;
-    document.getElementById('e_perusahaan_id').value =
-        d.perusahaan_id;
-    document.getElementById('e_judul_posisi').value =
-        d.judul_posisi;
-    document.getElementById('e_deskripsi_pekerjaan').value =
-        d.deskripsi_pekerjaan;
-    document.getElementById('e_kuota').value =
-        d.kuota;
-    document.getElementById('e_batas_pendaftaran').value =
-        d.batas_pendaftaran;
-    document.getElementById('e_status_loker').value =
-        d.status_loker;
-    openModal('modalEdit');
-}
-
-/*--HAPUS LOWONGAN--*/
-function hapusLoker(id, nama) {
-    Swal.fire({
-        title: 'Hapus Lowongan?',
-        html:
-            'Lowongan <strong>' +
-            nama +
-            '</strong> akan dihapus permanen!',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#64748b',
-        confirmButtonText: 'Ya, Hapus!',
-        cancelButtonText: 'Batal',
-        reverseButtons: true
-    }).then((result) => {
-        if (result.isConfirmed) {
-            document.getElementById(
-                'hapus_id'
-            ).value = id;
-            document.getElementById(
-                'formHapus'
-            ).submit();
-        }
-    });
-}
-</script>
 </body>
 </html>

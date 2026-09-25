@@ -112,7 +112,7 @@
 
             <form
                 class="contact-form"
-                action="components/_kontak.php"
+                action="<?= file_exists('components/header.php') ? '../backend/contact_handler.php' : '../../backend/contact_handler.php' ?>"
                 method="POST"
             >
 

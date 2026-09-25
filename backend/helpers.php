@@ -33,3 +33,29 @@ function render_pipe_list(string $value): string
 
     return $html;
 }
+
+function getBeritaById($koneksi, int $id): ?array
+{
+    if ($id <= 0 || !$koneksi) {
+        return null;
+    }
+
+    $stmt = mysqli_prepare(
+        $koneksi,
+        "SELECT * FROM berita WHERE id_berita = ? LIMIT 1"
+    );
+
+    if (!$stmt) {
+        return null;
+    }
+
+    mysqli_stmt_bind_param($stmt, "i", $id);
+    mysqli_stmt_execute($stmt);
+
+    $result = mysqli_stmt_get_result($stmt);
+    $berita = ($result && mysqli_num_rows($result) > 0) ? mysqli_fetch_assoc($result) : null;
+
+    mysqli_stmt_close($stmt);
+
+    return $berita;
+}
