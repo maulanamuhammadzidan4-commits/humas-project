@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../config.php'; // Include the config.php file for BASE_URL and ROOT_PATH definitions
+include __DIR__ . '/../../config.php'; // Include the config.php file for BASE_URL and ROOT_PATH definitions
 ?>
 
 <footer>
@@ -36,7 +36,7 @@ require_once __DIR__ . '/../config.php'; // Include the config.php file for BASE
                     <li><a href="#kegiatan"><i class="fa-solid fa-chevron-right"></i> Kunjungan Industri</a></li>
                     <li><a href="#kegiatan"><i class="fa-solid fa-chevron-right"></i> Kemitraan Perusahaan</a></li>
                     <li><a href="#kegiatan"><i class="fa-solid fa-chevron-right"></i> Program Magang PKL</a></li>
-                    <li><a href="../admin/login_admin.php"><i class="fa-solid fa-chevron-right"></i> Portal Admin</a></li>
+                    <li><a href="<?= BASE_URL ?>admin/login_admin.php"><i class="fa-solid fa-chevron-right"></i> Portal Admin</a></li>
                 </ul>
             </div>
 

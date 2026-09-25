@@ -208,7 +208,7 @@ nav {
             rgba(15, 23, 42, 0.94) 0%,
             rgba(30, 41, 59, 0.88) 50%,
             rgba(15, 23, 42, 0.94) 100%),
-        url("frontend/assets/css/smk1maja.jpeg");
+        url("../img/smk1maja.jpeg");
     background-size: cover;
     background-position: center;
     background-attachment: fixed;

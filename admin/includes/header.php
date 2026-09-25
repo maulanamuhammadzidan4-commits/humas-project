@@ -62,28 +62,3 @@ $page_title = $page_title ?? 'Dashboard';
     </div>
 </header>
 
-<script>
-// Tanggal dinamis di header
-const headerDate = document.getElementById('headerDate');
-if (headerDate) {
-    const now = new Date();
-    headerDate.textContent = now.toLocaleDateString('id-ID', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-    });
-}
-
-// Toggle dropdown user
-const trigger = document.getElementById('userDropdownTrigger');
-const dropdown = document.getElementById('userDropdown');
-if (trigger && dropdown) {
-    trigger.addEventListener('click', (e) => {
-        e.stopPropagation();
-        dropdown.classList.toggle('show');
-        trigger.classList.toggle('active');
-    });
-    document.addEventListener('click', () => {
-        dropdown.classList.remove('show');
-        trigger.classList.remove('active');
-    });
-}
-</script>

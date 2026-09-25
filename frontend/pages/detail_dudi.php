@@ -4,15 +4,7 @@ require_once '../../backend/connection.php';
 require_once '../../backend/helpers.php';
 
 $id = (int) ($_GET['id'] ?? 0);
-$berita = null;
-
-if ($id > 0) {
-    $stmt = mysqli_prepare($koneksi, 'SELECT * FROM berita WHERE id_berita = ? LIMIT 1');
-    mysqli_stmt_bind_param($stmt, 'i', $id);
-    mysqli_stmt_execute($stmt);
-    $berita = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt)) ?: null;
-    mysqli_stmt_close($stmt);
-}
+$berita = getBeritaById($koneksi, $id);
 ?>
 <!DOCTYPE html>
 <html lang="id">

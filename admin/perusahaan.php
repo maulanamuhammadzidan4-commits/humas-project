@@ -298,39 +298,5 @@ $page_title = "Perusahaan Mitra";
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="assets/admin.js"></script>
-<script>
-function editPerusahaan(data) {
-    document.getElementById('edit_id').value            = data.id;
-    document.getElementById('edit_nama_perusahaan').value = data.nama_perusahaan;
-    document.getElementById('edit_sektor_bidang').value = data.sektor_bidang;
-    document.getElementById('edit_jurusan').value        = data.jurusan;
-    document.getElementById('edit_alamat').value        = data.alamat;
-    document.getElementById('edit_penanggung_jawab').value = data.penanggung_jawab;
-    document.getElementById('edit_no_telepon').value    = data.no_telepon;
-    document.getElementById('edit_status_mou').value    = data.status_mou;
-    openModal('modalEdit');
-}
-
-function hapusPerusahaan(id, nama_perusahaan) {
-    Swal.fire({
-        title: 'Hapus Perusahaan?',
-        html: `Data <strong>${nama_perusahaan}</strong> akan dihapus beserta semua lowongan terkait!`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#64748b',
-        confirmButtonText: 'Ya, Hapus!',
-        cancelButtonText: 'Batal',
-        reverseButtons: true
-    }).then((result) => {
-
-        if (result.isConfirmed) {
-            document.getElementById('hapus_id').value = id;
-            document.getElementById('formHapus').submit();
-        }
-
-    });
-}
-</script>
 </body>
 </html>

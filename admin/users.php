@@ -232,32 +232,5 @@ $page_title = "Manajemen User";
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="assets/admin.js"></script>
-<script>
-function editUser(d) {
-    document.getElementById('e_id_user').value     = d.id_user;
-    document.getElementById('e_nama_lengkap').value = d.nama_lengkap;
-    document.getElementById('e_jabatan').value     = d.jabatan || 'Staf Humas';
-    document.getElementById('e_username').value    = d.username;
-    openModal('modalEdit');
-}
-function hapusUser(id, nama) {
-    Swal.fire({
-        title: 'Hapus User?',
-        html: `Akun <strong>${nama}</strong> akan dihapus permanen!`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#64748b',
-        confirmButtonText: 'Ya, Hapus!',
-        cancelButtonText: 'Batal',
-        reverseButtons: true
-    }).then(r => {
-        if (r.isConfirmed) {
-            document.getElementById('hapus_id').value = id;
-            document.getElementById('formHapus').submit();
-        }
-    });
-}
-</script>
 </body>
 </html>
