@@ -17,7 +17,7 @@ require_once __DIR__ . '/../../config.php';
             <li><a href="<?= BASE_URL ?>frontend/index.php#kontak">Kontak</a></li>
             <li>
                 <a href="<?= BASE_URL ?>admin/login_admin.php" class="btn-login">
-                    Login
+                    <i class="fa-solid fa-right-to-bracket"></i> Login
                 </a>
             </li>
         </ul>
