@@ -384,37 +384,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-
-/*
-|--------------------------------------------------------------------------
-| PENGATURAN
-|--------------------------------------------------------------------------
-*/
-
+/*--PENGATURAN--*/
 $search = trim(
     $_GET['search'] ?? ''
 );
-
 $page = max(
     1,
     (int)($_GET['page'] ?? 1)
 );
-
 $limit = 10;
-
 $offset = ($page - 1) * $limit;
 
-
-/*
-|--------------------------------------------------------------------------
-| PENCARIAN
-|--------------------------------------------------------------------------
-*/
-
+/*--PENCARIAN--*/
 $where = "";
-
 if ($search !== '') {
-
     $where = "
         WHERE
             s.nama_siswa LIKE ?
@@ -426,13 +409,7 @@ if ($search !== '') {
     ";
 }
 
-
-/*
-|--------------------------------------------------------------------------
-| HITUNG TOTAL DATA
-|--------------------------------------------------------------------------
-*/
-
+/*--HITUNG TOTAL DATA--*/
 $count_sql = "
     SELECT COUNT(*) AS total
     FROM tracer_study ts
@@ -1014,10 +991,7 @@ switch ($row['status_alumni']) {
     ) ?>
 
 </span>
-
 </td>
-
-
 <td>
 
     <?= htmlspecialchars(
@@ -1045,23 +1019,13 @@ switch ($row['status_alumni']) {
 
 
 <?php else: ?>
-
     -
-
 <?php endif; ?>
-
-
 </td>
-
-
 <td>
-
-
 <div class="action-btns">
 
-
 <!-- EDIT -->
-
 <button
     type="button"
     class="btn btn-warning btn-sm btn-icon"
@@ -1077,14 +1041,10 @@ switch ($row['status_alumni']) {
         ) ?>
     )'
 >
-
     <i class="fa-solid fa-pen"></i>
-
 </button>
 
-
 <!-- HAPUS -->
-
 <button
     type="button"
     class="btn btn-danger btn-sm btn-icon"
@@ -1099,254 +1059,106 @@ switch ($row['status_alumni']) {
             JSON_HEX_QUOT |
             JSON_HEX_AMP
         ) ?>
-    )'
->
-
+    )'>
     <i class="fa-solid fa-trash"></i>
-
 </button>
-
-
 </div>
-
-
 </td>
-
-
 </tr>
-
-
 <?php endforeach; ?>
-
-
 <?php endif; ?>
-
-
 </tbody>
-
 </table>
-
 </div>
-
 
 <!-- PAGINATION -->
-
 <?php if ($total_pages > 1): ?>
-
 <div class="pagination">
-
-
 <span class="pagination-info">
-
     Menampilkan
-
     <?= $total > 0
         ? $offset + 1
         : 0
     ?>
-
     –
-
     <?= min(
         $offset + $limit,
         $total
     ) ?>
-
     dari <?= $total ?>
-
 </span>
-
-
 <div class="pagination-btns">
 
-
 <?php if ($page > 1): ?>
-
-<a
-    href="?page=<?= $page - 1 ?>&search=<?= urlencode($search) ?>"
-    class="page-btn"
->
-
+<a href="?page=<?= $page - 1 ?>&search=<?= urlencode($search) ?>" class="page-btn">
     <i class="fa-solid fa-chevron-left"></i>
-
 </a>
-
 <?php endif; ?>
-
-
 <?php
-
 for (
     $p = max(1, $page - 2);
     $p <= min($total_pages, $page + 2);
     $p++
 ):
-
 ?>
-
-<a
-    href="?page=<?= $p ?>&search=<?= urlencode($search) ?>"
-    class="page-btn <?= $p == $page ? 'active' : '' ?>"
->
-
+<a href="?page=<?= $p ?>&search=<?= urlencode($search) ?>" class="page-btn <?= $p == $page ? 'active' : '' ?>">
     <?= $p ?>
-
 </a>
-
 <?php endfor; ?>
-
-
 <?php if ($page < $total_pages): ?>
-
-<a
-    href="?page=<?= $page + 1 ?>&search=<?= urlencode($search) ?>"
-    class="page-btn"
->
-
+<a href="?page=<?= $page + 1 ?>&search=<?= urlencode($search) ?>" class="page-btn">
     <i class="fa-solid fa-chevron-right"></i>
-
 </a>
-
 <?php endif; ?>
-
-
 </div>
-
 </div>
-
 <?php endif; ?>
-
-
 </div>
-
 </main>
-
 </div>
 
-
-
-<!-- =====================================================
-     MODAL TAMBAH
-     ===================================================== -->
-
-<div
-    class="modal-overlay"
-    id="modalTambah"
->
-
+<!--MODAL TAMBAH-->
+<div class="modal-overlay" id="modalTambah">
 <div class="modal">
-
-
 <div class="modal-header">
-
 <span class="modal-title">
-
     <i class="fa-solid fa-route"></i>
-
     Tambah Tracer Study
-
 </span>
-
-
-<button
-    type="button"
-    class="modal-close"
-    onclick="closeModal('modalTambah')"
->
-
+<button type="button" class="modal-close" onclick="closeModal('modalTambah')">
     <i class="fa-solid fa-xmark"></i>
-
 </button>
-
 </div>
-
-
-<form
-    method="POST"
-    action="tracer.php"
->
-
-
-<input
-    type="hidden"
-    name="action"
-    value="tambah"
->
-
-
+<form method="POST" action="tracer.php">
+<input type="hidden" name="action" value="tambah">
 <div class="modal-body">
 
-
 <!-- NAMA -->
-
 <div class="form-group">
-
 <label>
-
     Nama Siswa Alumni
-
     <span class="required">*</span>
-
 </label>
-
-
-<input
-    type="text"
-    name="nama_siswa"
-    class="form-control"
-    maxlength="200"
-    placeholder="Ketik nama alumni"
-    required
->
-
+<input type="text" name="nama_siswa" class="form-control" maxlength="200" placeholder="Ketik nama alumni" required>
 </div>
-
 
 <!-- TAHUN -->
-
 <div class="form-group">
-
 <label>
-
     Tahun Lulus
-
     <span class="required">*</span>
-
 </label>
 
-
-<input
-    type="number"
-    name="tahun_lulus"
-    class="form-control"
-    required
-    min="2000"
-    max="<?= date('Y') ?>"
-    placeholder="<?= date('Y') ?>"
->
-
+<input type="number" name="tahun_lulus" class="form-control" required min="2000" max="<?= date('Y') ?>" placeholder="<?= date('Y') ?>">
 </div>
 
-
 <!-- STATUS -->
-
 <div class="form-group">
-
 <label>
-
     Status Alumni
-
     <span class="required">*</span>
-
 </label>
-
-
-<select
-    name="status_alumni"
-    class="form-control"
-    required
->
-
+<select name="status_alumni" class="form-control" required>
     <option value="Bekerja">
         Bekerja
     </option>
@@ -1366,433 +1178,179 @@ for (
     <option value="Menikah">
         Menikah
     </option>
-
 </select>
-
 </div>
-
 
 <!-- INSTANSI -->
-
 <div class="form-group">
-
-<label>
-    Nama Instansi / Kampus
-</label>
-
-
-<input
-    type="text"
-    name="nama_instansi"
-    class="form-control"
-    maxlength="150"
-    placeholder="Contoh: PT Maju Jaya / Universitas Indonesia"
->
-
+<label>Nama Instansi / Kampus</label>
+<input type="text" name="nama_instansi" class="form-control" maxlength="150" placeholder="Contoh: PT Maju Jaya / Universitas Indonesia">
 </div>
 
-
 <!-- PENDAPATAN -->
-
 <div class="form-group">
-
 <label>
     Pendapatan Bulanan (Rp)
 </label>
-
-
-<input
-    type="number"
-    name="pendapatan_bulanan"
-    class="form-control"
-    min="0"
-    placeholder="Contoh: 3500000"
->
-
+<input type="number" name="pendapatan_bulanan" class="form-control" min="0" placeholder="Contoh: 3500000">
 </div>
-
-
 </div>
-
-
 <div class="modal-footer">
-
-
-<button
-    type="button"
-    class="btn btn-outline"
-    onclick="closeModal('modalTambah')"
->
-
+<button type="button" class="btn btn-outline" onclick="closeModal('modalTambah')">
     Batal
-
 </button>
-
-
-<button
-    type="submit"
-    class="btn btn-primary"
->
-
+<button type="submit" class="btn btn-primary">
     <i class="fa-solid fa-save"></i>
-
     Simpan
-
 </button>
-
-
 </div>
-
-
 </form>
-
+</div>
 </div>
 
-</div>
-
-
-
-<!-- =====================================================
-     MODAL EDIT
-     ===================================================== -->
-
-<div
-    class="modal-overlay"
-    id="modalEdit"
->
-
+<!--MODAL EDIT -->
+<div class="modal-overlay" id="modalEdit">
 <div class="modal">
-
-
 <div class="modal-header">
-
 <span class="modal-title">
-
     <i class="fa-solid fa-pen-to-square"></i>
-
     Edit Tracer Study
-
 </span>
 
-
-<button
-    type="button"
-    class="modal-close"
-    onclick="closeModal('modalEdit')"
->
-
+<buttontype="button"class="modal-close"onclick="closeModal('modalEdit')">
     <i class="fa-solid fa-xmark"></i>
-
 </button>
-
 </div>
-
-
-<form
-    method="POST"
-    action="tracer.php"
->
-
-
-<input
-    type="hidden"
-    name="action"
-    value="edit"
->
-
-
-<input
-    type="hidden"
-    name="id"
-    id="e_id"
->
-
-
+<form method="POST" action="tracer.php">
+<input type="hidden" name="action" value="edit">
+<input type="hidden" name="id" id="e_id">
 <div class="modal-body">
 
-
 <!-- NAMA -->
-
 <div class="form-group">
-
 <label>
-
     Nama Siswa Alumni
-
     <span class="required">*</span>
-
 </label>
-
-
-<input
-    type="text"
-    name="nama_siswa"
-    id="e_nama_siswa"
-    class="form-control"
-    maxlength="200"
-    required
->
-
+<input type="text" name="nama_siswa" id="e_nama_siswa" class="form-control" maxlength="200" required>
 </div>
-
 
 <!-- TAHUN -->
-
 <div class="form-group">
-
 <label>
-
     Tahun Lulus
-
     <span class="required">*</span>
-
 </label>
-
-
-<input
-    type="number"
-    name="tahun_lulus"
-    id="e_tahun_lulus"
-    class="form-control"
-    required
-    min="2000"
-    max="<?= date('Y') ?>"
->
-
+<input type="number" name="tahun_lulus" id="e_tahun_lulus" class="form-control" required min="2000" max="<?= date('Y') ?>">
 </div>
 
-
 <!-- STATUS -->
-
 <div class="form-group">
-
 <label>
-
     Status Alumni
-
     <span class="required">*</span>
-
 </label>
 
 
-<select
-    name="status_alumni"
-    id="e_status_alumni"
-    class="form-control"
-    required
->
-
+<select name="status_alumni" id="e_status_alumni" class="form-control" required>
     <option value="Bekerja">
         Bekerja
     </option>
-
     <option value="Kuliah">
         Kuliah
     </option>
-
     <option value="Wirausaha">
         Wirausaha
     </option>
-
     <option value="Mencari Kerja">
         Mencari Kerja
     </option>
-
     <option value="Menikah">
         Menikah
     </option>
-
 </select>
-
 </div>
-
 
 <!-- INSTANSI -->
-
 <div class="form-group">
-
-<label>
-    Nama Instansi / Kampus
-</label>
-
-
-<input
-    type="text"
-    name="nama_instansi"
-    id="e_nama_instansi"
-    class="form-control"
-    maxlength="150"
->
-
+    <label>
+        Nama Instansi / Kampus
+    </label>
+    <input type="text" name="nama_instansi" id="e_nama_instansi" class="form-control" maxlength="150">
 </div>
 
-
 <!-- PENDAPATAN -->
-
 <div class="form-group">
-
 <label>
     Pendapatan Bulanan (Rp)
 </label>
-
-
-<input
-    type="number"
-    name="pendapatan_bulanan"
-    id="e_pendapatan_bulanan"
-    class="form-control"
-    min="0"
->
-
+<input type="number" name="pendapatan_bulanan" id="e_pendapatan_bulanan" class="form-control" min="0">
 </div>
-
-
 </div>
-
-
 <div class="modal-footer">
-
-
-<button
-    type="button"
-    class="btn btn-outline"
-    onclick="closeModal('modalEdit')"
->
-
+<button type="button" class="btn btn-outline" onclick="closeModal('modalEdit')">
     Batal
-
 </button>
-
-
-<button
-    type="submit"
-    class="btn btn-primary"
->
-
+<button type="submit" class="btn btn-primary">
     <i class="fa-solid fa-save"></i>
-
     Perbarui
-
 </button>
-
-
 </div>
-
-
 </form>
-
 </div>
-
 </div>
-
-
 
 <!-- FORM HAPUS -->
-
-<form
-    method="POST"
-    action="tracer.php"
-    id="formHapus"
->
-
-    <input
-        type="hidden"
-        name="action"
-        value="hapus"
-    >
-
-    <input
-        type="hidden"
-        name="id"
-        id="hapus_id"
-    >
-
+<form method="POST" action="tracer.php" id="formHapus">
+    <input type="hidden" name="action" value="hapus">
+    <input type="hidden" name="id" id="hapus_id">
 </form>
 
-
-
 <!-- JAVASCRIPT -->
-
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script src="assets/admin.js"></script>
-
-
 <script>
-
 function editTracer(data) {
-
     document.getElementById('e_id').value =
         data.id;
-
-
     document.getElementById('e_nama_siswa').value =
         data.nama_siswa;
-
-
     document.getElementById('e_tahun_lulus').value =
         data.tahun_lulus;
-
-
     document.getElementById('e_status_alumni').value =
         data.status_alumni;
-
-
     document.getElementById('e_nama_instansi').value =
         data.nama_instansi || '';
-
-
     document.getElementById('e_pendapatan_bulanan').value =
         data.pendapatan_bulanan || '';
-
-
     openModal('modalEdit');
 }
 
-
-
 function hapusTracer(id, nama) {
-
     Swal.fire({
-
         title: 'Hapus Data Tracer?',
-
         html:
             'Data tracer study <strong>' +
             nama +
             '</strong> akan dihapus!',
-
         icon: 'warning',
-
         showCancelButton: true,
-
         confirmButtonColor: '#ef4444',
-
         cancelButtonColor: '#64748b',
-
         confirmButtonText: 'Ya, Hapus!',
-
         cancelButtonText: 'Batal',
-
         reverseButtons: true
-
     }).then(function(result) {
-
         if (result.isConfirmed) {
-
             document.getElementById(
                 'hapus_id'
             ).value = id;
 
-
             document.getElementById(
                 'formHapus'
             ).submit();
-
         }
-
     });
-
 }
 </script>
 </body>

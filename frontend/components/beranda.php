@@ -1,13 +1,13 @@
     <section class="hero" id="beranda">
         <div class="hero-content">
             <div class="hero-badge">
-                <i class="fa-solid fa-sparkles"></i> Portal Resmi Hubungan Masyarakat SMK
+                <i class="fa-solid fa-sparkles"></i> Portal Resmi Hubungan Masyarakat SMKN 1 MAJA
             </div>
             <h1>
-                Hubungan Masyarakat <span>SMK</span>
+                Hubungan Masyarakat <span>SMKN 1 MAJA</span>
             </h1>
             <p>
-                Selamat datang di Website Humas SMK. Sebagai jembatan antara sekolah, siswa,
+                Selamat datang di Website Humas SMKN 1 MAJA. Sebagai jembatan antara sekolah, siswa,
                 orang tua, dunia industri, dan masyarakat, kami berkomitmen membangun komunikasi,
                 sinergi, dan kerja sama yang unggul demi mencetak lulusan berdaya saing global.
             </p>

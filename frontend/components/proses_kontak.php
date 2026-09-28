@@ -49,8 +49,6 @@
         </script>";
 
     } catch (PDOException $e) {
-
         echo "Gagal menyimpan pesan: " . $e->getMessage();
-
     }
     ?>

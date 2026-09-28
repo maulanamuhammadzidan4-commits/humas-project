@@ -960,98 +960,61 @@ $page_title = "Data Siswa";
     method="POST"
     action="backend/siswa_handler.php"
     id="formHapus">
-
     <input
         type="hidden"
         name="action"
         value="hapus">
-
     <input
         type="hidden"
         name="id"
         id="hapus_id">
-
 </form>
-
-
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script src="assets/admin.js"></script>
-
-
 <script>
 
 /* =========================
    EDIT SISWA
 ========================= */
-
 function editSiswa(d) {
-
     document.getElementById('e_id').value =
         d.id;
-
     document.getElementById('e_nisn').value =
         d.nisn;
-
     document.getElementById('e_nama_siswa').value =
         d.nama_siswa;
-
     document.getElementById('e_kelas').value =
         d.kelas;
-
     document.getElementById('e_jurusan').value =
         d.jurusan;
-
     document.getElementById('e_status_alumni').checked =
         Number(d.status_alumni) === 1;
-
     openModal('modalEdit');
 }
-
 
 /* =========================
    HAPUS SISWA
 ========================= */
-
 function hapusSiswa(id, nama) {
-
     Swal.fire({
-
         title: 'Hapus Siswa?',
-
         html:
             `Data <strong>${nama}</strong> akan dihapus!`,
-
         icon: 'warning',
-
         showCancelButton: true,
-
         confirmButtonColor: '#ef4444',
-
         cancelButtonColor: '#64748b',
-
         confirmButtonText: 'Ya, Hapus!',
-
         cancelButtonText: 'Batal',
-
         reverseButtons: true
-
     }).then((result) => {
-
         if (result.isConfirmed) {
-
             document.getElementById('hapus_id').value =
                 id;
-
             document.getElementById('formHapus').submit();
-
         }
-
     });
-
 }
-
 </script>
-
 </body>
 </html>
