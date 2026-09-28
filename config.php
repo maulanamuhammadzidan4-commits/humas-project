@@ -1,6 +1,10 @@
 <?php
 // URL Configuration
-define('BASE_URL', '/humas-project/'); // Base URL for the project
+if (!defined('BASE_URL')) {
+	define('BASE_URL', '/humas-project/');
+}
 
 // Define ROOT_PATH for absolute file inclusion from the server
-define('ROOT_PATH', __DIR__ . '/'); // Absolute path to the project directory
+if (!defined('ROOT_PATH')) {
+	define('ROOT_PATH', __DIR__ . '/');
+}

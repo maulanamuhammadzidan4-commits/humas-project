@@ -29,12 +29,12 @@
         </div>
     </div>
 
-    <div class="sidebar-card" style="background: linear-gradient(135deg, var(--primary-navy), var(--primary-slate)); color: white;">
-        <h4 style="color: white; border-color: rgba(255,255,255,0.1);"><i class="fa-solid fa-share-nodes" style="color: var(--brand-gold);"></i> Bagikan Informasi</h4>
-        <p style="font-size: 14px; color: #cbd5e1; margin-bottom: 20px; line-height: 1.6;">
+    <div class="sidebar-card sidebar-card-dark">
+        <h4 class="sidebar-card-dark-title"><i class="fa-solid fa-share-nodes"></i> Bagikan Informasi</h4>
+        <p class="sidebar-card-dark-text">
             Bagikan berita resmi ini kepada rekan, siswa, dan wali murid.
         </p>
-        <a href="../index.php#berita" class="btn" style="width: 100%; font-size: 14px; padding: 12px; background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3);">
+        <a href="../index.php#berita" class="btn sidebar-card-dark-button">
             <i class="fa-solid fa-newspaper"></i> Lihat Berita Lainnya
         </a>
     </div>

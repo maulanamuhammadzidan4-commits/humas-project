@@ -1,5 +1,5 @@
 <?php
-include __DIR__ . '/../../config.php'; // Include the config.php file for BASE_URL and ROOT_PATH definitions
+require_once __DIR__ . '/../../config.php';
 ?>
 
 <footer>

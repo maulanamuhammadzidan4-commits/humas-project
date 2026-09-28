@@ -48,7 +48,7 @@ $berita = getBeritaById($koneksi, $id);
                             <p class="detail-lead"><?= nl2br(htmlspecialchars($berita['alamat'])); ?></p>
                         </div>
                     <?php endif; ?>
-                    <?php if (!empty($berita.['isi'])): ?>
+                    <?php if (!empty($berita['isi'])): ?>
                         <div class="detail-block">
                             <h3><i class="fa-solid fa-align-left"></i> Berita Selengkapnya</h3>
                             <p><?= nl2br(htmlspecialchars($berita['isi'])); ?></p>
@@ -67,7 +67,46 @@ $berita = getBeritaById($koneksi, $id);
                         </div>
                     <?php endif; ?>
                 </div>
-                <?php include __DIR__ . '/../components/sidebar.php'; ?>
+<!-- SIDEBAR -->
+            <aside class="detail-sidebar">
+                <div class="sidebar-card">
+                    <h4><i class="fa-solid fa-circle-info"></i> Informasi Tambahan</h4>
+                    <div class="sidebar-info-group">
+                        <div class="sidebar-info-item">
+                            <div class="sidebar-info-icon"><i class="fa-solid fa-users"></i></div>
+                            <div class="sidebar-info-text">
+                                <strong>Target Peserta</strong>
+                                <span id="detailTarget">Siswa SMK</span>
+                            </div>
+                        </div>
+                        <div class="sidebar-info-item">
+                            <div class="sidebar-info-icon"><i class="fa-solid fa-calendar-days"></i></div>
+                            <div class="sidebar-info-text">
+                                <strong>Frekuensi / Pelaksanaan</strong>
+                                <span id="detailFrekuensi">Berkala</span>
+                            </div>
+                        </div>
+                        <div class="sidebar-info-item">
+                            <div class="sidebar-info-icon"><i class="fa-solid fa-user-tie"></i></div>
+                            <div class="sidebar-info-text">
+                                <strong>Penanggung Jawab</strong>
+                                <span id="detailPenanggungJawab">Tim Humas SMK</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="sidebar-card"
+                    style="background: linear-gradient(135deg, var(--primary-navy), var(--primary-slate)); color: white;">
+                    <h4 style="color: white; border-color: rgba(255,255,255,0.1);"><i class="fa-solid fa-headset"
+                            style="color: var(--brand-gold);"></i> Butuh Informasi?</h4>
+                    <p style="font-size: 14px; color: #cbd5e1; margin-bottom: 20px; line-height: 1.6;">
+                        Ada pertanyaan mengenai program ini? Hubungi tim Humas SMK untuk konsultasi atau kemitraan.
+                    </p>
+                    <a href="index.php" class="btn" style="width: 100%; font-size: 14px; padding: 12px;">
+                        <i class="fa-solid fa-envelope"></i> Hubungi Humas
+                    </a>
+                </div>
+            </aside>
             </div>
         </main>
     <?php else: ?>
