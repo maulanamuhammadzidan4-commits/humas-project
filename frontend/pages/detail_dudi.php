@@ -107,7 +107,7 @@ $berita = getBeritaById($koneksi, $id);
                     <p style="font-size: 14px; color: #cbd5e1; margin-bottom: 20px; line-height: 1.6;">
                         Ada pertanyaan mengenai program ini? Hubungi tim Humas SMK untuk konsultasi atau kemitraan.
                     </p>
-                    <a href="index.php" class="btn" style="width: 100%; font-size: 14px; padding: 12px;">
+                    <a href="../index.php#kontak" class="btn" style="width: 100%; font-size: 14px; padding: 12px;">
                         <i class="fa-solid fa-envelope"></i> Hubungi Humas
                     </a>
                 </div>
