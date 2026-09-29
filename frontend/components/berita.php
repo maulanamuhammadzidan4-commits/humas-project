@@ -21,7 +21,7 @@
                         Siswa antusias mengikuti kegiatan kunjungan industri ke pabrik manufaktur modern
                         untuk mengenal standar operasional kerja secara langsung.
                     </p>
-                    <a href="pages/detail-berita.php?id=1" class="berita-link">Baca Selengkapnya <i
+                    <a href="pages/detail_dudi.php?id=1" class="berita-link">Baca Selengkapnya <i
                             class="fa-solid fa-arrow-right"></i></a>
                 </div>
             </div>
@@ -57,7 +57,7 @@
                         Ratusan siswa dilepas secara resmi oleh kepala sekolah untuk memulai program PKL
                         selama 6 bulan di berbagai mitra perusahaan terkemuka.
                     </p>
-                    <a href="pages/detail-kegiatan.php?id=3" class="berita-link">Baca Selengkapnya <i
+                    <a href="pages/detail_dudi.php?id=3" class="berita-link">Baca Selengkapnya <i
                             class="fa-solid fa-arrow-right"></i></a>
                 </div>
             </div>

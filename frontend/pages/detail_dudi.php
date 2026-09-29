@@ -42,10 +42,10 @@ $berita = getBeritaById($koneksi, $id);
                     <?php if (!empty($berita['gambar'])): ?>
                         <img src="<?= htmlspecialchars($berita['gambar']); ?>" alt="<?= htmlspecialchars($berita['judul'] ?? 'Gambar Berita'); ?>" class="detail-banner-img">
                     <?php endif; ?>
-                    <?php if (!empty($berita['alamat'])): ?>
+                    <?php if (!empty($berita['deskripsi'])): ?>
                         <div class="detail-block">
-                            <h3><i class="fa-solid fa-location-dot"></i> Alamat</h3>
-                            <p class="detail-lead"><?= nl2br(htmlspecialchars($berita['alamat'])); ?></p>
+                            <h3><i class="fa-solid fa-file-lines"></i> Ringkasan Berita</h3>
+                            <p class="detail-lead"><?= nl2br(htmlspecialchars($berita['deskripsi'])); ?></p>
                         </div>
                     <?php endif; ?>
                     <?php if (!empty($berita['isi'])): ?>
@@ -54,10 +54,10 @@ $berita = getBeritaById($koneksi, $id);
                             <p><?= nl2br(htmlspecialchars($berita['isi'])); ?></p>
                         </div>
                     <?php endif; ?>
-                    <?php if (!empty($berita['penanggung_jawab'])): ?>
+                    <?php if (!empty($berita['tujuan'])): ?>
                         <div class="detail-block">
-                            <h3><i class="fa-solid fa-user-tie"></i> Penanggung Jawab</h3>
-                            <ul class="detail-check-list"><?= render_pipe_list($berita['penanggung_jawab']); ?></ul>
+                            <h3><i class="fa-solid fa-bullseye"></i> Tujuan Kegiatan</h3>
+                            <ul class="detail-check-list"><?= render_pipe_list($berita['tujuan']); ?></ul>
                         </div>
                     <?php endif; ?>
                     <?php if (!empty($berita['manfaat'])): ?>
@@ -67,30 +67,30 @@ $berita = getBeritaById($koneksi, $id);
                         </div>
                     <?php endif; ?>
                 </div>
-<!-- SIDEBAR -->
+            <!-- SIDEBAR -->
             <aside class="detail-sidebar">
                 <div class="sidebar-card">
                     <h4><i class="fa-solid fa-circle-info"></i> Informasi Tambahan</h4>
                     <div class="sidebar-info-group">
                         <div class="sidebar-info-item">
-                            <div class="sidebar-info-icon"><i class="fa-solid fa-users"></i></div>
-                            <div class="sidebar-info-text">
-                                <strong>Target Peserta</strong>
-                                <span id="detailTarget">Siswa SMK</span>
-                            </div>
-                        </div>
-                        <div class="sidebar-info-item">
                             <div class="sidebar-info-icon"><i class="fa-solid fa-calendar-days"></i></div>
                             <div class="sidebar-info-text">
-                                <strong>Frekuensi / Pelaksanaan</strong>
-                                <span id="detailFrekuensi">Berkala</span>
+                                <strong>Tanggal Terbit</strong>
+                                <span><?= formatTanggalIndo($berita['tanggal'] ?? ''); ?></span>
                             </div>
                         </div>
                         <div class="sidebar-info-item">
                             <div class="sidebar-info-icon"><i class="fa-solid fa-user-tie"></i></div>
                             <div class="sidebar-info-text">
-                                <strong>Penanggung Jawab</strong>
-                                <span id="detailPenanggungJawab">Tim Humas SMK</span>
+                                <strong>Penerbit</strong>
+                                <span>Tim Humas SMK</span>
+                            </div>
+                        </div>
+                        <div class="sidebar-info-item">
+                            <div class="sidebar-info-icon"><i class="fa-solid fa-tag"></i></div>
+                            <div class="sidebar-info-text">
+                                <strong>Kategori</strong>
+                                <span><?= htmlspecialchars($berita['kategori'] ?? 'BERITA'); ?></span>
                             </div>
                         </div>
                     </div>
