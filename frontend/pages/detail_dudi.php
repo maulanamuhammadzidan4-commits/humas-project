@@ -1,9 +1,10 @@
 <?php
 session_start();
-require_once '../../backend/connection.php';
-require_once '../../backend/helpers.php';
+require '../../config.php';
+require_once BASE_URL . 'backend/connection.php';
+require_once BASE_URL . 'backend/helpers.php';
 
-$id = (int) ($_GET['id'] ?? 0);
+$id = (int)($_GET['id'] ?? 0);
 $berita = getBeritaById($koneksi, $id);
 ?>
 <!DOCTYPE html>
@@ -19,7 +20,7 @@ $berita = getBeritaById($koneksi, $id);
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
-    <?php include __DIR__ . '/../components/header.php'; ?>
+    <?php include BASE_URL . 'frontend/components/header.php'; ?>
 
     <?php if ($berita): ?>
         <header class="detail-header">
@@ -110,10 +111,10 @@ $berita = getBeritaById($koneksi, $id);
             </div>
         </main>
     <?php else: ?>
-        <?php include __DIR__ . '/../components/detail-not-found.php'; ?>
+        <?php include BASE_URL . 'frontend/components/detail-not-found.php'; ?>
     <?php endif; ?>
 
-    <?php include __DIR__ . '/../components/footer.php'; ?>
+    <?php include BASE_URL . 'frontend/components/footer.php'; ?>
     <script src="../js/script.js"></script>
 </body>
 </html>
