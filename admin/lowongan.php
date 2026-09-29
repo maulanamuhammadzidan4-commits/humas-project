@@ -316,7 +316,7 @@ $page_title = "Lowongan Kerja";
                     <span class="pagination-info">Menampilkan
                         <?= $total > 0 ? $offset + 1 : 0 ?>
                         –
-                        <?= min($offset + $limit, $total) ?>dari <?= $total ?>
+                        <?= min($offset + $limit, $total) ?> dari <?= $total ?>
                     </span>
                     <div class="pagination-btns">
                         <?php if ($page > 1): ?>
@@ -386,7 +386,7 @@ $page_title = "Lowongan Kerja";
                         <label>
                             Posisi<span class="required">*</span>
                         </label>
-                        <input type="text" name="judul_posisi" class="form-control" required maxlength="150" placeholder="Teknisi Komputer">
+                        <input type="text" name="judul_posisi" class="form-control" required maxlength="100" placeholder="Teknisi Komputer">
                     </div>
                 </div>
 
@@ -445,7 +445,7 @@ $page_title = "Lowongan Kerja";
 </div>
 
 <!--MODAL EDIT -->
-<divclass="modal-overlay"id="modalEdit">
+<div class="modal-overlay" id="modalEdit">
     <div class="modal modal-lg">
         <div class="modal-header">
             <span class="modal-title">
@@ -484,7 +484,7 @@ $page_title = "Lowongan Kerja";
                         <label>
                             Posisi<span class="required">*</span>
                         </label>
-                        <input type="text" name="judul_posisi" id="e_judul_posisi" class="form-control" required maxlength="150">
+                        <input type="text" name="judul_posisi" id="e_judul_posisi" class="form-control" required maxlength="100">
                     </div>
                 </div>
 
