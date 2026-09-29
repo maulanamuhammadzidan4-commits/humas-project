@@ -2,6 +2,7 @@
 session_start();
 
 require_once '../backend/connection.php';
+require_once '../backend/repositories/bootstrap.php';
 require_once 'includes/auth.php';
 
 /*--PENCARIAN & PAGINATION--*/
@@ -11,123 +12,14 @@ $page   = max(1, (int)($_GET['page'] ?? 1));
 $limit  = 10;
 $offset = ($page - 1) * $limit;
 
-/*--WHERE--*/
-$where = '';
-if ($search !== '') {
-    $where = "
-        WHERE lk.judul_posisi LIKE ?
-        OR p.nama_perusahaan LIKE ?
-    ";
-}
-
-/*--HITUNG TOTAL DATA--*/
-$count_sql = "SELECT COUNT(*) AS n
-    FROM lowongan_kerja AS lk
-    INNER JOIN perusahaan AS p
-    ON p.id = lk.perusahaan_id
-    $where";
-
-$stmt_count = mysqli_prepare($koneksi, $count_sql);
-if (!$stmt_count) {
-    die("Gagal menyiapkan query count: " . mysqli_error($koneksi));
-}
-if ($search !== '') {
-    $keyword = "%{$search}%";
-    mysqli_stmt_bind_param(
-        $stmt_count,
-        "ss",
-        $keyword,
-        $keyword
-    );
-}
-
-mysqli_stmt_execute($stmt_count);
-$result_count = mysqli_stmt_get_result($stmt_count);
-$row_count = mysqli_fetch_assoc($result_count);
-$total = (int)($row_count['n'] ?? 0);
+$total = LowonganRepository::countWithSearch($koneksi, $search);
 $total_pages = max(
     1,
     (int)ceil($total / $limit)
 );
-mysqli_stmt_close($stmt_count);
 
-/*--DATA LOWONGAN--*/
-$data_sql = "
-    SELECT
-        lk.id,
-        lk.perusahaan_id,
-        lk.judul_posisi,
-        lk.deskripsi_pekerjaan,
-        lk.kuota,
-        lk.batas_pendaftaran,
-        lk.status_loker,
-        lk.created_at,
-        lk.updated_at,
-
-        p.nama_perusahaan
-    FROM lowongan_kerja AS lk
-    INNER JOIN perusahaan AS p
-        ON p.id = lk.perusahaan_id
-    $where
-    ORDER BY lk.created_at DESC
-    LIMIT ? OFFSET ?
-";
-
-$stmt_data = mysqli_prepare($koneksi, $data_sql);
-if (!$stmt_data) {
-    die("Gagal menyiapkan query data: " . mysqli_error($koneksi));
-}
-if ($search !== '') {
-    $keyword = "%{$search}%";
-    mysqli_stmt_bind_param(
-        $stmt_data,
-        "ssii",
-        $keyword,
-        $keyword,
-        $limit,
-        $offset
-    );
-
-} else {
-    mysqli_stmt_bind_param(
-        $stmt_data,
-        "ii",
-        $limit,
-        $offset
-    );
-}
-mysqli_stmt_execute($stmt_data);
-$result_data = mysqli_stmt_get_result($stmt_data);
-$data = mysqli_fetch_all(
-    $result_data,
-    MYSQLI_ASSOC
-);
-mysqli_stmt_close($stmt_data);
-
-/*--DATA PERUSAHAAN UNTUK SELECT--*/
-$perusahaan_sql = "
-    SELECT
-        id,
-        nama_perusahaan
-    FROM perusahaan
-    ORDER BY nama_perusahaan ASC
-";
-
-$result_perusahaan = mysqli_query(
-    $koneksi,
-    $perusahaan_sql
-);
-if (!$result_perusahaan) {
-    die(
-        "Gagal mengambil data perusahaan: "
-        . mysqli_error($koneksi)
-    );
-}
-
-$perusahaan_list = mysqli_fetch_all(
-    $result_perusahaan,
-    MYSQLI_ASSOC
-);
+$data = LowonganRepository::getPaginated($koneksi, $search, $limit, $offset);
+$perusahaan_list = PerusahaanRepository::getOptions($koneksi);
 
 $page_title = "Lowongan Kerja";
 ?>

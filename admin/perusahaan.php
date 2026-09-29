@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../backend/connection.php';
+require_once '../backend/repositories/bootstrap.php';
 require_once 'includes/auth.php';
 
 $search = trim($_GET['search'] ?? '');
@@ -8,38 +9,9 @@ $page   = max(1, (int)($_GET['page'] ?? 1));
 $limit  = 10;
 $offset = ($page - 1) * $limit;
 
-$where = $search ? "WHERE nama_perusahaan LIKE ? OR sektor_bidang LIKE ?" : "";
-$params_type = "sss";
-$params_val  = ["%$search%", "%$search%", "%$search%"];
-
-$count_sql = "SELECT COUNT(*) as n FROM perusahaan $where";
-$stmt_count = mysqli_prepare($koneksi, $count_sql);
-if ($search) mysqli_stmt_bind_param($stmt_count, $params_type, ...$params_val);
-mysqli_stmt_execute($stmt_count);
-$total = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt_count))['n'];
-$total_pages = ceil($total / $limit);
-
-$data_sql = "SELECT * FROM perusahaan $where ORDER BY created_at DESC LIMIT ? OFFSET ?";
-$stmt_data = mysqli_prepare($koneksi, $data_sql);
-if ($search) {
-    $bind_params = array_merge($params_val, [$limit, $offset]);
-    mysqli_stmt_bind_param(
-        $stmt_data,
-        $params_type . 'ii',
-        ...$bind_params
-    );
-} else {
-    mysqli_stmt_bind_param(
-        $stmt_data,
-        'ii',
-        $limit,
-        $offset
-    );
-}
-
-mysqli_stmt_execute($stmt_data);
-$result = mysqli_stmt_get_result($stmt_data);
-$data = mysqli_fetch_all($result, MYSQLI_ASSOC);
+$total = PerusahaanRepository::countWithSearch($koneksi, $search);
+$total_pages = max(1, (int)ceil($total / $limit));
+$data = PerusahaanRepository::getPaginated($koneksi, $search, $limit, $offset);
 $page_title = "Perusahaan Mitra";
 ?>
 <!DOCTYPE html>

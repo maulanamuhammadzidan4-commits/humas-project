@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../backend/connection.php';
+require_once '../backend/repositories/bootstrap.php';
 require_once 'includes/auth.php';
 
 $search = trim($_GET['search'] ?? '');
@@ -8,19 +9,9 @@ $page   = max(1, (int)($_GET['page'] ?? 1));
 $limit  = 10;
 $offset = ($page - 1) * $limit;
 
-$where = $search ? "WHERE username LIKE ? OR nama_lengkap LIKE ? OR jabatan LIKE ?" : "";
-
-$stmt_count = mysqli_prepare($koneksi, "SELECT COUNT(*) as n FROM users $where");
-if ($search) { $q="%$search%"; mysqli_stmt_bind_param($stmt_count,'sss',$q,$q,$q); }
-mysqli_stmt_execute($stmt_count);
-$total = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt_count))['n'];
-$total_pages = ceil($total / $limit);
-
-$stmt_data = mysqli_prepare($koneksi, "SELECT * FROM users $where ORDER BY created_at DESC LIMIT ? OFFSET ?");
-if ($search) { $q="%$search%"; mysqli_stmt_bind_param($stmt_data,'sssii',$q,$q,$q,$limit,$offset); }
-else { mysqli_stmt_bind_param($stmt_data,'ii',$limit,$offset); }
-mysqli_stmt_execute($stmt_data);
-$data = mysqli_fetch_all(mysqli_stmt_get_result($stmt_data), MYSQLI_ASSOC);
+$total = UserRepository::countWithSearch($koneksi, $search);
+$total_pages = max(1, (int)ceil($total / $limit));
+$data = UserRepository::getPaginated($koneksi, $search, $limit, $offset);
 
 $page_title = "Manajemen User";
 ?>

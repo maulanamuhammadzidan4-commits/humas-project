@@ -5,6 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/connection.php';
+require_once __DIR__ . '/repositories/bootstrap.php';
 
 /* =====================================
    PASTIKAN REQUEST BERASAL DARI FORM
@@ -48,11 +49,12 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
    SIMPAN KE DATABASE
 ===================================== */
 try {
-    $sql = "INSERT INTO kontak (nama, email, subjek, pesan) VALUES (?, ?, ?, ?)";
-    $stmt = $koneksi->prepare($sql);
-    $stmt->bind_param("ssss", $nama, $email, $subjek, $pesan);
-    $stmt->execute();
-    $stmt->close();
+    KontakRepository::create($koneksi, [
+        'nama' => $nama,
+        'email' => $email,
+        'subjek' => $subjek,
+        'pesan' => $pesan,
+    ]);
 
     $_SESSION['contact_flash'] = ['type' => 'success', 'message' => 'Terima kasih! Pesan Anda berhasil dikirim.'];
     header("Location: $redirect");

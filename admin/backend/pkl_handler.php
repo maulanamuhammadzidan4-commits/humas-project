@@ -6,6 +6,7 @@
 session_start();
 
 require_once '../../backend/connection.php';
+require_once '../../backend/repositories/bootstrap.php';
 
 /* =========================
    CEK LOGIN ADMIN
@@ -57,27 +58,7 @@ try {
            CARI ID SISWA
         ========================= */
 
-        $stmt = mysqli_prepare(
-            $koneksi,
-            "SELECT id FROM siswa WHERE nama_siswa = ? LIMIT 1"
-        );
-
-        if (!$stmt) {
-            throw new Exception(mysqli_error($koneksi));
-        }
-
-        mysqli_stmt_bind_param(
-            $stmt,
-            "s",
-            $nama_siswa
-        );
-
-        mysqli_stmt_execute($stmt);
-
-        $result = mysqli_stmt_get_result($stmt);
-        $siswa = mysqli_fetch_assoc($result);
-
-        mysqli_stmt_close($stmt);
+        $siswa = SiswaRepository::findByName($koneksi, $nama_siswa);
 
         if (!$siswa) {
             throw new Exception(
@@ -92,27 +73,7 @@ try {
            CARI ID PERUSAHAAN
         ========================= */
 
-        $stmt = mysqli_prepare(
-            $koneksi,
-            "SELECT id FROM perusahaan WHERE nama_perusahaan = ? LIMIT 1"
-        );
-
-        if (!$stmt) {
-            throw new Exception(mysqli_error($koneksi));
-        }
-
-        mysqli_stmt_bind_param(
-            $stmt,
-            "s",
-            $nama_perusahaan
-        );
-
-        mysqli_stmt_execute($stmt);
-
-        $result = mysqli_stmt_get_result($stmt);
-        $perusahaan = mysqli_fetch_assoc($result);
-
-        mysqli_stmt_close($stmt);
+        $perusahaan = PerusahaanRepository::findByName($koneksi, $nama_perusahaan);
 
         if (!$perusahaan) {
             throw new Exception(
@@ -127,42 +88,16 @@ try {
            INSERT
         ========================= */
 
-        $stmt = mysqli_prepare(
-            $koneksi,
-            "INSERT INTO pkl_penempatan
-            (
-                siswa_id,
-                perusahaan_id,
-                pembimbing_guru,
-                tanggal_mulai,
-                tanggal_selesai,
-                status_penempatan
-            )
-            VALUES (?, ?, ?, ?, ?, ?)"
-        );
-
-        if (!$stmt) {
-            throw new Exception(mysqli_error($koneksi));
+        if (!PklRepository::create($koneksi, [
+            'siswa_id' => $siswa_id,
+            'perusahaan_id' => $perusahaan_id,
+            'pembimbing_guru' => $pembimbing,
+            'tanggal_mulai' => $tanggal_mulai,
+            'tanggal_selesai' => $tanggal_selesai,
+            'status_penempatan' => $status_penempatan,
+        ])) {
+            throw new Exception('Gagal menyimpan data PKL.');
         }
-
-        mysqli_stmt_bind_param(
-            $stmt,
-            "iissss",
-            $siswa_id,
-            $perusahaan_id,
-            $pembimbing,
-            $tanggal_mulai,
-            $tanggal_selesai,
-            $status_penempatan
-        );
-
-        if (!mysqli_stmt_execute($stmt)) {
-            throw new Exception(
-                mysqli_stmt_error($stmt)
-            );
-        }
-
-        mysqli_stmt_close($stmt);
 
         header(
             "Location: ../pkl.php?msg=" .
@@ -207,27 +142,7 @@ try {
            CARI SISWA
         ========================= */
 
-        $stmt = mysqli_prepare(
-            $koneksi,
-            "SELECT id FROM siswa WHERE nama_siswa = ? LIMIT 1"
-        );
-
-        if (!$stmt) {
-            throw new Exception(mysqli_error($koneksi));
-        }
-
-        mysqli_stmt_bind_param(
-            $stmt,
-            "s",
-            $nama_siswa
-        );
-
-        mysqli_stmt_execute($stmt);
-
-        $result = mysqli_stmt_get_result($stmt);
-        $siswa = mysqli_fetch_assoc($result);
-
-        mysqli_stmt_close($stmt);
+        $siswa = SiswaRepository::findByName($koneksi, $nama_siswa);
 
         if (!$siswa) {
             throw new Exception(
@@ -242,27 +157,7 @@ try {
            CARI PERUSAHAAN
         ========================= */
 
-        $stmt = mysqli_prepare(
-            $koneksi,
-            "SELECT id FROM perusahaan WHERE nama_perusahaan = ? LIMIT 1"
-        );
-
-        if (!$stmt) {
-            throw new Exception(mysqli_error($koneksi));
-        }
-
-        mysqli_stmt_bind_param(
-            $stmt,
-            "s",
-            $nama_perusahaan
-        );
-
-        mysqli_stmt_execute($stmt);
-
-        $result = mysqli_stmt_get_result($stmt);
-        $perusahaan = mysqli_fetch_assoc($result);
-
-        mysqli_stmt_close($stmt);
+        $perusahaan = PerusahaanRepository::findByName($koneksi, $nama_perusahaan);
 
         if (!$perusahaan) {
             throw new Exception(
@@ -277,42 +172,16 @@ try {
            UPDATE
         ========================= */
 
-        $stmt = mysqli_prepare(
-            $koneksi,
-            "UPDATE pkl_penempatan
-             SET
-                siswa_id = ?,
-                perusahaan_id = ?,
-                pembimbing_guru = ?,
-                tanggal_mulai = ?,
-                tanggal_selesai = ?,
-                status_penempatan = ?
-             WHERE id = ?"
-        );
-
-        if (!$stmt) {
-            throw new Exception(mysqli_error($koneksi));
+        if (!PklRepository::update($koneksi, $id, [
+            'siswa_id' => $siswa_id,
+            'perusahaan_id' => $perusahaan_id,
+            'pembimbing_guru' => $pembimbing,
+            'tanggal_mulai' => $tanggal_mulai,
+            'tanggal_selesai' => $tanggal_selesai,
+            'status_penempatan' => $status_penempatan,
+        ])) {
+            throw new Exception('Gagal memperbarui data PKL.');
         }
-
-        mysqli_stmt_bind_param(
-            $stmt,
-            "iissssi",
-            $siswa_id,
-            $perusahaan_id,
-            $pembimbing,
-            $tanggal_mulai,
-            $tanggal_selesai,
-            $status_penempatan,
-            $id
-        );
-
-        if (!mysqli_stmt_execute($stmt)) {
-            throw new Exception(
-                mysqli_stmt_error($stmt)
-            );
-        }
-
-        mysqli_stmt_close($stmt);
 
         header(
             "Location: ../pkl.php?msg=" .
@@ -335,28 +204,9 @@ try {
             throw new Exception("ID PKL tidak valid.");
         }
 
-        $stmt = mysqli_prepare(
-            $koneksi,
-            "DELETE FROM pkl_penempatan WHERE id = ?"
-        );
-
-        if (!$stmt) {
-            throw new Exception(mysqli_error($koneksi));
+        if (!PklRepository::delete($koneksi, $id)) {
+            throw new Exception('Gagal menghapus data PKL.');
         }
-
-        mysqli_stmt_bind_param(
-            $stmt,
-            "i",
-            $id
-        );
-
-        if (!mysqli_stmt_execute($stmt)) {
-            throw new Exception(
-                mysqli_stmt_error($stmt)
-            );
-        }
-
-        mysqli_stmt_close($stmt);
 
         header(
             "Location: ../pkl.php?msg=" .

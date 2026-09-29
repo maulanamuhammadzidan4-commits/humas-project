@@ -6,6 +6,7 @@
 session_start();
 
 require_once '../../backend/connection.php';
+require_once '../../backend/repositories/bootstrap.php';
 $authLoginPath = '../login_admin.php';
 require_once '../includes/auth.php';
 
@@ -50,76 +51,24 @@ try {
         /* =========================
            CEK NISN
         ========================= */
-        $cek = mysqli_prepare(
-            $koneksi,
-            "SELECT id FROM siswa WHERE nisn = ? LIMIT 1"
-        );
-
-        if (!$cek) {
-            throw new Exception(mysqli_error($koneksi));
-        }
-
-        mysqli_stmt_bind_param(
-            $cek,
-            "s",
-            $nisn
-        );
-
-        mysqli_stmt_execute($cek);
-
-        $result = mysqli_stmt_get_result($cek);
-
-        if (mysqli_num_rows($result) > 0) {
-
-            mysqli_stmt_close($cek);
-
+        if (SiswaRepository::findByNisn($koneksi, $nisn)) {
             throw new Exception(
                 "NISN tersebut sudah terdaftar."
             );
         }
 
-        mysqli_stmt_close($cek);
-
         /* =========================
            INSERT DATA
         ========================= */
-        $stmt = mysqli_prepare(
-            $koneksi,
-            "INSERT INTO siswa
-            (
-                nisn,
-                nama_siswa,
-                kelas,
-                jurusan,
-                status_alumni
-            )
-            VALUES (?, ?, ?, ?, ?)"
-        );
-
-        if (!$stmt) {
-            throw new Exception(
-                mysqli_error($koneksi)
-            );
+        if (!SiswaRepository::create($koneksi, [
+            'nisn' => $nisn,
+            'nama_siswa' => $nama_siswa,
+            'kelas' => $kelas,
+            'jurusan' => $jurusan,
+            'status_alumni' => $status_alumni,
+        ])) {
+            throw new Exception('Gagal menyimpan data siswa.');
         }
-
-        mysqli_stmt_bind_param(
-            $stmt,
-            "ssssi",
-            $nisn,
-            $nama_siswa,
-            $kelas,
-            $jurusan,
-            $status_alumni
-        );
-
-        if (!mysqli_stmt_execute($stmt)) {
-
-            throw new Exception(
-                mysqli_stmt_error($stmt)
-            );
-        }
-
-        mysqli_stmt_close($stmt);
 
         header(
             "Location: ../siswa.php?msg=" .
@@ -174,85 +123,24 @@ try {
            CEK NISN
            AGAR TIDAK SAMA DENGAN SISWA LAIN
         ========================= */
-        $cek = mysqli_prepare(
-            $koneksi,
-            "SELECT id
-             FROM siswa
-             WHERE nisn = ?
-             AND id != ?
-             LIMIT 1"
-        );
-
-        if (!$cek) {
-            throw new Exception(
-                mysqli_error($koneksi)
-            );
-        }
-
-        mysqli_stmt_bind_param(
-            $cek,
-            "si",
-            $nisn,
-            $id
-        );
-
-        mysqli_stmt_execute($cek);
-
-        $hasil_cek = mysqli_stmt_get_result($cek);
-
-        if (mysqli_num_rows($hasil_cek) > 0) {
-
-            mysqli_stmt_close($cek);
-
+        if (SiswaRepository::findByNisnExcept($koneksi, $nisn, $id)) {
             throw new Exception(
                 "NISN tersebut sudah digunakan siswa lain."
             );
         }
 
-        mysqli_stmt_close($cek);
-
         /* =========================
            UPDATE DATA
         ========================= */
-        $stmt = mysqli_prepare(
-            $koneksi,
-            "UPDATE siswa
-             SET
-                nisn = ?,
-                nama_siswa = ?,
-                kelas = ?,
-                jurusan = ?,
-                status_alumni = ?,
-                updated_at = CURRENT_TIMESTAMP
-             WHERE id = ?"
-        );
-
-        if (!$stmt) {
-
-            throw new Exception(
-                mysqli_error($koneksi)
-            );
+        if (!SiswaRepository::update($koneksi, $id, [
+            'nisn' => $nisn,
+            'nama_siswa' => $nama_siswa,
+            'kelas' => $kelas,
+            'jurusan' => $jurusan,
+            'status_alumni' => $status_alumni,
+        ])) {
+            throw new Exception('Gagal memperbarui data siswa.');
         }
-
-        mysqli_stmt_bind_param(
-            $stmt,
-            "ssssii",
-            $nisn,
-            $nama_siswa,
-            $kelas,
-            $jurusan,
-            $status_alumni,
-            $id
-        );
-
-        if (!mysqli_stmt_execute($stmt)) {
-
-            throw new Exception(
-                mysqli_stmt_error($stmt)
-            );
-        }
-
-        mysqli_stmt_close($stmt);
 
         header(
             "Location: ../siswa.php?msg=" .
@@ -281,32 +169,9 @@ try {
         /* =========================
            DELETE DATA
         ========================= */
-        $stmt = mysqli_prepare(
-            $koneksi,
-            "DELETE FROM siswa WHERE id = ?"
-        );
-
-        if (!$stmt) {
-
-            throw new Exception(
-                mysqli_error($koneksi)
-            );
+        if (!SiswaRepository::delete($koneksi, $id)) {
+            throw new Exception('Gagal menghapus data siswa.');
         }
-
-        mysqli_stmt_bind_param(
-            $stmt,
-            "i",
-            $id
-        );
-
-        if (!mysqli_stmt_execute($stmt)) {
-
-            throw new Exception(
-                mysqli_stmt_error($stmt)
-            );
-        }
-
-        mysqli_stmt_close($stmt);
 
         header(
             "Location: ../siswa.php?msg=" .

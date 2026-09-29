@@ -40,22 +40,6 @@ function getBeritaById($koneksi, int $id): ?array
         return null;
     }
 
-    $stmt = mysqli_prepare(
-        $koneksi,
-        "SELECT * FROM berita WHERE id_berita = ? LIMIT 1"
-    );
-
-    if (!$stmt) {
-        return null;
-    }
-
-    mysqli_stmt_bind_param($stmt, "i", $id);
-    mysqli_stmt_execute($stmt);
-
-    $result = mysqli_stmt_get_result($stmt);
-    $berita = ($result && mysqli_num_rows($result) > 0) ? mysqli_fetch_assoc($result) : null;
-
-    mysqli_stmt_close($stmt);
-
-    return $berita;
+    require_once __DIR__ . '/repositories/bootstrap.php';
+    return BeritaRepository::findById($koneksi, $id);
 }

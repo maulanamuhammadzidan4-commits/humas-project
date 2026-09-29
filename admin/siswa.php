@@ -2,6 +2,7 @@
 session_start();
 
 require_once '../backend/connection.php';
+require_once '../backend/repositories/bootstrap.php';
 require_once 'includes/auth.php';
 
 /* =========================
@@ -13,119 +14,10 @@ $page   = max(1, (int)($_GET['page'] ?? 1));
 $limit  = 10;
 $offset = ($page - 1) * $limit;
 
-/* =========================
-   WHERE SEARCH
-========================= */
-$where = '';
-
-if ($search !== '') {
-    $where = "
-        WHERE nisn LIKE ?
-        OR nama_siswa LIKE ?
-        OR kelas LIKE ?
-        OR jurusan LIKE ?
-    ";
-}
-
-/* =========================
-   COUNT DATA
-========================= */
-$count_sql = "
-    SELECT COUNT(*) AS n
-    FROM siswa
-    $where
-";
-
-$stmt_count = mysqli_prepare($koneksi, $count_sql);
-
-if (!$stmt_count) {
-    die("Gagal menyiapkan query count: " . mysqli_error($koneksi));
-}
-
-if ($search !== '') {
-    $keyword = "%{$search}%";
-
-    mysqli_stmt_bind_param(
-        $stmt_count,
-        "ssss",
-        $keyword,
-        $keyword,
-        $keyword,
-        $keyword
-    );
-}
-
-mysqli_stmt_execute($stmt_count);
-
-$result_count = mysqli_stmt_get_result($stmt_count);
-$count_data   = mysqli_fetch_assoc($result_count);
-
-$total = (int)($count_data['n'] ?? 0);
-
-mysqli_stmt_close($stmt_count);
-
+$total = SiswaRepository::countWithSearch($koneksi, $search);
 $total_pages = max(1, (int)ceil($total / $limit));
 
-/* =========================
-   AMBIL DATA SISWA
-========================= */
-$data_sql = "
-    SELECT
-        id,
-        nisn,
-        nama_siswa,
-        kelas,
-        jurusan,
-        status_alumni,
-        created_at,
-        updated_at
-    FROM siswa
-    $where
-    ORDER BY created_at DESC
-    LIMIT ? OFFSET ?
-";
-
-$stmt_data = mysqli_prepare($koneksi, $data_sql);
-
-if (!$stmt_data) {
-    die("Gagal menyiapkan query data: " . mysqli_error($koneksi));
-}
-
-if ($search !== '') {
-
-    $keyword = "%{$search}%";
-
-    mysqli_stmt_bind_param(
-        $stmt_data,
-        "ssssii",
-        $keyword,
-        $keyword,
-        $keyword,
-        $keyword,
-        $limit,
-        $offset
-    );
-
-} else {
-
-    mysqli_stmt_bind_param(
-        $stmt_data,
-        "ii",
-        $limit,
-        $offset
-    );
-}
-
-mysqli_stmt_execute($stmt_data);
-
-$result_data = mysqli_stmt_get_result($stmt_data);
-
-$data = mysqli_fetch_all(
-    $result_data,
-    MYSQLI_ASSOC
-);
-
-mysqli_stmt_close($stmt_data);
+$data = SiswaRepository::getPaginated($koneksi, $search, $limit, $offset);
 
 $page_title = "Data Siswa";
 ?>

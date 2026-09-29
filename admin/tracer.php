@@ -3,6 +3,7 @@
 session_start();
 
 require_once '../backend/connection.php';
+require_once '../backend/repositories/bootstrap.php';
 require_once 'includes/auth.php';
 
 
@@ -53,33 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
 
-        $stmt_siswa = mysqli_prepare(
-            $koneksi,
-            "SELECT id FROM siswa WHERE nama_siswa = ? LIMIT 1"
-        );
-
-        if (!$stmt_siswa) {
-
-            die(
-                "Gagal mencari siswa: " .
-                mysqli_error($koneksi)
-            );
-        }
-
-
-        mysqli_stmt_bind_param(
-            $stmt_siswa,
-            "s",
-            $nama_siswa
-        );
-
-        mysqli_stmt_execute($stmt_siswa);
-
-        $result_siswa = mysqli_stmt_get_result($stmt_siswa);
-
-        $siswa = mysqli_fetch_assoc($result_siswa);
-
-        mysqli_stmt_close($stmt_siswa);
+        $siswa = SiswaRepository::findByName($koneksi, $nama_siswa);
 
 
         /*
@@ -107,45 +82,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         | Simpan ke tracer_study
         */
 
-        $sql = "
-            INSERT INTO tracer_study
-            (
-                siswa_id,
-                tahun_lulus,
-                status_alumni,
-                nama_instansi,
-                pendapatan_bulanan
-            )
-            VALUES (?, ?, ?, ?, ?)
-        ";
-
-
-        $stmt = mysqli_prepare($koneksi, $sql);
-
-        if (!$stmt) {
-
-            die(
-                "Gagal menyiapkan INSERT: " .
-                mysqli_error($koneksi)
-            );
-        }
-
-
-        mysqli_stmt_bind_param(
-            $stmt,
-            "iissi",
-            $siswa_id,
-            $tahun_lulus,
-            $status_alumni,
-            $nama_instansi,
-            $pendapatan_bulanan
-        );
-
-
-        if (mysqli_stmt_execute($stmt)) {
-
-            mysqli_stmt_close($stmt);
-
+        if (TracerRepository::create($koneksi, [
+            'siswa_id' => $siswa_id,
+            'tahun_lulus' => $tahun_lulus,
+            'status_alumni' => $status_alumni,
+            'nama_instansi' => $nama_instansi,
+            'pendapatan_bulanan' => $pendapatan_bulanan,
+        ])) {
             header(
                 "Location: tracer.php?msg=" .
                 urlencode(
@@ -155,18 +98,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
 
             exit;
-
-        } else {
-
-            $error = mysqli_stmt_error($stmt);
-
-            mysqli_stmt_close($stmt);
-
-            die(
-                "Gagal menyimpan data tracer: " .
-                $error
-            );
         }
+
+        die("Gagal menyimpan data tracer.");
     }
 
 
@@ -220,37 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         | Cari ID siswa berdasarkan nama
         */
 
-        $stmt_siswa = mysqli_prepare(
-            $koneksi,
-            "SELECT id FROM siswa WHERE nama_siswa = ? LIMIT 1"
-        );
-
-        if (!$stmt_siswa) {
-
-            die(
-                "Gagal mencari siswa: " .
-                mysqli_error($koneksi)
-            );
-        }
-
-
-        mysqli_stmt_bind_param(
-            $stmt_siswa,
-            "s",
-            $nama_siswa
-        );
-
-        mysqli_stmt_execute($stmt_siswa);
-
-        $result_siswa = mysqli_stmt_get_result(
-            $stmt_siswa
-        );
-
-        $siswa = mysqli_fetch_assoc(
-            $result_siswa
-        );
-
-        mysqli_stmt_close($stmt_siswa);
+        $siswa = SiswaRepository::findByName($koneksi, $nama_siswa);
 
 
         if (!$siswa) {
@@ -274,49 +178,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         | Update
         */
 
-        $sql = "
-            UPDATE tracer_study
-            SET
-                siswa_id = ?,
-                tahun_lulus = ?,
-                status_alumni = ?,
-                nama_instansi = ?,
-                pendapatan_bulanan = ?,
-                updated_at = NOW()
-            WHERE id = ?
-        ";
-
-
-        $stmt = mysqli_prepare(
-            $koneksi,
-            $sql
-        );
-
-        if (!$stmt) {
-
-            die(
-                "Gagal menyiapkan UPDATE: " .
-                mysqli_error($koneksi)
-            );
-        }
-
-
-        mysqli_stmt_bind_param(
-            $stmt,
-            "iissii",
-            $siswa_id,
-            $tahun_lulus,
-            $status_alumni,
-            $nama_instansi,
-            $pendapatan_bulanan,
-            $id
-        );
-
-
-        if (mysqli_stmt_execute($stmt)) {
-
-            mysqli_stmt_close($stmt);
-
+        if (TracerRepository::update($koneksi, $id, [
+            'siswa_id' => $siswa_id,
+            'tahun_lulus' => $tahun_lulus,
+            'status_alumni' => $status_alumni,
+            'nama_instansi' => $nama_instansi,
+            'pendapatan_bulanan' => $pendapatan_bulanan,
+        ])) {
             header(
                 "Location: tracer.php?msg=" .
                 urlencode(
@@ -326,18 +194,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
 
             exit;
-
-        } else {
-
-            $error = mysqli_stmt_error($stmt);
-
-            mysqli_stmt_close($stmt);
-
-            die(
-                "Gagal memperbarui data: " .
-                $error
-            );
         }
+
+        die("Gagal memperbarui data tracer.");
     }
 
 
@@ -364,32 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
 
-        $stmt = mysqli_prepare(
-            $koneksi,
-            "DELETE FROM tracer_study WHERE id = ?"
-        );
-
-
-        if (!$stmt) {
-
-            die(
-                "Gagal menyiapkan DELETE: " .
-                mysqli_error($koneksi)
-            );
-        }
-
-
-        mysqli_stmt_bind_param(
-            $stmt,
-            "i",
-            $id
-        );
-
-
-        if (mysqli_stmt_execute($stmt)) {
-
-            mysqli_stmt_close($stmt);
-
+        if (TracerRepository::delete($koneksi, $id)) {
             header(
                 "Location: tracer.php?msg=" .
                 urlencode(
@@ -399,18 +233,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
 
             exit;
-
-        } else {
-
-            $error = mysqli_stmt_error($stmt);
-
-            mysqli_stmt_close($stmt);
-
-            die(
-                "Gagal menghapus data: " .
-                $error
-            );
         }
+
+        die("Gagal menghapus data tracer.");
     }
 }
 
@@ -441,276 +266,15 @@ $offset = ($page - 1) * $limit;
 |--------------------------------------------------------------------------
 */
 
-$where = "";
-
-if ($search !== '') {
-
-    $where = "
-        WHERE
-            s.nama_siswa LIKE ?
-            OR s.nisn LIKE ?
-            OR s.kelas LIKE ?
-            OR s.jurusan LIKE ?
-            OR ts.nama_instansi LIKE ?
-            OR ts.status_alumni LIKE ?
-    ";
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| HITUNG TOTAL DATA
-|--------------------------------------------------------------------------
-*/
-
-$count_sql = "
-    SELECT COUNT(*) AS total
-    FROM tracer_study ts
-    INNER JOIN siswa s
-        ON s.id = ts.siswa_id
-    $where
-";
-
-
-$stmt_count = mysqli_prepare(
-    $koneksi,
-    $count_sql
-);
-
-
-if (!$stmt_count) {
-
-    die(
-        "Gagal menyiapkan query count: " .
-        mysqli_error($koneksi)
-    );
-}
-
-
-if ($search !== '') {
-
-    $keyword = "%{$search}%";
-
-    mysqli_stmt_bind_param(
-        $stmt_count,
-        "ssssss",
-        $keyword,
-        $keyword,
-        $keyword,
-        $keyword,
-        $keyword,
-        $keyword
-    );
-}
-
-
-mysqli_stmt_execute($stmt_count);
-
-
-$result_count = mysqli_stmt_get_result(
-    $stmt_count
-);
-
-
-$count_data = mysqli_fetch_assoc(
-    $result_count
-);
-
-
-$total = (int)(
-    $count_data['total'] ?? 0
-);
-
-
-$total_pages = max(
-    1,
-    (int)ceil($total / $limit)
-);
-
-
-mysqli_stmt_close($stmt_count);
-
-
-/*
-|--------------------------------------------------------------------------
-| AMBIL DATA TRACER
-|--------------------------------------------------------------------------
-*/
-
-$data_sql = "
-    SELECT
-        ts.id,
-        ts.siswa_id,
-        ts.tahun_lulus,
-        ts.status_alumni,
-        ts.nama_instansi,
-        ts.pendapatan_bulanan,
-        ts.created_at,
-        ts.updated_at,
-
-        s.id AS id_siswa,
-        s.nisn,
-        s.nama_siswa,
-        s.kelas,
-        s.jurusan,
-        s.status_alumni AS status_siswa
-
-    FROM tracer_study ts
-
-    INNER JOIN siswa s
-        ON s.id = ts.siswa_id
-
-    $where
-
-    ORDER BY ts.created_at DESC
-
-    LIMIT ? OFFSET ?
-";
-
-
-$stmt_data = mysqli_prepare(
-    $koneksi,
-    $data_sql
-);
-
-
-if (!$stmt_data) {
-
-    die(
-        "Gagal menyiapkan query data: " .
-        mysqli_error($koneksi)
-    );
-}
-
-
-if ($search !== '') {
-
-    $keyword = "%{$search}%";
-
-    mysqli_stmt_bind_param(
-        $stmt_data,
-        "ssssssii",
-        $keyword,
-        $keyword,
-        $keyword,
-        $keyword,
-        $keyword,
-        $keyword,
-        $limit,
-        $offset
-    );
-
-} else {
-
-    mysqli_stmt_bind_param(
-        $stmt_data,
-        "ii",
-        $limit,
-        $offset
-    );
-}
-
-
-mysqli_stmt_execute($stmt_data);
-
-
-$result_data = mysqli_stmt_get_result(
-    $stmt_data
-);
-
-
-$data = mysqli_fetch_all(
-    $result_data,
-    MYSQLI_ASSOC
-);
-
-
-mysqli_stmt_close($stmt_data);
-
-
-/*
-|--------------------------------------------------------------------------
-| STATISTIK
-|--------------------------------------------------------------------------
-*/
-
-$total_tracer_sql = "
-    SELECT COUNT(*) AS total
-    FROM tracer_study
-";
-
-$result = mysqli_query(
-    $koneksi,
-    $total_tracer_sql
-);
-
-$total_tracer = (int)(
-    mysqli_fetch_assoc($result)['total'] ?? 0
-);
-
-
-$bekerja_sql = "
-    SELECT COUNT(*) AS total
-    FROM tracer_study
-    WHERE status_alumni = 'Bekerja'
-";
-
-$result = mysqli_query(
-    $koneksi,
-    $bekerja_sql
-);
-
-$total_bekerja = (int)(
-    mysqli_fetch_assoc($result)['total'] ?? 0
-);
-
-
-$kuliah_sql = "
-    SELECT COUNT(*) AS total
-    FROM tracer_study
-    WHERE status_alumni = 'Kuliah'
-";
-
-$result = mysqli_query(
-    $koneksi,
-    $kuliah_sql
-);
-
-$total_kuliah = (int)(
-    mysqli_fetch_assoc($result)['total'] ?? 0
-);
-
-
-$wirausaha_sql = "
-    SELECT COUNT(*) AS total
-    FROM tracer_study
-    WHERE status_alumni = 'Wirausaha'
-";
-
-$result = mysqli_query(
-    $koneksi,
-    $wirausaha_sql
-);
-
-$total_wirausaha = (int)(
-    mysqli_fetch_assoc($result)['total'] ?? 0
-);
-
-
-$mencari_sql = "
-    SELECT COUNT(*) AS total
-    FROM tracer_study
-    WHERE status_alumni = 'Mencari Kerja'
-";
-
-$result = mysqli_query(
-    $koneksi,
-    $mencari_sql
-);
-
-$total_mencari = (int)(
-    mysqli_fetch_assoc($result)['total'] ?? 0
-);
+$total = TracerRepository::countWithSearch($koneksi, $search);
+$total_pages = max(1, (int)ceil($total / $limit));
+$data = TracerRepository::getPaginated($koneksi, $search, $limit, $offset);
+$tracer_stats = TracerRepository::getStatistics($koneksi);
+$total_tracer = $tracer_stats['total'];
+$total_bekerja = $tracer_stats['Bekerja'];
+$total_kuliah = $tracer_stats['Kuliah'];
+$total_wirausaha = $tracer_stats['Wirausaha'];
+$total_mencari = $tracer_stats['Mencari Kerja'];
 
 
 $page_title = "Tracer Study";

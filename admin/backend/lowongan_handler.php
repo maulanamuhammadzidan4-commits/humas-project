@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../../backend/connection.php';
+require_once '../../backend/repositories/bootstrap.php';
 require_once '../includes/auth.php';
 
 /*--FUNGSI REDIRECT--*/
@@ -58,109 +59,29 @@ if ($action === 'tambah') {
     }
 
 /*--CEK PERUSAHAAN--*/
-    $cek_perusahaan = mysqli_prepare(
-        $koneksi,
-        "SELECT id FROM perusahaan WHERE id = ? LIMIT 1"
-    );
-    if (!$cek_perusahaan) {
-        redirect_lowongan(
-            'Gagal memeriksa perusahaan: ' .
-            mysqli_error($koneksi),
-            'error'
-        );
-    }
-    mysqli_stmt_bind_param(
-        $cek_perusahaan,
-        "i",
-        $perusahaan_id
-    );
-    mysqli_stmt_execute(
-        $cek_perusahaan
-    );
-    $hasil_perusahaan =
-        mysqli_stmt_get_result(
-            $cek_perusahaan
-        );
-    if (
-        mysqli_num_rows(
-            $hasil_perusahaan
-        ) === 0
-    ) {
-        mysqli_stmt_close(
-            $cek_perusahaan
-        );
+    if (!PerusahaanRepository::findById($koneksi, $perusahaan_id)) {
         redirect_lowongan(
             'Perusahaan yang dipilih tidak ditemukan.',
             'error'
         );
     }
-    mysqli_stmt_close(
-        $cek_perusahaan
-    );
 
 /*--INSERT--*/
-    $sql = "
-        INSERT INTO lowongan_kerja
-        (
-            perusahaan_id,
-            judul_posisi,
-            deskripsi_pekerjaan,
-            kuota,
-            batas_pendaftaran,
-            status_loker
-        )
-        VALUES
-        (?, ?, ?, ?, ?, ?)";
-
-    $stmt = mysqli_prepare(
-        $koneksi,
-        $sql
-    );
-
-    if (!$stmt) {
-
-        redirect_lowongan(
-            'Gagal menyiapkan data: ' .
-            mysqli_error($koneksi),
-            'error'
-        );
-
-    }
-
-
-    mysqli_stmt_bind_param(
-        $stmt,
-        "ississ",
-        $perusahaan_id,
-        $judul_posisi,
-        $deskripsi_pekerjaan,
-        $kuota,
-        $batas_pendaftaran,
-        $status_loker
-    );
-
-
-    if (
-        mysqli_stmt_execute($stmt)
-    ) {
-
-        mysqli_stmt_close($stmt);
-
+    if (LowonganRepository::create($koneksi, [
+        'perusahaan_id' => $perusahaan_id,
+        'judul_posisi' => $judul_posisi,
+        'deskripsi_pekerjaan' => $deskripsi_pekerjaan,
+        'kuota' => $kuota,
+        'batas_pendaftaran' => $batas_pendaftaran,
+        'status_loker' => $status_loker,
+    ])) {
         redirect_lowongan(
             'Lowongan kerja berhasil ditambahkan.'
         );
-
     }
 
-
-    $error =
-        mysqli_stmt_error($stmt);
-
-    mysqli_stmt_close($stmt);
-
     redirect_lowongan(
-        'Gagal menambahkan lowongan: ' .
-        $error,
+        'Gagal menambahkan lowongan.',
         'error'
     );
 
@@ -226,68 +147,21 @@ if ($action === 'edit') {
     |--------------------------------------------------------------------------
     */
 
-    $sql = "
-        UPDATE lowongan_kerja
-        SET
-            perusahaan_id = ?,
-            judul_posisi = ?,
-            deskripsi_pekerjaan = ?,
-            kuota = ?,
-            batas_pendaftaran = ?,
-            status_loker = ?
-        WHERE id = ?
-    ";
-
-    $stmt = mysqli_prepare(
-        $koneksi,
-        $sql
-    );
-
-    if (!$stmt) {
-
-        redirect_lowongan(
-            'Gagal menyiapkan update: ' .
-            mysqli_error($koneksi),
-            'error'
-        );
-
-    }
-
-
-    mysqli_stmt_bind_param(
-        $stmt,
-        "ississi",
-        $perusahaan_id,
-        $judul_posisi,
-        $deskripsi_pekerjaan,
-        $kuota,
-        $batas_pendaftaran,
-        $status_loker,
-        $id
-    );
-
-
-    if (
-        mysqli_stmt_execute($stmt)
-    ) {
-
-        mysqli_stmt_close($stmt);
-
+    if (LowonganRepository::update($koneksi, $id, [
+        'perusahaan_id' => $perusahaan_id,
+        'judul_posisi' => $judul_posisi,
+        'deskripsi_pekerjaan' => $deskripsi_pekerjaan,
+        'kuota' => $kuota,
+        'batas_pendaftaran' => $batas_pendaftaran,
+        'status_loker' => $status_loker,
+    ])) {
         redirect_lowongan(
             'Lowongan kerja berhasil diperbarui.'
         );
-
     }
 
-
-    $error =
-        mysqli_stmt_error($stmt);
-
-    mysqli_stmt_close($stmt);
-
     redirect_lowongan(
-        'Gagal memperbarui lowongan: ' .
-        $error,
+        'Gagal memperbarui lowongan.',
         'error'
     );
 
@@ -316,70 +190,12 @@ if ($action === 'hapus') {
     }
 
 
-    $sql = "
-        DELETE FROM lowongan_kerja
-        WHERE id = ?
-    ";
-
-
-    $stmt = mysqli_prepare(
-        $koneksi,
-        $sql
-    );
-
-
-    if (!$stmt) {
-
-        redirect_lowongan(
-            'Gagal menyiapkan penghapusan: ' .
-            mysqli_error($koneksi),
-            'error'
-        );
-
+    if (LowonganRepository::delete($koneksi, $id) > 0) {
+        redirect_lowongan('Lowongan kerja berhasil dihapus.');
     }
-
-
-    mysqli_stmt_bind_param(
-        $stmt,
-        "i",
-        $id
-    );
-
-
-    if (
-        mysqli_stmt_execute($stmt)
-    ) {
-
-        if (
-            mysqli_stmt_affected_rows($stmt) > 0
-        ) {
-
-            mysqli_stmt_close($stmt);
-
-            redirect_lowongan(
-                'Lowongan kerja berhasil dihapus.'
-            );
-
-        }
-
-        mysqli_stmt_close($stmt);
-
-        redirect_lowongan(
-            'Data lowongan tidak ditemukan.',
-            'error'
-        );
-
-    }
-
-
-    $error =
-        mysqli_stmt_error($stmt);
-
-    mysqli_stmt_close($stmt);
 
     redirect_lowongan(
-        'Gagal menghapus lowongan: ' .
-        $error,
+        'Data lowongan tidak ditemukan.',
         'error'
     );
 

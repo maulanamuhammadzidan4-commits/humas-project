@@ -128,9 +128,8 @@ $page_title = "Dashboard";
                         </thead>
                         <tbody>
                         <?php
-                        $has_pkl = false;
-                        while ($row = mysqli_fetch_assoc($pkl_terbaru)):
-                            $has_pkl = true;
+                        $has_pkl = !empty($pkl_terbaru);
+                        foreach ($pkl_terbaru as $row):
                             $badge = match($row['status_penempatan']) {
                                 'Disetujui' => 'badge-green',
                                 'Selesai'   => 'badge-blue',
@@ -144,7 +143,7 @@ $page_title = "Dashboard";
                                 <td><?= date('d/m/Y', strtotime($row['tanggal_selesai'])) ?></td>
                                 <td><span class="badge <?= $badge ?>"><?= $row['status_penempatan'] ?></span></td>
                             </tr>
-                        <?php endwhile; ?>
+                        <?php endforeach; ?>
                         <?php if (!$has_pkl): ?>
                             <tr><td colspan="5">
                                 <div class="table-empty">
@@ -207,8 +206,7 @@ $page_title = "Dashboard";
 
         <!-- Lowongan Akan Segera Tutup -->
         <?php
-        $expiring_rows = [];
-        while ($r = mysqli_fetch_assoc($expiring)) $expiring_rows[] = $r;
+        $expiring_rows = $expiring;
         if (!empty($expiring_rows)):
         ?>
         <div class="card">

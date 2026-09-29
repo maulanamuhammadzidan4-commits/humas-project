@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../../backend/connection.php';
+require_once '../../backend/repositories/bootstrap.php';
 
 if (!isset($_SESSION['login_attempts'])) {
     $_SESSION['login_attempts'] = 0;
@@ -34,23 +35,7 @@ if ($username === '' || $password === '') {
 }
 
 try {
-    $stmt = mysqli_prepare(
-        $koneksi,
-        "SELECT id_user, username, password, nama_lengkap, jabatan 
-         FROM users 
-         WHERE username = ? 
-         LIMIT 1"
-    );
-
-    if (!$stmt) {
-        throw new Exception("Gagal menyiapkan query database.");
-    }
-
-    mysqli_stmt_bind_param($stmt, "s", $username);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    $user = mysqli_fetch_assoc($result);
-    mysqli_stmt_close($stmt);
+    $user = UserRepository::findByUsername($koneksi, $username);
 
     $password_benar = false;
     if ($user) {

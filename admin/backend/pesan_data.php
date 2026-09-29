@@ -6,27 +6,9 @@
 if (!isset($koneksi)) {
     require_once __DIR__ . '/../../backend/connection.php';
 }
+require_once __DIR__ . '/../../backend/repositories/bootstrap.php';
 
-$sql = "
-    SELECT
-        id_kontak,
-        nama,
-        email,
-        subjek,
-        pesan,
-        tanggal_kirim,
-        status
-    FROM kontak
-    ORDER BY tanggal_kirim DESC
-";
-
-$result = mysqli_query($koneksi, $sql);
-
-if (!$result) {
-    die("Gagal mengambil data pesan: " . mysqli_error($koneksi));
-}
-
-$data = mysqli_fetch_all($result, MYSQLI_ASSOC);
+$data = KontakRepository::getAll($koneksi);
 
 $totalPesan  = count($data);
 $belumDibaca = 0;
