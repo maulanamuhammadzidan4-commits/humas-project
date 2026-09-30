@@ -1,4 +1,4 @@
 <?php
-header('Location: ' . BASE_URL . 'frontend/index.php');
+header('Location: frontend/index.php');
 exit();
 ?>
