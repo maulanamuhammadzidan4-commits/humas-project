@@ -3,38 +3,36 @@
  * Handler CRUD — Penempatan PKL
  */
 
-session_start();
-
 require_once '../../backend/connection.php';
+require_once '../../backend/helpers.php';
 require_once '../../backend/repositories/bootstrap.php';
-
-/* =========================
-   CEK LOGIN ADMIN
-========================= */
-
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login_admin.php");
-    exit;
-}
-
-/* =========================
-   CEK KONEKSI
-========================= */
+$authLoginPath = '../login_admin.php';
+require_once '../includes/auth.php';
 
 if (!$koneksi) {
-    die("Koneksi database gagal.");
+    die('Koneksi database gagal.');
+}
+
+function redirectPkl(string $message, string $type = 'success'): void
+{
+    redirectWithMessage('../pkl.php', $message, $type);
+}
+
+function resolveEntityId(callable $resolver, string $label, string $name): int
+{
+    $entity = $resolver();
+
+    if (!$entity) {
+        throw new InvalidArgumentException("{$label} '{$name}' tidak ditemukan.");
+    }
+
+    return (int) $entity['id'];
 }
 
 $action = $_POST['action'] ?? '';
 
 try {
-
-    /* =====================================================
-       TAMBAH DATA PKL
-    ===================================================== */
-
     if ($action === 'tambah') {
-
         $nama_siswa = trim($_POST['nama_siswa'] ?? '');
         $nama_perusahaan = trim($_POST['nama_perusahaan'] ?? '');
         $pembimbing = trim($_POST['pembimbing'] ?? '');
@@ -42,51 +40,25 @@ try {
         $tanggal_selesai = trim($_POST['tanggal_selesai'] ?? '');
         $status_penempatan = trim($_POST['status_penempatan'] ?? 'Draft');
 
-        /* VALIDASI */
+        requireNonEmptyFields([
+            $nama_siswa,
+            $nama_perusahaan,
+            $pembimbing,
+            $tanggal_mulai,
+            $tanggal_selesai,
+        ], 'Semua data PKL wajib diisi.');
 
-        if (
-            $nama_siswa === '' ||
-            $nama_perusahaan === '' ||
-            $pembimbing === '' ||
-            $tanggal_mulai === '' ||
-            $tanggal_selesai === ''
-        ) {
-            throw new Exception("Semua data PKL wajib diisi.");
-        }
+        $siswa_id = resolveEntityId(
+            fn() => SiswaRepository::findByName($koneksi, $nama_siswa),
+            'Siswa',
+            $nama_siswa
+        );
 
-        /* =========================
-           CARI ID SISWA
-        ========================= */
-
-        $siswa = SiswaRepository::findByName($koneksi, $nama_siswa);
-
-        if (!$siswa) {
-            throw new Exception(
-                "Siswa '$nama_siswa' tidak ditemukan."
-            );
-        }
-
-        $siswa_id = (int)$siswa['id'];
-
-
-        /* =========================
-           CARI ID PERUSAHAAN
-        ========================= */
-
-        $perusahaan = PerusahaanRepository::findByName($koneksi, $nama_perusahaan);
-
-        if (!$perusahaan) {
-            throw new Exception(
-                "Perusahaan '$nama_perusahaan' tidak ditemukan."
-            );
-        }
-
-        $perusahaan_id = (int)$perusahaan['id'];
-
-
-        /* =========================
-           INSERT
-        ========================= */
+        $perusahaan_id = resolveEntityId(
+            fn() => PerusahaanRepository::findByName($koneksi, $nama_perusahaan),
+            'Perusahaan',
+            $nama_perusahaan
+        );
 
         if (!PklRepository::create($koneksi, [
             'siswa_id' => $siswa_id,
@@ -99,23 +71,11 @@ try {
             throw new Exception('Gagal menyimpan data PKL.');
         }
 
-        header(
-            "Location: ../pkl.php?msg=" .
-            urlencode("Data PKL berhasil ditambahkan!") .
-            "&type=success"
-        );
-        exit;
+        redirectPkl('Data PKL berhasil ditambahkan!');
     }
 
-
-    /* =====================================================
-       EDIT DATA PKL
-    ===================================================== */
-
-    elseif ($action === 'edit') {
-
-        $id = (int)($_POST['id'] ?? 0);
-
+    if ($action === 'edit') {
+        $id = (int) ($_POST['id'] ?? 0);
         $nama_siswa = trim($_POST['nama_siswa'] ?? '');
         $nama_perusahaan = trim($_POST['nama_perusahaan'] ?? '');
         $pembimbing = trim($_POST['pembimbing'] ?? '');
@@ -124,53 +84,28 @@ try {
         $status_penempatan = trim($_POST['status_penempatan'] ?? 'Draft');
 
         if ($id <= 0) {
-            throw new Exception("ID PKL tidak valid.");
+            throw new InvalidArgumentException('ID PKL tidak valid.');
         }
 
-        if (
-            $nama_siswa === '' ||
-            $nama_perusahaan === '' ||
-            $pembimbing === '' ||
-            $tanggal_mulai === '' ||
-            $tanggal_selesai === ''
-        ) {
-            throw new Exception("Semua data PKL wajib diisi.");
-        }
+        requireNonEmptyFields([
+            $nama_siswa,
+            $nama_perusahaan,
+            $pembimbing,
+            $tanggal_mulai,
+            $tanggal_selesai,
+        ], 'Semua data PKL wajib diisi.');
 
+        $siswa_id = resolveEntityId(
+            fn() => SiswaRepository::findByName($koneksi, $nama_siswa),
+            'Siswa',
+            $nama_siswa
+        );
 
-        /* =========================
-           CARI SISWA
-        ========================= */
-
-        $siswa = SiswaRepository::findByName($koneksi, $nama_siswa);
-
-        if (!$siswa) {
-            throw new Exception(
-                "Siswa '$nama_siswa' tidak ditemukan."
-            );
-        }
-
-        $siswa_id = (int)$siswa['id'];
-
-
-        /* =========================
-           CARI PERUSAHAAN
-        ========================= */
-
-        $perusahaan = PerusahaanRepository::findByName($koneksi, $nama_perusahaan);
-
-        if (!$perusahaan) {
-            throw new Exception(
-                "Perusahaan '$nama_perusahaan' tidak ditemukan."
-            );
-        }
-
-        $perusahaan_id = (int)$perusahaan['id'];
-
-
-        /* =========================
-           UPDATE
-        ========================= */
+        $perusahaan_id = resolveEntityId(
+            fn() => PerusahaanRepository::findByName($koneksi, $nama_perusahaan),
+            'Perusahaan',
+            $nama_perusahaan
+        );
 
         if (!PklRepository::update($koneksi, $id, [
             'siswa_id' => $siswa_id,
@@ -183,59 +118,26 @@ try {
             throw new Exception('Gagal memperbarui data PKL.');
         }
 
-        header(
-            "Location: ../pkl.php?msg=" .
-            urlencode("Data PKL berhasil diperbarui!") .
-            "&type=success"
-        );
-        exit;
+        redirectPkl('Data PKL berhasil diperbarui!');
     }
 
-
-    /* =====================================================
-       HAPUS DATA PKL
-    ===================================================== */
-
-    elseif ($action === 'hapus') {
-
-        $id = (int)($_POST['id'] ?? 0);
+    if ($action === 'hapus') {
+        $id = (int) ($_POST['id'] ?? 0);
 
         if ($id <= 0) {
-            throw new Exception("ID PKL tidak valid.");
+            throw new InvalidArgumentException('ID PKL tidak valid.');
         }
 
         if (!PklRepository::delete($koneksi, $id)) {
             throw new Exception('Gagal menghapus data PKL.');
         }
 
-        header(
-            "Location: ../pkl.php?msg=" .
-            urlencode("Data PKL berhasil dihapus.") .
-            "&type=success"
-        );
-        exit;
+        redirectPkl('Data PKL berhasil dihapus.');
     }
 
-
-    /* =====================================================
-       ACTION TIDAK DIKENAL
-    ===================================================== */
-
-    else {
-
-        header("Location: ../pkl.php");
-        exit;
-    }
-
-
-} catch (Exception $e) {
-
-    header(
-        "Location: ../pkl.php?msg=" .
-        urlencode("Gagal: " . $e->getMessage()) .
-        "&type=danger"
-    );
-
+    header('Location: ../pkl.php');
     exit;
+} catch (Throwable $e) {
+    redirectPkl('Gagal: ' . $e->getMessage(), 'danger');
 }
 ?>

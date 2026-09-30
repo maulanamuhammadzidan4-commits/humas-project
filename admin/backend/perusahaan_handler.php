@@ -1,9 +1,14 @@
 <?php
-session_start();
 require_once '../../backend/connection.php';
+require_once '../../backend/helpers.php';
 require_once '../../backend/repositories/bootstrap.php';
 $authLoginPath = '../login_admin.php';
 require_once '../includes/auth.php';
+
+function redirectPerusahaan(string $message, string $type = 'success'): void
+{
+    redirectWithMessage('../perusahaan.php', $message, $type);
+}
 
 $action = $_POST['action'] ?? '';
 
@@ -15,10 +20,18 @@ try {
     $penanggung_jawab = trim($_POST['penanggung_jawab'] ?? '');
     $no_telepon = trim($_POST['no_telepon'] ?? '');
     $status_mou = trim($_POST['status_mou'] ?? '');
-    $perusahaan_id = (int)($_POST['id'] ?? 0);
+    $perusahaan_id = (int) ($_POST['id'] ?? 0);
 
-    if ($action !== 'hapus' && ($nama_perusahaan === '' || $sektor_bidang === '' || $jurusan === '' || $alamat === '' || $penanggung_jawab === '' || $no_telepon === '' || $status_mou === '')) {
-        throw new Exception('Semua data perusahaan wajib diisi.');
+    if ($action !== 'hapus') {
+        requireNonEmptyFields([
+            $nama_perusahaan,
+            $sektor_bidang,
+            $jurusan,
+            $alamat,
+            $penanggung_jawab,
+            $no_telepon,
+            $status_mou,
+        ], 'Semua data perusahaan wajib diisi.');
     }
 
     if ($action === 'tambah') {
@@ -31,10 +44,15 @@ try {
             'no_telepon' => $no_telepon,
             'status_mou' => $status_mou,
         ]);
-        $msg = urlencode("Perusahaan berhasil ditambahkan!");
-        header("Location: ../perusahaan.php?msg=$msg&type=success");
 
-    } elseif ($action === 'edit') {
+        redirectPerusahaan('Perusahaan berhasil ditambahkan!');
+    }
+
+    if ($action === 'edit') {
+        if ($perusahaan_id <= 0) {
+            throw new InvalidArgumentException('ID perusahaan tidak valid.');
+        }
+
         PerusahaanRepository::update($koneksi, $perusahaan_id, [
             'nama_perusahaan' => $nama_perusahaan,
             'sektor_bidang' => $sektor_bidang,
@@ -44,19 +62,24 @@ try {
             'no_telepon' => $no_telepon,
             'status_mou' => $status_mou,
         ]);
-        $msg = urlencode("Data perusahaan berhasil diperbarui!");
-        header("Location: ../perusahaan.php?msg=$msg&type=success");
 
-    } elseif ($action === 'hapus') {
-        PerusahaanRepository::delete($koneksi, (int)$_POST['id']);
-        $msg = urlencode("Perusahaan berhasil dihapus.");
-        header("Location: ../perusahaan.php?msg=$msg&type=success");
-
-    } else {
-        header("Location: ../perusahaan.php");
+        redirectPerusahaan('Data perusahaan berhasil diperbarui!');
     }
-} catch (Exception $e) {
-    $msg = urlencode("Gagal: " . $e->getMessage());
-    header("Location: ../perusahaan.php?msg=$msg&type=danger");
+
+    if ($action === 'hapus') {
+        $id = (int) ($_POST['id'] ?? 0);
+
+        if ($id <= 0) {
+            throw new InvalidArgumentException('ID perusahaan tidak valid.');
+        }
+
+        PerusahaanRepository::delete($koneksi, $id);
+        redirectPerusahaan('Perusahaan berhasil dihapus.');
+    }
+
+    header('Location: ../perusahaan.php');
+    exit;
+} catch (Throwable $e) {
+    redirectPerusahaan('Gagal: ' . $e->getMessage(), 'danger');
 }
 exit;

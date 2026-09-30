@@ -43,3 +43,40 @@ function getBeritaById($koneksi, int $id): ?array
     require_once __DIR__ . '/repositories/bootstrap.php';
     return BeritaRepository::findById($koneksi, $id);
 }
+
+function redirectWithMessage(string $target, string $message = '', string $type = 'success'): never
+{
+    $query = http_build_query([
+        'msg' => $message,
+        'type' => $type,
+    ]);
+
+    $separator = str_contains($target, '?') ? '&' : '?';
+    $url = $message === '' ? $target : $target . $separator . $query;
+
+    header('Location: ' . $url);
+    exit;
+}
+
+function requireNonEmptyFields(array $fields, string $errorMessage): void
+{
+    foreach ($fields as $field) {
+        if (trim((string) $field) === '') {
+            throw new InvalidArgumentException($errorMessage);
+        }
+    }
+}
+
+function ensureAdminAuthenticated(string $loginPath = 'login_admin.php'): void
+{
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    if (!isset($_SESSION['user_id'])) {
+        header('Location: ' . $loginPath);
+        exit;
+    }
+
+    unset($_SESSION['login_success_flash']);
+}

@@ -1,6 +1,6 @@
 <?php
-session_start();
 require_once '../../backend/connection.php';
+require_once '../../backend/helpers.php';
 require_once '../../backend/repositories/bootstrap.php';
 require_once '../includes/auth.php';
 
@@ -9,13 +9,7 @@ function redirect_lowongan(
     string $message,
     string $type = 'success'
 ): void {
-    header(
-        'Location: ../lowongan.php?type=' .
-        urlencode($type) .
-        '&msg=' .
-        urlencode($message)
-    );
-    exit;
+    redirectWithMessage('../lowongan.php', $message, $type);
 }
 
 /*--CEK REQUEST--*/
