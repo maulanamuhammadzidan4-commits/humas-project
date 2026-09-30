@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Sep 21, 2026 at 03:44 AM
+-- Generation Time: Sep 30, 2026 at 03:17 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS `kontak` (
   `tanggal_kirim` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `status` enum('Belum Dibaca','Sudah Dibaca') DEFAULT 'Belum Dibaca',
   PRIMARY KEY (`id_kontak`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `kontak`
@@ -76,7 +76,9 @@ INSERT INTO `kontak` (`id_kontak`, `nama`, `email`, `subjek`, `pesan`, `tanggal_
 (1, 'haha', 'kaylanurlela7@gmail.com', 'jkjhuioi', 'nbh', '2026-09-16 14:28:38', 'Sudah Dibaca'),
 (2, 'haha', 'kaylanurlela7@gmail.com', 'jkjhuioi', 'nb', '2026-09-16 14:28:50', 'Sudah Dibaca'),
 (3, 'haha', 'kaylanurlela7@gmail.com', 'jkjhuioi', 'hg', '2026-09-16 14:35:25', 'Sudah Dibaca'),
-(4, 'haha', 'kaylanurlela7@gmail.com', 'jkjhuioi', 'haloww', '2026-09-17 11:21:51', 'Sudah Dibaca');
+(4, 'haha', 'kaylanurlela7@gmail.com', 'jkjhuioi', 'haloww', '2026-09-17 11:21:51', 'Sudah Dibaca'),
+(5, 'haha', 'kaylanurlela7@gmail.com', 'jkjhuioi', 'jhgfwhryu4wt55y', '2026-09-21 03:58:54', 'Sudah Dibaca'),
+(6, 'jihan', 'jihan@gmail.com', 'pkl', 'mau pkl 7 bulan', '2026-09-22 08:51:24', 'Sudah Dibaca');
 
 -- --------------------------------------------------------
 
@@ -96,7 +98,7 @@ CREATE TABLE IF NOT EXISTS `lowongan_kerja` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `fk_loker_perusahaan` (`perusahaan_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -116,7 +118,7 @@ CREATE TABLE IF NOT EXISTS `perusahaan` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=85 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `perusahaan`
@@ -154,7 +156,49 @@ INSERT INTO `perusahaan` (`id`, `nama_perusahaan`, `sektor_bidang`, `jurusan`, `
 (38, 'MAX-PRO', 'Perdagangan', 'Teknik Jaringan Komputer dan Telekomunikasi', 'Jl. K.H. Abdul Halim, Pasar Balong', 'Henri Dwi Purnama', '085320212005', 'Aktif', '2026-09-19 13:26:23', '2026-09-19 13:26:23'),
 (39, 'GISAKA NET', 'Jasa Layanan Internet', 'Teknik Jaringan Komputer dan Telekomunikasi', 'Jl. Ahmad Kusumah, Majalengka Wetan, Kec. Majalengka, Kab. Majalengka', 'Gilang Bhirawa Noraga', '085295644177', 'Aktif', '2026-09-19 13:28:58', '2026-09-19 13:28:58'),
 (40, 'MANDIRI NET', 'Jasa Layanan Internet', 'Teknik Jaringan Komputer dan Telekomunikasi', 'Perum Grand Rahayu Resindence Blok G No.11, Simpeureum Cigasong', 'Rudi, M.Pd', '081947331555', 'Aktif', '2026-09-19 13:32:29', '2026-09-19 13:32:29'),
-(41, 'BAPENDA MAJALENGKA (SAMSAT MAJALENGKA)', 'Instansi Pemerintah / Layanan Publik', 'Teknik Jaringan Komputer dan Telekomunikasi', 'Jl. K.H. Abdul Halim No.88, Majalengka', 'H. Dwi Yudhi Ginanto Rahman, S.P., M.A.P.', '00000', 'Aktif', '2026-09-19 13:35:50', '2026-09-19 13:35:50');
+(41, 'BAPENDA MAJALENGKA (SAMSAT MAJALENGKA)', 'Instansi Pemerintah / Layanan Publik', 'Teknik Jaringan Komputer dan Telekomunikasi', 'Jl. K.H. Abdul Halim No.88, Majalengka', 'H. Dwi Yudhi Ginanto Rahman, S.P., M.A.P.', '00000', 'Aktif', '2026-09-19 13:35:50', '2026-09-19 13:35:50'),
+(42, 'KUA SUKAHAJI', 'Instansi Pemerintah / Layanan Publik', 'PENGEMBANGAN PERANGKAT LUNAK DAN GIM', 'Jl. Remaja Utara, Desa No.65, Cikoneng, Kec. Sukahaji, Kab. Majalengka', 'Oo Koimudin, S.Ag.', '00000', 'Aktif', '2026-09-21 04:30:30', '2026-09-21 04:30:30'),
+(44, 'ABUBA STEAK', 'Perdagangan', 'rpl', 'Jl. Cipete Raya No. 14A, Cilandak, Jakarta Selatan.', 'Rizal Baydillah, S.Hi, MH.', '000', 'Aktif', '2026-09-21 04:33:55', '2026-09-21 04:33:55'),
+(45, 'PT. FORIT ASTA SOLUSINDO', 'IT', 'rpl', 'LT. 3 Gedung BITC, Jl. HMS Mintareja Sarjana Hukum, Baros, Kec. Cimahi Tengah, Kota Cimahi, Jawa Barat 40512', 'Hendry Cahya Irawan, S.T., M.T', '082240442749', 'Aktif', '2026-09-21 04:38:27', '2026-09-21 04:38:27'),
+(46, 'DINAS KETAHANAN PANGAN PERTANIAN DAN PERIKANAN', 'Instansi Pemerintah / Layanan Publik', 'rpl', 'Jalan Kh. Abdul Halim No.31, Jatipamor, Panyingkiran, Cijati, Kec. Majalengka, Kabupaten Majalengka', 'H. Nana Rohmana S. Sos. M. Si', '085314451100', 'Aktif', '2026-09-21 04:40:31', '2026-09-21 04:40:31'),
+(47, 'DPRD MAJALENGKA', 'Instansi Pemerintah / Layanan Publik', 'rpl', 'Jl. Raya K H Abdul Halim No.247, Majalengka Kulon, Kec. Majalengka, Kabupaten Majalengka,', 'Drs. Agus Permana, MP', '08122071969', 'Aktif', '2026-09-21 04:45:53', '2026-09-21 04:45:53'),
+(48, 'KANTOR KECAMATAN MAJA', 'Instansi Pemerintah / Layanan Publik', 'rpl', 'Jl. Pasukan Sindangkasih No.4 Maja Kabupaten Majalengka', 'Doni Fardiansyah, S.STP', '081320712021', 'Aktif', '2026-09-25 00:46:27', '2026-09-25 00:46:27'),
+(49, 'PERHUTANI MAJALENGKA', 'Instansi Pemerintah / Layanan Publik', 'rpl', 'Jl. Kehutanan No.205, Majalengka Kulon, Kec. Majalengka, Kabupaten Majalengka, Jawa Barat 45411', 'Suparno, S.Hut', '00000', 'Aktif', '2026-09-25 00:48:44', '2026-09-25 00:48:44'),
+(50, 'PT. MEGA CENTRAL FINANCE (MCF)', 'Finance', 'rpl', 'Blok Pakuwon Rt. 014 Rw. 04 Kel. Cigasong Kec. Cigasong', 'Aas Laelasari, S.Pd.', '081322397919', 'Aktif', '2026-09-25 00:50:26', '2026-09-25 00:50:26'),
+(51, 'DINAS KOMUNIKASI DAN INFORMATIKA MAJALENGKA', 'Instansi Pemerintah / Layanan Publik', 'rpl', 'Jl. Pangeran Muhamad, Simpeureum, Kec. Cigasong, Kabupaten Majalengka', 'belum di ketahui', '00000', 'Aktif', '2026-09-25 00:52:56', '2026-09-25 00:52:56'),
+(52, 'FAKULTAS TEKNIK UNIVERSITAS MAJALENGKA', 'Jasa Pendidikan', 'rpl', 'Jl. Raya K H Abdul Halim No.103, Majalengka Kulon, Kec. Majalengka, Kabupaten Majalengka, Jawa Barat 45418', 'Dr. Indra A. Budiman, M.Pd.', '0000', 'Aktif', '2026-09-25 00:54:17', '2026-09-25 00:54:17'),
+(53, 'BAWASLU MAJALENGKA', 'Instansi Pemerintah / Layanan Publik', 'rpl', 'Jl. Letkol Abd. Gani No.7, Majalengka Wetan, Kec. Majalengka, Kabupaten Majalengka, Jawa Barat 45418', 'Dede Rosada, S.H., SPd', '0233 (8292244)', 'Aktif', '2026-09-25 00:56:12', '2026-09-25 00:56:12'),
+(54, 'DINAS PENANAMAN MODAL DAN PELAYANAN TERPADU SATU PINTU (DPMPTSP)', 'Instansi Pemerintah / Layanan Publik', 'rpl', 'Jl. K.H.Abdul Halim No.97, Majalengka Kulon, Kec. Majalengka, Kabupaten Majalengka', 'Johansyah, SE.', '(0233) 8286599', 'Aktif', '2026-09-25 00:58:01', '2026-09-25 00:58:01'),
+(55, 'BANK BJB MAJALENGKA', 'Perbankan', 'rpl', 'Jl. Raya K H Abdul Halim No.224, Majalengka Kulon, Kec. Majalengka, Kab. Majalengka, Jawa Barat 45418', 'Marga Budikarsa Gazali', '\'0233 281156', 'Aktif', '2026-09-25 00:59:35', '2026-09-25 00:59:35'),
+(56, 'Kepala Dinas Arsip dan Perpustakaan Daerah Kab. Majalengka', 'Instansi Pemerintah / Layanan Publik', 'rpl', 'cicenang, Kec. Cigasong, Kabupaten Majalengka, Jawa Barat 45476', ' Gun Gun Mochamad Dharmadi, S.H., M.Pd.', '00000', 'Aktif', '2026-09-25 01:00:57', '2026-09-25 01:00:57'),
+(57, 'KPU MAJALENGKA', 'Instansi Pemerintah / Layanan Publik', 'rpl', 'Jl. Gerakan Koperasi I No.18 Kabupaten Majalengka Jawa Barat 45411', 'Teguh Fajar Putra Utama, M.Pd.', '(0233) 282480', 'Aktif', '2026-09-25 01:02:12', '2026-09-25 01:02:12'),
+(58, 'DINAS PENDIDIKAN KABUPATEN MAJALENGKA', 'Instansi Pemerintah / Layanan Publik', 'rpl', 'Majalengka Wetan, Majalengka Sub-District, Majalengka Regency, West Java 45411', 'H. Rd. Muhammad Umar Ma\'ruf, S. Sos., M. Si. ', '0000', 'Aktif', '2026-09-25 01:03:21', '2026-09-25 01:03:21'),
+(59, 'DINAS PARIWISATA MAJALENGKA', 'Instansi Pemerintah / Layanan Publik', 'rpl', 'Jl. Raya K H Abdul Halim No.333, Majalengka Wetan, Kec. Majalengka, Kabupaten Majalengka, Jawa Barat 45411', 'Dr. H. IDA HERIYANI, S.K.M., M.H.', '0000', 'Aktif', '2026-09-25 01:04:24', '2026-09-25 01:04:24'),
+(60, 'DINAS SOSIAL KABUPATEN MAJALENGKA', 'Instansi Pemerintah / Layanan Publik', 'rpl', 'Jl. K.H. Abdul Halim No. 498 Majalengka', 'Ida Widanengsih, S.Kep., Ners ', '(0233)281122', 'Aktif', '2026-09-25 01:05:31', '2026-09-25 01:05:31'),
+(61, 'SERVICE AB ELEKTRONIK', 'Perdagangan & service elektronika', 'te', 'Blok Suka Asih,Desa Banjaran Kec. Maja Kab. Majalengka', 'Abung Kusman', '89685620040', 'Aktif', '2026-09-25 01:06:47', '2026-09-25 01:06:47'),
+(62, 'PT. WIJAYA KARYA BETON', 'Produsen konstruksi teknik', 'te', 'Jl. Raya Barat Burujul Kulon Kec. Jatiwangi Kab. Majalengka', 'Erwin Dewata', '082116212212', 'Aktif', '2026-09-25 01:08:44', '2026-09-25 01:08:44'),
+(63, 'CALVIN COMPUTER', 'Perdagangan & service elektronika', 'te', 'Jl. Raya Ciborelang No.84 Desa Ciborelang Kec. Jatiwangi Kab. Majalengka', 'Nanda Mawansa', '81220838548', 'Aktif', '2026-09-25 01:11:25', '2026-09-25 01:11:25'),
+(64, 'PT. METROPOLITAN JAYA RAYA', 'Jasa transportasi', 'te', 'Desa Tegalsari Kec. Maja Kab. Majalengka', 'Sutisna Sudianto', '0233 284335', 'Aktif', '2026-09-25 01:12:51', '2026-09-25 01:12:51'),
+(65, '7SORA CONSULTANT', 'Konsultan audio, perdagangan & service elektronika', 'te', 'Desa Sindang Kec. Sindang Kab. Majalengka', 'Hj. Dian Novita', '087717913966', 'Aktif', '2026-09-25 01:14:13', '2026-09-25 01:14:13'),
+(66, 'ENCANG MANDIRI', 'jasa service elektronika', 'te', 'Desa Salagedang Kec. Sukahaji Kab. Majalengka', 'Encang', '089674143899', 'Aktif', '2026-09-25 01:15:38', '2026-09-25 01:15:38'),
+(67, 'WARINGIN SERVIS', 'jasa service elektronika', 'te', 'Desa Waringin Kec. Palasah Kab. Majalengka', 'Indra', '085316386779', 'Aktif', '2026-09-25 01:17:18', '2026-09-25 01:17:18'),
+(68, 'PURTA VARIASI & AUDIO MOBIL', 'Perdagangan & jasa audio mobil', 'te', 'Jl. Siliwangi No.1, Jatipamor Kec. Panyingkiran Kab. Majalengka', 'Jery', '082214046016', 'Aktif', '2026-09-25 01:18:48', '2026-09-25 01:18:48'),
+(69, 'PT. MIWA EKATAMA INDUSTRI', 'Produsen komponen elektronika', 'te', 'Jl. Raya Leuwiliang Baru, Kec. Ligung Kab. Majalengka', 'Suherman', '081324245112', 'Aktif', '2026-09-25 01:20:09', '2026-09-25 01:20:09'),
+(70, 'GREENKOOL AC', 'jasa service AC & elektronika', 'te', 'Jl. K.H. Abdul Halim No.479, Tonjong Kec. Cigasong Kab. Majalengka', 'Abdul Gani', '085220844955', 'Aktif', '2026-09-25 01:21:32', '2026-09-25 01:21:32'),
+(71, 'PT. RADJASYA GALUH PRATAMA', 'Kontraktor listrik & elektronika', 'te', 'Jl. K.H. Abdul Halim, Munjul Kec. Majalengka Kab. Majalengka', 'Maman Suhatman, S.T.', '082318814000', 'Aktif', '2026-09-25 01:22:48', '2026-09-25 01:22:48'),
+(72, 'CERDAS MOTOR', 'Perdagangan & jasa audio mobil', 'te', 'Jl. Pasukan Sindangkasih No.84 Cigasong, Kec. Cigasong Kab. Majalengka', 'Yogi Permana, S.E.', '081395819858', 'Aktif', '2026-09-25 01:24:19', '2026-09-25 01:24:19'),
+(73, 'A BURHAN SUBUR ELEKTRONIK', 'jasa service elektronika', 'te', 'Jl. Pejuang, Sindangkasih Kec. Majalengka Kab. Majalengka', 'Dadi Wahdaena', '08122432518', 'Aktif', '2026-09-25 01:25:57', '2026-09-25 01:25:57'),
+(74, 'MUTIARA DIESEL', 'jasa service elektronika', 'te', 'Jl. Pejuang, Cicurug Kec. Majalengka Kab. Majalengka', 'Kadim', '085723294409', 'Aktif', '2026-09-25 01:27:43', '2026-09-25 01:27:43'),
+(75, 'HECA PRIMA AUDIOWORK', 'Perdagangan & jasa audio mobil', 'te', 'Jl. Raya Pasar Cigasong, Kec. Cigasong Kab. Majalengka', 'Hendra Juniarto', '082318620284', 'Aktif', '2026-09-25 01:29:30', '2026-09-25 01:29:30'),
+(76, 'CV. GEMILANG MANDIRI', 'Jasa sound system', 'te', 'Jl. Selapraja, Maja Selatan Kec. Maja Kab. Majalengka', 'Chandra Irawan', '085223331631', 'Aktif', '2026-09-25 01:30:53', '2026-09-25 01:30:53'),
+(77, 'FAMILY ELEKTRONIK', 'Perdagangan & service elektronika', 'te', 'Komplek Pasar Maja Selatan, Kec. Maja Kab. Majalengka', 'Eka Rudianto', '08121474492', 'Aktif', '2026-09-25 01:32:05', '2026-09-25 01:32:05'),
+(78, 'PT. MOMENTA AGRIKULTURA ', 'Budidaya Pertanian', 'at', 'Jl. Cisaroni,Cikahuripan-Lembang', 'Deddy Suhariyanto, S.P', '081121114443', 'Aktif', '2026-09-25 01:34:26', '2026-09-25 01:34:26'),
+(79, 'BBPP LEMBANG ', 'Pusat Pelatihan Pertanian dan Pedesaan Swadaya', 'at', 'Jl. Kayu Ambon No. 82 Desa Kayu Ambon, Kec. Lembang, Kab. Bandung Barat', 'Dr. Ir. Ajat Jatnika, M.Sc. ', '(022) 2786234', 'Aktif', '2026-09-25 01:35:56', '2026-09-25 01:35:56'),
+(80, 'P4S TANI MANDIRI ', 'Pusat Pelatihan Pertanian dan Pedesaan Swadaya', 'at', 'Jl. Raya Rajagaluh Desa Pajajar-Sindang', 'H. Jalil', '081324073544', 'Aktif', '2026-09-25 01:37:12', '2026-09-25 01:37:12'),
+(81, 'TAMAN BUNGA', 'Budidaya Tanaman Hias', 'at', 'Desa Argalingga-Argapura', 'Dede Anwar Muklar, S.P', '082318370726', 'Aktif', '2026-09-25 01:38:15', '2026-09-25 01:38:15'),
+(82, 'SAUNG HIDROPONIK  WA ADI ', 'Pusat Pelatihan Pertanian dan Pedesaan Swadaya', 'at', 'Desa Gunung Manik-Kecamatan Talaga, Kabupaten Majalengka', 'Adi Nuryanto, S.P', '081224557084', 'Aktif', '2026-09-25 01:39:17', '2026-09-25 01:39:17'),
+(83, 'P4S AN NABAWIE AGROLESTARI ', 'Pusat Pelatihan Pertanian dan Pedesaan Swadaya', 'at', 'Desa Majasari- Kecamatan Palasah, Kabupaten Majalengka', 'Jajang Ade Rukmana, S.P', '082353819443', 'Aktif', '2026-09-25 01:40:46', '2026-09-25 01:40:46'),
+(84, 'P4S OKIGARU PRIANGAN ', 'Pusat Pelatihan Pertanian dan Pedesaan Swadaya', 'at', 'Jl. Salawangi Desa Silihwangi-Bantarujeg', 'Dede Ahmad Ade Robi Amd,. ANT III', '085742607257', 'Aktif', '2026-09-25 01:41:55', '2026-09-25 01:41:55');
 
 -- --------------------------------------------------------
 
@@ -259,7 +303,7 @@ CREATE TABLE IF NOT EXISTS `users` (
 
 INSERT INTO `users` (`id_user`, `username`, `password`, `nama_lengkap`, `jabatan`, `created_at`) VALUES
 (1, 'admin', 'admin123', 'Administrator Humas', 'Admin', '2026-09-08 09:21:53'),
-(3, 'zahra', '$2y$10$JpwdjwakbmGsQcv3/ZekzODaZ6TBzSEKO8nLog.9zgtFms6/IRlPm', 'kayla', 'Staf Humas', '2026-09-16 05:48:43');
+(3, 'zahra', '250309', 'kayla', 'Staf Humas', '2026-09-16 05:48:43');
 
 --
 -- Constraints for dumped tables
