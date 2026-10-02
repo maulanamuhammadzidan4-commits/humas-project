@@ -5,8 +5,8 @@ require_once '../backend/repositories/bootstrap.php';
 require_once 'includes/auth.php';
 
 $search = trim($_GET['search'] ?? '');
-$page   = max(1, (int)($_GET['page'] ?? 1));
-$limit  = 10;
+$page = max(1, (int)($_GET['page'] ?? 1));
+$limit = 10;
 $offset = ($page - 1) * $limit;
 
 $total = UserRepository::countWithSearch($koneksi, $search);
@@ -32,10 +32,10 @@ $page_title = "Manajemen User";
     <?php include 'includes/header.php'; ?>
     <main class="admin-content">
         <?php if (isset($_GET['msg'])): ?>
-        <div class="alert alert-<?= htmlspecialchars($_GET['type'] ?? 'success') ?> flash-alert">
-            <i class="fa-solid fa-circle-check"></i>
-            <?= htmlspecialchars(urldecode($_GET['msg'])) ?>
-        </div>
+            <div class="alert alert-<?= htmlspecialchars($_GET['type'] ?? 'success') ?> flash-alert">
+                <i class="fa-solid fa-circle-check"></i>
+                <?= htmlspecialchars(urldecode($_GET['msg'])) ?>
+            </div>
         <?php endif; ?>
 
         <div class="page-header">
@@ -71,7 +71,9 @@ $page_title = "Manajemen User";
                         <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Cari username, nama...">
                     </div>
                     <button type="submit" class="btn btn-outline btn-sm"><i class="fa-solid fa-search"></i></button>
-                    <?php if ($search): ?><a href="users.php" class="btn btn-outline btn-sm"><i class="fa-solid fa-xmark"></i></a><?php endif; ?>
+                    <?php if ($search): ?>
+                        <a href="users.php" class="btn btn-outline btn-sm"><i class="fa-solid fa-xmark"></i></a>
+                    <?php endif; ?>
                 </form>
             </div>
             <div class="table-wrapper">
@@ -93,10 +95,10 @@ $page_title = "Manajemen User";
                         $is_me = $row['id_user'] == $_SESSION['user_id'];
                     ?>
                         <tr <?= $is_me ? 'style="background:var(--blue-light);"' : '' ?>>
-                            <td class="td-no"><?= $offset+$i+1 ?></td>
+                            <td class="td-no"><?= $offset + $i + 1 ?></td>
                             <td>
                                 <div class="user-cell">
-                                    <div class="user-avatar-cell"><?= strtoupper(substr($row['nama_lengkap'],0,1)) ?></div>
+                                    <div class="user-avatar-cell"><?= strtoupper(substr($row['nama_lengkap'], 0, 1)) ?></div>
                                     <div>
                                         <span style="font-weight:700;"><?= htmlspecialchars($row['nama_lengkap']) ?></span>
                                         <?= $is_me ? '<span class="badge badge-blue" style="margin-left:6px;font-size:.65rem;">Anda</span>' : '' ?>
@@ -123,13 +125,13 @@ $page_title = "Manajemen User";
             </div>
             <?php if ($total_pages > 1): ?>
             <div class="pagination">
-                <span class="pagination-info">Menampilkan <?= $offset+1 ?>–<?= min($offset+$limit,$total) ?> dari <?= $total ?></span>
+                <span class="pagination-info">Menampilkan <?= $offset + 1 ?>–<?= min($offset + $limit, $total) ?> dari <?= $total ?></span>
                 <div class="pagination-btns">
-                    <?php if ($page > 1): ?><a href="?page=<?= $page-1 ?>&search=<?= urlencode($search) ?>" class="page-btn"><i class="fa-solid fa-chevron-left"></i></a><?php endif; ?>
-                    <?php for ($p=max(1,$page-2); $p<=min($total_pages,$page+2); $p++): ?>
-                        <a href="?page=<?= $p ?>&search=<?= urlencode($search) ?>" class="page-btn <?= $p==$page?'active':'' ?>"><?= $p ?></a>
+                    <?php if ($page > 1): ?><a href="?page=<?= $page - 1 ?>&search=<?= urlencode($search) ?>" class="page-btn"><i class="fa-solid fa-chevron-left"></i></a><?php endif; ?>
+                    <?php for ($p = max(1, $page - 2); $p <= min($total_pages, $page + 2); $p++): ?>
+                        <a href="?page=<?= $p ?>&search=<?= urlencode($search) ?>" class="page-btn <?= $p == $page ? 'active' : '' ?>"><?= $p ?></a>
                     <?php endfor; ?>
-                    <?php if ($page < $total_pages): ?><a href="?page=<?= $page+1 ?>&search=<?= urlencode($search) ?>" class="page-btn"><i class="fa-solid fa-chevron-right"></i></a><?php endif; ?>
+                    <?php if ($page < $total_pages): ?><a href="?page=<?= $page + 1 ?>&search=<?= urlencode($search) ?>" class="page-btn"><i class="fa-solid fa-chevron-right"></i></a><?php endif; ?>
                 </div>
             </div>
             <?php endif; ?>
