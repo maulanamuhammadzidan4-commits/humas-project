@@ -41,9 +41,10 @@ $page_title = "Lowongan Kerja";
 
         <!-- FLASH MESSAGE -->
         <?php if (isset($_GET['msg'])): ?>
-            <div class="alert alert-<?= htmlspecialchars($_GET['type'] ?? 'success') ?> flash-alert">
-                <i class="fa-solid fa-circle-check"></i>
-                <?= htmlspecialchars(urldecode($_GET['msg'])) ?>
+            <?php $message_type = $_GET['type'] ?? 'success'; ?>
+            <div class="alert alert-<?= htmlspecialchars($message_type) ?> flash-alert">
+                <i class="fa-solid <?= $message_type === 'danger' ? 'fa-triangle-exclamation' : 'fa-circle-check' ?>"></i>
+                <?= htmlspecialchars($_GET['msg'], ENT_QUOTES, 'UTF-8') ?>
             </div>
         <?php endif; ?>
 

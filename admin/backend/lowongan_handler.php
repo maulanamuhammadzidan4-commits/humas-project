@@ -16,7 +16,7 @@ function redirect_lowongan(
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect_lowongan(
         'Akses tidak valid.',
-        'error'
+        'danger'
     );
 }
 
@@ -48,7 +48,7 @@ if ($action === 'tambah') {
     ) {
         redirect_lowongan(
             'Semua data wajib diisi dengan benar.',
-            'error'
+            'danger'
         );
     }
 
@@ -56,7 +56,7 @@ if ($action === 'tambah') {
     if (!PerusahaanRepository::findById($koneksi, $perusahaan_id)) {
         redirect_lowongan(
             'Perusahaan yang dipilih tidak ditemukan.',
-            'error'
+            'danger'
         );
     }
 
@@ -76,7 +76,7 @@ if ($action === 'tambah') {
 
     redirect_lowongan(
         'Gagal menambahkan lowongan.',
-        'error'
+        'danger'
     );
 
 }
@@ -129,7 +129,7 @@ if ($action === 'edit') {
 
         redirect_lowongan(
             'Data edit tidak lengkap.',
-            'error'
+            'danger'
         );
 
     }
@@ -156,7 +156,7 @@ if ($action === 'edit') {
 
     redirect_lowongan(
         'Gagal memperbarui lowongan.',
-        'error'
+        'danger'
     );
 
 }
@@ -178,7 +178,7 @@ if ($action === 'hapus') {
 
         redirect_lowongan(
             'ID lowongan tidak valid.',
-            'error'
+            'danger'
         );
 
     }
@@ -190,7 +190,7 @@ if ($action === 'hapus') {
 
     redirect_lowongan(
         'Data lowongan tidak ditemukan.',
-        'error'
+        'danger'
     );
 
 }
@@ -204,5 +204,5 @@ if ($action === 'hapus') {
 
 redirect_lowongan(
     'Aksi tidak dikenali.',
-    'error'
+    'danger'
 );
