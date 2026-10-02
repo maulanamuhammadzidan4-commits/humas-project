@@ -9,7 +9,7 @@ final class PerusahaanRepository
             $connection,
             "SELECT COUNT(*) AS total FROM perusahaan$where",
             $search === '' ? '' : 'ss',
-            $search === '' ? [] : ["%$search%", "%$search%"]
+            $search === '' ? [] : array_fill(0, 2, RepositoryQuery::likePattern($search))
         );
 
         return (int)($row['total'] ?? 0);
@@ -21,7 +21,7 @@ final class PerusahaanRepository
         $types = $search === '' ? 'ii' : 'ssii';
         $params = $search === ''
             ? [$limit, $offset]
-            : ["%$search%", "%$search%", $limit, $offset];
+            : [RepositoryQuery::likePattern($search), RepositoryQuery::likePattern($search), $limit, $offset];
 
         return RepositoryQuery::fetchAll(
             $connection,
@@ -47,6 +47,16 @@ final class PerusahaanRepository
     public static function findByName(mysqli $connection, string $name): ?array
     {
         return RepositoryQuery::fetchOne($connection, 'SELECT id FROM perusahaan WHERE nama_perusahaan = ? LIMIT 1', 's', [$name]);
+    }
+
+    public static function findUniqueByName(mysqli $connection, string $name): ?array
+    {
+        $matches = RepositoryQuery::fetchAll($connection, 'SELECT id FROM perusahaan WHERE nama_perusahaan = ? LIMIT 2', 's', [$name]);
+        if (count($matches) > 1) {
+            throw new InvalidArgumentException('Nama perusahaan tidak unik; pastikan hanya ada satu perusahaan dengan nama tersebut.');
+        }
+
+        return $matches[0] ?? null;
     }
 
     public static function create(mysqli $connection, array $data): bool

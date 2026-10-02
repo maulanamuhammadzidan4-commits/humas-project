@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../../backend/connection.php';
+require_once '../../backend/helpers.php';
 require_once '../../backend/repositories/bootstrap.php';
 
 if (!isset($_SESSION['login_attempts'])) {
@@ -25,23 +26,26 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$username = trim($_POST['username'] ?? '');
-$password = trim($_POST['password'] ?? '');
-
-if ($username === '' || $password === '') {
-    $_SESSION['login_error'] = "Username dan password wajib diisi!";
-    header("Location: ../login_admin.php");
-    exit;
-}
-
 try {
+    verifyCsrfToken($_POST['csrf_token'] ?? null);
+    $username = validateString($_POST['username'] ?? null, 'Username', 1, 50);
+    $password = $_POST['password'] ?? null;
+
+    if (!is_string($password) || $password === '' || strlen($password) > 255) {
+        throw new InvalidArgumentException('Username dan password wajib diisi.');
+    }
+
     $user = UserRepository::findByUsername($koneksi, $username);
 
     $password_benar = false;
     if ($user) {
-        if (password_verify($password, $user['password'])) {
+        $storedPassword = (string) $user['password'];
+        if (password_verify($password, $storedPassword)) {
             $password_benar = true;
-        } elseif ($password === $user['password']) {
+        } elseif (password_get_info($storedPassword)['algo'] === null && hash_equals($storedPassword, $password)) {
+            if (!UserRepository::updatePassword($koneksi, (int) $user['id_user'], password_hash($password, PASSWORD_DEFAULT))) {
+                throw new RuntimeException('Gagal memperbarui kredensial akun lama.');
+            }
             $password_benar = true;
         }
     }
@@ -54,6 +58,7 @@ try {
 
         // Regenerasi session untuk keamanan
         session_regenerate_id(true);
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 
         // Simpan data user ke session
         $_SESSION['user_id']      = $user['id_user'];
@@ -78,8 +83,13 @@ try {
         header("Location: ../login_admin.php");
         exit;
     }
-} catch (Exception $e) {
-    $_SESSION['login_error'] = "Terjadi kesalahan sistem: " . $e->getMessage();
+} catch (InvalidArgumentException $e) {
+    $_SESSION['login_error'] = $e->getMessage();
+    header("Location: ../login_admin.php");
+    exit;
+} catch (Throwable $e) {
+    error_log('Login handler error: ' . $e->getMessage());
+    $_SESSION['login_error'] = "Terjadi kesalahan sistem. Silakan coba kembali.";
     header("Location: ../login_admin.php");
     exit;
 }

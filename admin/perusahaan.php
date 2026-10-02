@@ -4,13 +4,15 @@ require_once '../backend/connection.php';
 require_once '../backend/repositories/bootstrap.php';
 require_once 'includes/auth.php';
 
-$search = trim($_GET['search'] ?? '');
-$page   = max(1, (int)($_GET['page'] ?? 1));
+$search = is_string($_GET['search'] ?? null) ? trim($_GET['search']) : '';
+$requestedPage = filter_var($_GET['page'] ?? '1', FILTER_VALIDATE_INT);
+$page = $requestedPage !== false && $requestedPage > 0 ? $requestedPage : 1;
 $limit  = 10;
-$offset = ($page - 1) * $limit;
 
 $total = PerusahaanRepository::countWithSearch($koneksi, $search);
 $total_pages = max(1, (int)ceil($total / $limit));
+$page = min($page, $total_pages);
+$offset = ($page - 1) * $limit;
 $data = PerusahaanRepository::getPaginated($koneksi, $search, $limit, $offset);
 $page_title = "Perusahaan Mitra";
 ?>
@@ -56,7 +58,7 @@ $page_title = "Perusahaan Mitra";
                 <form method="GET" style="display:flex;gap:.5rem;align-items:center;">
                     <div class="search-box">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Cari perusahaan..." id="searchInput">
+                        <input type="text" name="search" maxlength="255" value="<?= htmlspecialchars($search) ?>" placeholder="Cari perusahaan..." id="searchInput">
                     </div>
                     <button type="submit" class="btn btn-outline btn-sm"><i class="fa-solid fa-search"></i></button>
                     <?php if ($search): ?>
@@ -155,34 +157,35 @@ $page_title = "Perusahaan Mitra";
             <button class="modal-close" onclick="closeModal('modalTambah')"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form method="POST" action="backend/perusahaan_handler.php">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="action" value="tambah">
             <div class="modal-body">
                 <div class="form-row">
                     <div class="form-group">
                         <label>Nama Perusahaan <span class="required">*</span></label>
-                        <input type="text" name="nama_perusahaan" class="form-control" required placeholder="PT. Contoh Maju">
+                        <input type="text" name="nama_perusahaan" class="form-control" required maxlength="150" placeholder="PT. Contoh Maju">
                     </div>
                     <div class="form-group">
                         <label>Sektor / Bidang <span class="required">*</span></label>
-                        <input type="text" name="sektor_bidang" class="form-control" required placeholder="Teknologi Informasi">
+                        <input type="text" name="sektor_bidang" class="form-control" required maxlength="100" placeholder="Teknologi Informasi">
                     </div>
                 </div>
                 <div class="form-group">
                     <label>Jurusan <span class="required">*</span></label>
-                    <textarea name="jurusan" class="form-control" required placeholder="Nama Jurusan"></textarea>
+                    <textarea name="jurusan" class="form-control" required maxlength="5000" placeholder="Nama Jurusan"></textarea>
                 </div>
                 <div class="form-group">
                     <label>Alamat <span class="required">*</span></label>
-                    <textarea name="alamat" class="form-control" required placeholder="Jl. Contoh No. 1, Kota..."></textarea>
+                    <textarea name="alamat" class="form-control" required maxlength="5000" placeholder="Jl. Contoh No. 1, Kota..."></textarea>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Penanggung Jawab <span class="required">*</span></label>
-                        <input type="text" name="penanggung_jawab" class="form-control" required placeholder="Nama PIC">
+                        <input type="text" name="penanggung_jawab" class="form-control" required maxlength="100" placeholder="Nama PIC">
                     </div>
                     <div class="form-group">
                         <label>No. Telepon <span class="required">*</span></label>
-                        <input type="text" name="no_telepon" class="form-control" required placeholder="0812-xxxx-xxxx">
+                        <input type="text" name="no_telepon" class="form-control" required maxlength="20" pattern="[0-9+(). -]+" placeholder="0812-xxxx-xxxx">
                     </div>
                 </div>
                 <div class="form-row">
@@ -212,35 +215,36 @@ $page_title = "Perusahaan Mitra";
             <button class="modal-close" onclick="closeModal('modalEdit')"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form method="POST" action="backend/perusahaan_handler.php">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="action" value="edit">
             <input type="hidden" name="id" id="edit_id">
             <div class="modal-body">
                 <div class="form-row">
                     <div class="form-group">
                         <label>Nama Perusahaan <span class="required">*</span></label>
-                        <input type="text" name="nama_perusahaan" id="edit_nama_perusahaan" class="form-control" required>
+                        <input type="text" name="nama_perusahaan" id="edit_nama_perusahaan" class="form-control" required maxlength="150">
                     </div>
                     <div class="form-group">
                         <label>Sektor / Bidang <span class="required">*</span></label>
-                        <input type="text" name="sektor_bidang" id="edit_sektor_bidang" class="form-control" required>
+                        <input type="text" name="sektor_bidang" id="edit_sektor_bidang" class="form-control" required maxlength="100">
                     </div>
                 </div>
                 <div class="form-group">
                     <label>Jurusan <span class="required">*</span></label>
-                    <textarea name="jurusan" id="edit_jurusan" class="form-control" required></textarea>
+                    <textarea name="jurusan" id="edit_jurusan" class="form-control" required maxlength="5000"></textarea>
                 </div>
                 <div class="form-group">
                     <label>Alamat <span class="required">*</span></label>
-                    <textarea name="alamat" id="edit_alamat" class="form-control" required></textarea>
+                    <textarea name="alamat" id="edit_alamat" class="form-control" required maxlength="5000"></textarea>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Penanggung Jawab <span class="required">*</span></label>
-                        <input type="text" name="penanggung_jawab" id="edit_penanggung_jawab" class="form-control" required>
+                        <input type="text" name="penanggung_jawab" id="edit_penanggung_jawab" class="form-control" required maxlength="100">
                     </div>
                     <div class="form-group">
                         <label>No. Telepon <span class="required">*</span></label>
-                        <input type="text" name="no_telepon" id="edit_no_telepon" class="form-control" required>
+                        <input type="text" name="no_telepon" id="edit_no_telepon" class="form-control" required maxlength="20" pattern="[0-9+(). -]+">
                     </div>
                 </div>
                 <div class="form-row">
@@ -264,6 +268,7 @@ $page_title = "Perusahaan Mitra";
 
 <!-- ══ FORM HAPUS (hidden) ══ -->
 <form method="POST" action="backend/perusahaan_handler.php" id="formHapus">
+    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
     <input type="hidden" name="action" value="hapus">
     <input type="hidden" name="id" id="hapus_id">
 </form>

@@ -6,17 +6,19 @@ require_once '../backend/repositories/bootstrap.php';
 require_once 'includes/auth.php';
 
 /*--PENCARIAN & PAGINATION--*/
-$search = trim($_GET['search'] ?? '');
-$page   = max(1, (int)($_GET['page'] ?? 1));
+$search = is_string($_GET['search'] ?? null) ? trim($_GET['search']) : '';
+$requestedPage = filter_var($_GET['page'] ?? '1', FILTER_VALIDATE_INT);
+$page = $requestedPage !== false && $requestedPage > 0 ? $requestedPage : 1;
 
 $limit  = 10;
-$offset = ($page - 1) * $limit;
 
 $total = LowonganRepository::countWithSearch($koneksi, $search);
 $total_pages = max(
     1,
     (int)ceil($total / $limit)
 );
+$page = min($page, $total_pages);
+$offset = ($page - 1) * $limit;
 
 $data = LowonganRepository::getPaginated($koneksi, $search, $limit, $offset);
 $perusahaan_list = PerusahaanRepository::getOptions($koneksi);
@@ -77,8 +79,7 @@ $page_title = "Lowongan Kerja";
                 <form method="GET" style="display:flex;gap:.5rem;align-items:center;">
                     <div class="search-box">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" name="search" value="<?= htmlspecialchars($search) ?>
-                            "placeholder="Cari posisi / perusahaan...">
+                        <input type="text" name="search" maxlength="255" value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8') ?>" placeholder="Cari posisi / perusahaan...">
                     </div>
 
                     <button type="submit" class="btn btn-outline btn-sm">
@@ -250,6 +251,7 @@ $page_title = "Lowongan Kerja";
         </div>
 
         <form method="POST" action="backend/lowongan_handler.php">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="action" value="tambah">
             <div class="modal-body">
 
@@ -288,7 +290,7 @@ $page_title = "Lowongan Kerja";
                     <label>
                         Deskripsi<span class="required">*</span>
                     </label>
-                    <textarea name="deskripsi_pekerjaan" class="form-control" required rows="5" placeholder="Deskripsi pekerjaan dan persyaratan..."></textarea>
+                    <textarea name="deskripsi_pekerjaan" class="form-control" required maxlength="10000" rows="5" placeholder="Deskripsi pekerjaan dan persyaratan..."></textarea>
                 </div>
 
                 <!-- KUOTA + BATAS -->
@@ -297,7 +299,7 @@ $page_title = "Lowongan Kerja";
                         <label>
                             Kuota<span class="required">*</span>
                         </label>
-                        <input type="number" name="kuota" class="form-control" required min="1" placeholder="5">
+                        <input type="number" name="kuota" class="form-control" required min="1" max="2147483647" placeholder="5">
                     </div>
                     <div class="form-group">
                         <label>
@@ -352,6 +354,7 @@ $page_title = "Lowongan Kerja";
         </div>
 
         <form method="POST" action="backend/lowongan_handler.php">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="action" value="edit">
             <input type="hidden" name="id" id="e_id">
             <div class="modal-body">
@@ -386,7 +389,7 @@ $page_title = "Lowongan Kerja";
                     <label>
                         Deskripsi<span class="required">*</span>
                     </label>
-                    <textarea name="deskripsi_pekerjaan" id="e_deskripsi_pekerjaan" class="form-control" required rows="5"></textarea>
+                    <textarea name="deskripsi_pekerjaan" id="e_deskripsi_pekerjaan" class="form-control" required maxlength="10000" rows="5"></textarea>
                 </div>
 
                 <!-- KUOTA + BATAS -->
@@ -395,7 +398,7 @@ $page_title = "Lowongan Kerja";
                         <label>
                             Kuota<span class="required">*</span>
                         </label>
-                        <input type="number" name="kuota" id="e_kuota" class="form-control" required min="1">
+                        <input type="number" name="kuota" id="e_kuota" class="form-control" required min="1" max="2147483647">
                     </div>
                     <div class="form-group">
                         <label>
@@ -433,6 +436,7 @@ $page_title = "Lowongan Kerja";
 
 <!--FORM HAPUS -->
 <form method="POST" action="backend/lowongan_handler.php" id="formHapus">
+    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
     <input type="hidden" name="action" value="hapus">
     <input type="hidden" name="id" id="hapus_id">
 </form>

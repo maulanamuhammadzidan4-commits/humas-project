@@ -15,16 +15,19 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-if (isset($_POST['terima_pesan'])) {
-    $id_kontak = (int) ($_POST['id_kontak'] ?? 0);
+try {
+    verifyCsrfToken($_POST['csrf_token'] ?? null);
 
-    if ($id_kontak <= 0) {
-        redirectPesan('ID pesan tidak valid.', 'danger');
+    if (isset($_POST['terima_pesan'])) {
+        $id_kontak = validateInteger($_POST['id_kontak'] ?? null, 'ID pesan', 1, 2147483647);
+
+        if (!KontakRepository::markAsRead($koneksi, $id_kontak)) {
+            throw new RuntimeException('Gagal memperbarui status pesan.');
+        }
+        redirectPesan('Pesan berhasil ditandai sebagai sudah diterima.');
     }
 
-    KontakRepository::markAsRead($koneksi, $id_kontak);
-    redirectPesan('Pesan berhasil ditandai sebagai sudah diterima.');
+    throw new InvalidArgumentException('Aksi pesan tidak valid.');
+} catch (Throwable $e) {
+    redirectPesan('Gagal: ' . $e->getMessage(), 'danger');
 }
-
-header('Location: ../pesan.php');
-exit;

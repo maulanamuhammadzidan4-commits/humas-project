@@ -2,6 +2,11 @@
 
 final class RepositoryQuery
 {
+    public static function likePattern(string $search): string
+    {
+        return '%' . addcslashes($search, '\\%_') . '%';
+    }
+
     private static function prepare(mysqli $connection, string $sql, string $types, array $params): mysqli_stmt
     {
         $statement = mysqli_prepare($connection, $sql);

@@ -28,7 +28,8 @@ $page_title = "Dashboard";
 
         <!-- Flash Messages -->
         <?php if (isset($_GET['msg'])): ?>
-        <div class="alert alert-<?= $_GET['type'] ?? 'success' ?> flash-alert">
+        <?php $alertType = in_array($_GET['type'] ?? '', ['success', 'danger', 'warning', 'info'], true) ? $_GET['type'] : 'success'; ?>
+        <div class="alert alert-<?= htmlspecialchars($alertType, ENT_QUOTES, 'UTF-8') ?> flash-alert">
             <i class="fa-solid fa-circle-check"></i>
             <?= htmlspecialchars(urldecode($_GET['msg'])) ?>
         </div>

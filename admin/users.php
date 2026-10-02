@@ -4,13 +4,15 @@ require_once '../backend/connection.php';
 require_once '../backend/repositories/bootstrap.php';
 require_once 'includes/auth.php';
 
-$search = trim($_GET['search'] ?? '');
-$page = max(1, (int)($_GET['page'] ?? 1));
+$search = is_string($_GET['search'] ?? null) ? trim($_GET['search']) : '';
+$requestedPage = filter_var($_GET['page'] ?? '1', FILTER_VALIDATE_INT);
+$page = $requestedPage !== false && $requestedPage > 0 ? $requestedPage : 1;
 $limit = 10;
-$offset = ($page - 1) * $limit;
 
 $total = UserRepository::countWithSearch($koneksi, $search);
 $total_pages = max(1, (int)ceil($total / $limit));
+$page = min($page, $total_pages);
+$offset = ($page - 1) * $limit;
 $data = UserRepository::getPaginated($koneksi, $search, $limit, $offset);
 
 $page_title = "Manajemen User";
@@ -68,7 +70,7 @@ $page_title = "Manajemen User";
                 <form method="GET" style="display:flex;gap:.5rem;align-items:center;">
                     <div class="search-box">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Cari username, nama...">
+                        <input type="text" name="search" maxlength="255" value="<?= htmlspecialchars($search) ?>" placeholder="Cari username, nama...">
                     </div>
                     <button type="submit" class="btn btn-outline btn-sm"><i class="fa-solid fa-search"></i></button>
                     <?php if ($search): ?>
@@ -147,26 +149,27 @@ $page_title = "Manajemen User";
             <button class="modal-close" onclick="closeModal('modalTambah')"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form method="POST" action="backend/users_handler.php">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="action" value="tambah">
             <div class="modal-body">
                 <div class="form-row">
                     <div class="form-group">
                         <label>Nama Lengkap <span class="required">*</span></label>
-                        <input type="text" name="nama_lengkap" class="form-control" required placeholder="Nama lengkap admin">
+                        <input type="text" name="nama_lengkap" class="form-control" required maxlength="100" placeholder="Nama lengkap admin">
                     </div>
                     <div class="form-group">
                         <label>Jabatan</label>
-                        <input type="text" name="jabatan" class="form-control" placeholder="Staf Humas" value="Staf Humas">
+                        <input type="text" name="jabatan" class="form-control" maxlength="50" placeholder="Staf Humas" value="Staf Humas">
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Username <span class="required">*</span></label>
-                        <input type="text" name="username" class="form-control" required placeholder="username unik">
+                        <input type="text" name="username" class="form-control" required minlength="3" maxlength="50" pattern="[A-Za-z0-9_.-]+" placeholder="username unik">
                     </div>
                     <div class="form-group">
                         <label>Password <span class="required">*</span></label>
-                        <input type="password" name="password" class="form-control" required placeholder="Min. 6 karakter">
+                        <input type="password" name="password" class="form-control" required minlength="6" maxlength="72" placeholder="Min. 6 karakter (maks. 72 byte)">
                     </div>
                 </div>
             </div>
@@ -186,27 +189,28 @@ $page_title = "Manajemen User";
             <button class="modal-close" onclick="closeModal('modalEdit')"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form method="POST" action="backend/users_handler.php">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="action" value="edit">
             <input type="hidden" name="id_user" id="e_id_user">
             <div class="modal-body">
                 <div class="form-row">
                     <div class="form-group">
                         <label>Nama Lengkap <span class="required">*</span></label>
-                        <input type="text" name="nama_lengkap" id="e_nama_lengkap" class="form-control" required>
+                        <input type="text" name="nama_lengkap" id="e_nama_lengkap" class="form-control" required maxlength="100">
                     </div>
                     <div class="form-group">
                         <label>Jabatan</label>
-                        <input type="text" name="jabatan" id="e_jabatan" class="form-control">
+                        <input type="text" name="jabatan" id="e_jabatan" class="form-control" maxlength="50">
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Username <span class="required">*</span></label>
-                        <input type="text" name="username" id="e_username" class="form-control" required>
+                        <input type="text" name="username" id="e_username" class="form-control" required minlength="3" maxlength="50" pattern="[A-Za-z0-9_.-]+">
                     </div>
                     <div class="form-group">
                         <label>Password Baru <small style="color:var(--slate-400);">(kosongkan jika tidak diganti)</small></label>
-                        <input type="password" name="password" class="form-control" placeholder="Biarkan kosong jika tidak diubah">
+                        <input type="password" name="password" class="form-control" minlength="6" maxlength="72" placeholder="Biarkan kosong jika tidak diubah">
                     </div>
                 </div>
             </div>
@@ -219,6 +223,7 @@ $page_title = "Manajemen User";
 </div>
 
 <form method="POST" action="backend/users_handler.php" id="formHapus">
+    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
     <input type="hidden" name="action" value="hapus">
     <input type="hidden" name="id_user" id="hapus_id">
 </form>

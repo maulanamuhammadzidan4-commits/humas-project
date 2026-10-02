@@ -5,63 +5,52 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/connection.php';
+require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/repositories/bootstrap.php';
 
-/* =====================================
-   PASTIKAN REQUEST BERASAL DARI FORM
-===================================== */
-$referer = $_SERVER['HTTP_REFERER'] ?? '../frontend/index.php#kontak';
-// Pastikan anchor #kontak ada jika belum ada
-$redirect = (strpos($referer, '#kontak') === false) ? $referer . '#kontak' : $referer;
+$redirect = '../frontend/index.php#kontak';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: $redirect");
+    header('Location: ' . $redirect);
     exit;
 }
 
-/* =====================================
-   AMBIL DATA DARI FORM
-===================================== */
-$nama   = trim($_POST['nama'] ?? '');
-$email  = trim($_POST['email'] ?? '');
-$subjek = trim($_POST['subjek'] ?? '');
-$pesan  = trim($_POST['pesan'] ?? '');
-
-/* =====================================
-   VALIDASI DATA
-===================================== */
-if ($nama === '' || $email === '' || $subjek === '' || $pesan === '') {
-    $_SESSION['contact_flash'] = ['type' => 'error', 'message' => 'Semua data wajib diisi.'];
-    header("Location: $redirect");
-    exit;
-}
-
-/* =====================================
-   VALIDASI EMAIL
-===================================== */
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    $_SESSION['contact_flash'] = ['type' => 'error', 'message' => 'Format email tidak valid.'];
-    header("Location: $redirect");
-    exit;
-}
-
-/* =====================================
-   SIMPAN KE DATABASE
-===================================== */
 try {
-    KontakRepository::create($koneksi, [
+    verifyCsrfToken($_POST['csrf_token'] ?? null);
+
+    if (!empty($_POST['website'] ?? '')) {
+        $_SESSION['contact_flash'] = ['type' => 'error', 'message' => 'Pesan tidak dapat dikirim.'];
+        header('Location: ' . $redirect);
+        exit;
+    }
+
+    $nama = validateString($_POST['nama'] ?? null, 'Nama', 1, 100);
+    $email = validateString($_POST['email'] ?? null, 'Email', 1, 150);
+    $subjek = validateString($_POST['subjek'] ?? null, 'Subjek', 1, 200);
+    $pesan = validateString($_POST['pesan'] ?? null, 'Pesan', 1, 5000);
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        throw new InvalidArgumentException('Format email tidak valid.');
+    }
+
+    if (!KontakRepository::create($koneksi, [
         'nama' => $nama,
         'email' => $email,
         'subjek' => $subjek,
         'pesan' => $pesan,
-    ]);
+    ])) {
+        throw new RuntimeException('Gagal menyimpan pesan.');
+    }
 
     $_SESSION['contact_flash'] = ['type' => 'success', 'message' => 'Terima kasih! Pesan Anda berhasil dikirim.'];
-    header("Location: $redirect");
+    header('Location: ' . $redirect);
     exit;
-
-} catch (mysqli_sql_exception $e) {
-    $_SESSION['contact_flash'] = ['type' => 'error', 'message' => 'Pesan gagal disimpan ke database.'];
-    header("Location: $redirect");
+} catch (InvalidArgumentException $e) {
+    $_SESSION['contact_flash'] = ['type' => 'error', 'message' => $e->getMessage()];
+    header('Location: ' . $redirect);
+    exit;
+} catch (Throwable $e) {
+    error_log('Contact handler error: ' . $e->getMessage());
+    $_SESSION['contact_flash'] = ['type' => 'error', 'message' => 'Pesan gagal disimpan. Silakan coba kembali.'];
+    header('Location: ' . $redirect);
     exit;
 }

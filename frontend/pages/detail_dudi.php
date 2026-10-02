@@ -8,7 +8,11 @@ try{
 } catch (Exception $e){
     echo $e->getMessage();
 }
-$id = (int)($_GET['id'] ?? 0);
+$idInput = $_GET['id'] ?? null;
+$id = (is_string($idInput) || is_int($idInput))
+    ? filter_var($idInput, FILTER_VALIDATE_INT)
+    : false;
+$id = $id !== false && $id > 0 ? $id : 0;
 $berita = getBeritaById($koneksi, $id);
 ?>
 <!DOCTYPE html>

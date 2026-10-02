@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once '../backend/helpers.php';
 
 if (isset($_SESSION['user_id']) && !isset($_SESSION['login_success_flash'])) {
     header("Location: dashboard.php");
@@ -88,6 +89,7 @@ if (isset($_SESSION['lockout_time'])) {
             
             <!-- FORM LOGIN -->
             <form action="backend/login_handler.php" method="POST" id="loginForm">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
                 <!-- USERNAME -->
                 <div class="form-group">
                     <label for="username">Username Admin</label>
@@ -96,6 +98,7 @@ if (isset($_SESSION['lockout_time'])) {
                             type="text"
                             id="username"
                             name="username"
+                            maxlength="50"
                             class="form-control"
                             placeholder="Masukkan username"
                             required
@@ -114,6 +117,7 @@ if (isset($_SESSION['lockout_time'])) {
                             type="password"
                             id="password"
                             name="password"
+                            maxlength="255"
                             class="form-control"
                             placeholder="Masukkan password"
                             required

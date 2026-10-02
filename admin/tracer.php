@@ -2,166 +2,18 @@
 session_start();
 
 require_once '../backend/connection.php';
+require_once '../backend/helpers.php';
 require_once '../backend/repositories/bootstrap.php';
 require_once 'includes/auth.php';
 
-/*
-|--------------------------------------------------------------------------
-| PROSES TAMBAH / EDIT / HAPUS
-|--------------------------------------------------------------------------
-*/
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? '';
-
-    /*
-    |--------------------------------------------------------------------------
-    | TAMBAH DATA
-    |--------------------------------------------------------------------------
-    */
-    if ($action === 'tambah') {
-        $nama_siswa = trim($_POST['nama_siswa'] ?? '');
-        $tahun_lulus = (int)($_POST['tahun_lulus'] ?? 0);
-        $status_alumni = trim($_POST['status_alumni'] ?? '');
-        $nama_instansi = trim($_POST['nama_instansi'] ?? '');
-
-        $pendapatan_bulanan = (
-            isset($_POST['pendapatan_bulanan']) &&
-            $_POST['pendapatan_bulanan'] !== ''
-        )
-            ? (int)$_POST['pendapatan_bulanan']
-            : null;
-        /*
-        | Cari ID siswa berdasarkan nama
-        */
-
-        if ($nama_siswa === '') {
-            header("Location: tracer.php?msg=" . urlencode("Nama alumni wajib diisi.") . "&type=danger");
-            exit;
-        }
-
-        $siswa = SiswaRepository::findByName($koneksi, $nama_siswa);
-
-        /*
-        | Jika nama tidak ditemukan
-        */
-        if (!$siswa) {
-            header("Location: tracer.php?msg=" . urlencode("Nama alumni \"$nama_siswa\" tidak ditemukan di data siswa.") . "&type=danger");
-            exit;
-        }
-
-        $siswa_id = (int)$siswa['id'];
-
-        /*
-        | Simpan ke tracer_study
-        */
-        if (TracerRepository::create($koneksi, [
-            'siswa_id' => $siswa_id,
-            'tahun_lulus' => $tahun_lulus,
-            'status_alumni' => $status_alumni,
-            'nama_instansi' => $nama_instansi,
-            'pendapatan_bulanan' => $pendapatan_bulanan,
-        ])) {
-            header("Location: tracer.php?msg=" . urlencode("Data tracer untuk $nama_siswa berhasil ditambahkan.") . "&type=success");
-            exit;
-        }
-        die("Gagal menyimpan data tracer.");
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | EDIT DATA
-    |--------------------------------------------------------------------------
-    */
-    if ($action === 'edit') {
-        $id = (int)($_POST['id'] ?? 0);
-        $nama_siswa = trim($_POST['nama_siswa'] ?? '');
-        $tahun_lulus = (int)($_POST['tahun_lulus'] ?? 0);
-        $status_alumni = trim($_POST['status_alumni'] ?? '');
-        $nama_instansi = trim($_POST['nama_instansi'] ?? '');
-
-        $pendapatan_bulanan = (isset($_POST['pendapatan_bulanan']) && $_POST['pendapatan_bulanan'] !== '') ? (int)$_POST['pendapatan_bulanan'] : null;
-
-        /*
-        | Validasi
-        */
-        if ($id <= 0 || $nama_siswa === '') {
-            header("Location: tracer.php?msg=" . urlencode("Data edit tidak lengkap.") . "&type=danger");
-            exit;
-        }
-
-        /*
-        | Cari ID siswa berdasarkan nama
-        */
-        $siswa = SiswaRepository::findByName($koneksi, $nama_siswa);
-
-        if (!$siswa) {
-            header("Location: tracer.php?msg=" . urlencode("Nama alumni \"$nama_siswa\" tidak ditemukan.") . "&type=danger");
-            exit;
-        }
-
-        $siswa_id = (int)$siswa['id'];
-
-        /*
-        | Update
-        */
-        if (TracerRepository::update($koneksi, $id, [
-            'siswa_id' => $siswa_id,
-            'tahun_lulus' => $tahun_lulus,
-            'status_alumni' => $status_alumni,
-            'nama_instansi' => $nama_instansi,
-            'pendapatan_bulanan' => $pendapatan_bulanan,
-        ])) {
-            header("Location: tracer.php?msg=" . urlencode("Data tracer berhasil diperbarui.") . "&type=success");
-            exit;
-        }
-
-        die("Gagal memperbarui data tracer.");
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | HAPUS DATA
-    |--------------------------------------------------------------------------
-    */
-    if ($action === 'hapus') {
-        $id = (int)($_POST['id'] ?? 0);
-
-        if ($id <= 0) {
-            header("Location: tracer.php?msg=" . urlencode("ID data tidak valid.") . "&type=danger");
-            exit;
-        }
-
-        if (TracerRepository::delete($koneksi, $id)) {
-            header("Location: tracer.php?msg=" . urlencode("Data tracer berhasil dihapus.") . "&type=success");
-            exit;
-        }
-
-        die("Gagal menghapus data tracer.");
-    }
-}
-
-/*
-|--------------------------------------------------------------------------
-| PENGATURAN
-|--------------------------------------------------------------------------
-*/
-$search = trim($_GET['search'] ?? '');
-
-$page = max(1, (int)($_GET['page'] ?? 1));
-
+$search = is_string($_GET['search'] ?? null) ? trim($_GET['search']) : '';
+$requestedPage = filter_var($_GET['page'] ?? '1', FILTER_VALIDATE_INT);
+$page = $requestedPage !== false && $requestedPage > 0 ? $requestedPage : 1;
 $limit = 10;
-
-$offset = ($page - 1) * $limit;
-
-
-/*
-|--------------------------------------------------------------------------
-| PENCARIAN
-|--------------------------------------------------------------------------
-*/
 $total = TracerRepository::countWithSearch($koneksi, $search);
 $total_pages = max(1, (int)ceil($total / $limit));
+$page = min($page, $total_pages);
+$offset = ($page - 1) * $limit;
 $data = TracerRepository::getPaginated($koneksi, $search, $limit, $offset);
 $tracer_stats = TracerRepository::getStatistics($koneksi);
 $total_tracer = $tracer_stats['total'];
@@ -232,7 +84,7 @@ $page_title = "Tracer Study";
 					<form method="GET" style="display:flex;gap:.5rem;align-items:center;">
 						<div class="search-box">
 							<i class="fa-solid fa-magnifying-glass"></i>
-							<input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Cari nama / instansi...">
+							<input type="text" name="search" maxlength="255" value="<?= htmlspecialchars($search) ?>" placeholder="Cari nama / instansi...">
 						</div>
 
 						<button type="submit" class="btn btn-outline btn-sm">
@@ -292,7 +144,7 @@ $page_title = "Tracer Study";
 										case 'Mencari Kerja':
 											$badge = 'badge-red';
 											break;
-										case 'Menikah':
+										case 'menikah':
 											$badge = 'badge-red';
 											break;
 										default:
@@ -397,7 +249,8 @@ $page_title = "Tracer Study";
 					<i class="fa-solid fa-xmark"></i>
 				</button>
 			</div>
-			<form method="POST" action="tracer.php">
+			<form method="POST" action="backend/tracer_handler.php">
+				<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
 				<input type="hidden" name="action" value="tambah">
 				<div class="modal-body">
 					<!-- NAMA -->
@@ -406,7 +259,7 @@ $page_title = "Tracer Study";
 							Nama Siswa Alumni
 							<span class="required">*</span>
 						</label>
-						<input type="text" name="nama_siswa" class="form-control" maxlength="200" placeholder="Ketik nama alumni" required>
+						<input type="text" name="nama_siswa" class="form-control" maxlength="150" placeholder="Ketik nama alumni" required>
 					</div>
 					<!-- TAHUN -->
 					<div class="form-group">
@@ -414,7 +267,7 @@ $page_title = "Tracer Study";
 							Tahun Lulus
 							<span class="required">*</span>
 						</label>
-						<input type="number" name="tahun_lulus" class="form-control" required min="2000" max="<?= date('Y') ?>" placeholder="<?= date('Y') ?>">
+						<input type="number" name="tahun_lulus" class="form-control" required min="1901" max="<?= date('Y') ?>" placeholder="<?= date('Y') ?>">
 					</div>
 
 					<!-- STATUS -->
@@ -428,7 +281,7 @@ $page_title = "Tracer Study";
 							<option value="Kuliah">Kuliah</option>
 							<option value="Wirausaha">Wirausaha</option>
 							<option value="Mencari Kerja">Mencari Kerja</option>
-							<option value="Menikah">Menikah</option>
+							<option value="menikah">Menikah</option>
 						</select>
 					</div>
 
@@ -473,7 +326,8 @@ $page_title = "Tracer Study";
 					<i class="fa-solid fa-xmark"></i>
 				</button>
 			</div>
-			<form method="POST" action="tracer.php">
+			<form method="POST" action="backend/tracer_handler.php">
+				<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
 				<input type="hidden" name="action" value="edit">
 				<input type="hidden" name="id" id="e_id">
 				<div class="modal-body">
@@ -483,7 +337,7 @@ $page_title = "Tracer Study";
 							Nama Siswa Alumni
 							<span class="required">*</span>
 						</label>
-						<input type="text" name="nama_siswa" id="e_nama_siswa" class="form-control" maxlength="200" required>
+						<input type="text" name="nama_siswa" id="e_nama_siswa" class="form-control" maxlength="150" required>
 					</div>
 
 					<!-- TAHUN -->
@@ -492,7 +346,7 @@ $page_title = "Tracer Study";
 							Tahun Lulus
 							<span class="required">*</span>
 						</label>
-						<input type="number" name="tahun_lulus" id="e_tahun_lulus" class="form-control" required min="2000" max="<?= date('Y') ?>">
+						<input type="number" name="tahun_lulus" id="e_tahun_lulus" class="form-control" required min="1901" max="<?= date('Y') ?>">
 					</div>
 
 					<!-- STATUS -->
@@ -506,7 +360,7 @@ $page_title = "Tracer Study";
 							<option value="Kuliah">Kuliah</option>
 							<option value="Wirausaha">Wirausaha</option>
 							<option value="Mencari Kerja">Mencari Kerja</option>
-							<option value="Menikah">Menikah</option>
+							<option value="menikah">Menikah</option>
 						</select>
 					</div>
 
@@ -540,7 +394,8 @@ $page_title = "Tracer Study";
 	</div>
 
 	<!-- FORM HAPUS -->
-	<form method="POST" action="tracer.php" id="formHapus">
+	<form method="POST" action="backend/tracer_handler.php" id="formHapus">
+		<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
 		<input type="hidden" name="action" value="hapus">
 		<input type="hidden" name="id" id="hapus_id">
 	</form>

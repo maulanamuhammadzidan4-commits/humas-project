@@ -9,7 +9,7 @@ final class SiswaRepository
             $connection,
             "SELECT COUNT(*) AS total FROM siswa$where",
             $search === '' ? '' : 'ssss',
-            $search === '' ? [] : array_fill(0, 4, "%$search%")
+            $search === '' ? [] : array_fill(0, 4, RepositoryQuery::likePattern($search))
         );
 
         return (int)($row['total'] ?? 0);
@@ -21,7 +21,7 @@ final class SiswaRepository
         $types = $search === '' ? 'ii' : 'ssssii';
         $params = $search === ''
             ? [$limit, $offset]
-            : array_merge(array_fill(0, 4, "%$search%"), [$limit, $offset]);
+            : array_merge(array_fill(0, 4, RepositoryQuery::likePattern($search)), [$limit, $offset]);
 
         return RepositoryQuery::fetchAll(
             $connection,
@@ -46,6 +46,16 @@ final class SiswaRepository
     public static function findByName(mysqli $connection, string $name): ?array
     {
         return RepositoryQuery::fetchOne($connection, 'SELECT id FROM siswa WHERE nama_siswa = ? LIMIT 1', 's', [$name]);
+    }
+
+    public static function findUniqueByName(mysqli $connection, string $name): ?array
+    {
+        $matches = RepositoryQuery::fetchAll($connection, 'SELECT id FROM siswa WHERE nama_siswa = ? LIMIT 2', 's', [$name]);
+        if (count($matches) > 1) {
+            throw new InvalidArgumentException('Nama siswa tidak unik; pastikan hanya ada satu siswa dengan nama tersebut.');
+        }
+
+        return $matches[0] ?? null;
     }
 
     public static function findByNisn(mysqli $connection, string $nisn): ?array

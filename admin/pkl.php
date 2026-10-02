@@ -8,20 +8,19 @@ require_once '../backend/repositories/bootstrap.php';
 require_once 'includes/auth.php';
 
 /*SEARCH & PAGINATION */
-$search = trim($_GET['search'] ?? '');
-$page = max(
-    1,
-    (int)($_GET['page'] ?? 1)
-);
+$search = is_string($_GET['search'] ?? null) ? trim($_GET['search']) : '';
+$requestedPage = filter_var($_GET['page'] ?? '1', FILTER_VALIDATE_INT);
+$page = $requestedPage !== false && $requestedPage > 0 ? $requestedPage : 1;
 
 $limit = 10;
-$offset = ($page - 1) * $limit;
 
 $total = PklRepository::countWithSearch($koneksi, $search);
 $total_pages = max(
     1,
     (int)ceil($total / $limit)
 );
+$page = min($page, $total_pages);
+$offset = ($page - 1) * $limit;
 
 $data = PklRepository::getPaginated($koneksi, $search, $limit, $offset);
 $siswa_list = SiswaRepository::getOptions($koneksi);
@@ -78,7 +77,7 @@ $page_title = "Penempatan PKL";
                 <form method="GET" style="display:flex;gap:.5rem;align-items:center;">
                     <div class="search-box">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Cari siswa / perusahaan...">
+                        <input type="text" name="search" maxlength="255" value="<?= htmlspecialchars($search) ?>" placeholder="Cari siswa / perusahaan...">
                     </div>
                     <button type="submit" class="btn btn-outline btn-sm">
                         <i class="fa-solid fa-search"></i>
@@ -255,25 +254,26 @@ $page_title = "Penempatan PKL";
             </button>
         </div>
         <form method="POST" action="backend/pkl_handler.php">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="action" value="tambah">
             <div class="modal-body">
 
                 <!-- NAMA SISWA -->
                 <div class="form-group">
                     <label>Nama Siswa<span class="required">*</span></label>
-                    <input type="text" name="nama_siswa" class="form-control" maxlength="200" placeholder="Ketik nama siswa" autocomplete="off" required>
+                    <input type="text" name="nama_siswa" class="form-control" maxlength="150" placeholder="Ketik nama siswa" autocomplete="off" required>
                 </div>
 
                 <!-- NAMA PERUSAHAAN -->
                 <div class="form-group">
                     <label>Nama Perusahaan / Instansi <span class="required">*</span></label>
-                    <input type="text" name="nama_perusahaan" class="form-control" maxlength="200" placeholder="Ketik nama perusahaan / instansi" autocomplete="off" required>
+                    <input type="text" name="nama_perusahaan" class="form-control" maxlength="150" placeholder="Ketik nama perusahaan / instansi" autocomplete="off" required>
                 </div>
 
                 <!-- PEMBIMBING -->
                 <div class="form-group">
                     <label>Nama Pembimbing<span class="required">*</span></label>
-                    <input type="text" name="pembimbing" class="form-control" maxlength="200" placeholder="Nama pembimbing PKL" required>
+                    <input type="text" name="pembimbing" class="form-control" maxlength="100" placeholder="Nama pembimbing PKL" required>
                 </div>
 
                 <!-- TANGGAL -->
@@ -318,6 +318,7 @@ $page_title = "Penempatan PKL";
             </button>
         </div>
         <form method="POST" action="backend/pkl_handler.php">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="action" value="edit">
             <input type="hidden" name="id" id="e_id">
             <div class="modal-body">
@@ -325,19 +326,19 @@ $page_title = "Penempatan PKL";
                 <!-- NAMA SISWA -->
                 <div class="form-group">
                     <label>Nama Siswa<span class="required">*</span></label>
-                    <input type="text" name="nama_siswa" id="e_nama_siswa" class="form-control" maxlength="200" required>
+                    <input type="text" name="nama_siswa" id="e_nama_siswa" class="form-control" maxlength="150" required>
                 </div>
 
                 <!-- NAMA PERUSAHAAN -->
                 <div class="form-group">
                     <label>Nama Perusahaan / Instansi<span class="required">*</span></label>
-                    <input type="text" name="nama_perusahaan" id="e_nama_perusahaan" class="form-control" maxlength="200" required>
+                    <input type="text" name="nama_perusahaan" id="e_nama_perusahaan" class="form-control" maxlength="150" required>
                 </div>
 
                 <!-- PEMBIMBING -->
                 <div class="form-group">
                     <label>Nama Pembimbing<span class="required">*</span></label>
-                    <input type="text" name="pembimbing" id="e_pembimbing" class="form-control" maxlength="200" required>
+                    <input type="text" name="pembimbing" id="e_pembimbing" class="form-control" maxlength="100" required>
                 </div>
 
                 <!-- TANGGAL -->
@@ -377,6 +378,7 @@ $page_title = "Penempatan PKL";
 
 <!-- FORM HAPUS -->
 <form method="POST" action="backend/pkl_handler.php" id="formHapus">
+    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
     <input type="hidden" name="action" value="hapus">
     <input type="hidden" name="id" id="hapus_id">
 </form>

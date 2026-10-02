@@ -9,7 +9,7 @@ final class UserRepository
             $connection,
             "SELECT COUNT(*) AS total FROM users$where",
             $search === '' ? '' : 'sss',
-            $search === '' ? [] : array_fill(0, 3, "%$search%")
+            $search === '' ? [] : array_fill(0, 3, RepositoryQuery::likePattern($search))
         );
 
         return (int)($row['total'] ?? 0);
@@ -21,7 +21,7 @@ final class UserRepository
         $types = $search === '' ? 'ii' : 'sssii';
         $params = $search === ''
             ? [$limit, $offset]
-            : array_merge(array_fill(0, 3, "%$search%"), [$limit, $offset]);
+            : array_merge(array_fill(0, 3, RepositoryQuery::likePattern($search)), [$limit, $offset]);
 
         return RepositoryQuery::fetchAll(
             $connection,
@@ -38,6 +38,26 @@ final class UserRepository
             'SELECT id_user, username, password, nama_lengkap, jabatan FROM users WHERE username = ? LIMIT 1',
             's',
             [$username]
+        );
+    }
+
+    public static function usernameExistsExcept(mysqli $connection, string $username, int $excludeId = 0): bool
+    {
+        return RepositoryQuery::fetchOne(
+            $connection,
+            'SELECT id_user FROM users WHERE username = ? AND id_user != ? LIMIT 1',
+            'si',
+            [$username, $excludeId]
+        ) !== null;
+    }
+
+    public static function updatePassword(mysqli $connection, int $id, string $passwordHash): bool
+    {
+        return RepositoryQuery::execute(
+            $connection,
+            'UPDATE users SET password = ? WHERE id_user = ?',
+            'si',
+            [$passwordHash, $id]
         );
     }
 

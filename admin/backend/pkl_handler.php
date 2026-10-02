@@ -32,30 +32,28 @@ function resolveEntityId(callable $resolver, string $label, string $name): int
 $action = $_POST['action'] ?? '';
 
 try {
-    if ($action === 'tambah') {
-        $nama_siswa = trim($_POST['nama_siswa'] ?? '');
-        $nama_perusahaan = trim($_POST['nama_perusahaan'] ?? '');
-        $pembimbing = trim($_POST['pembimbing'] ?? '');
-        $tanggal_mulai = trim($_POST['tanggal_mulai'] ?? '');
-        $tanggal_selesai = trim($_POST['tanggal_selesai'] ?? '');
-        $status_penempatan = trim($_POST['status_penempatan'] ?? 'Draft');
+    verifyCsrfToken($_POST['csrf_token'] ?? null);
+    $action = validateEnum($_POST['action'] ?? null, ['tambah', 'edit', 'hapus'], 'aksi');
 
-        requireNonEmptyFields([
-            $nama_siswa,
-            $nama_perusahaan,
-            $pembimbing,
-            $tanggal_mulai,
-            $tanggal_selesai,
-        ], 'Semua data PKL wajib diisi.');
+    if ($action === 'tambah') {
+        $nama_siswa = validateString($_POST['nama_siswa'] ?? null, 'Nama siswa', 1, 150);
+        $nama_perusahaan = validateString($_POST['nama_perusahaan'] ?? null, 'Nama perusahaan', 1, 150);
+        $pembimbing = validateString($_POST['pembimbing'] ?? null, 'Nama pembimbing', 1, 100);
+        $tanggal_mulai = validateDate($_POST['tanggal_mulai'] ?? null, 'tanggal mulai');
+        $tanggal_selesai = validateDate($_POST['tanggal_selesai'] ?? null, 'tanggal selesai');
+        $status_penempatan = validateEnum($_POST['status_penempatan'] ?? 'Draft', ['Draft', 'Disetujui', 'Selesai'], 'status penempatan');
+        if ($tanggal_selesai < $tanggal_mulai) {
+            throw new InvalidArgumentException('Tanggal selesai harus sama atau setelah tanggal mulai.');
+        }
 
         $siswa_id = resolveEntityId(
-            fn() => SiswaRepository::findByName($koneksi, $nama_siswa),
+            fn() => SiswaRepository::findUniqueByName($koneksi, $nama_siswa),
             'Siswa',
             $nama_siswa
         );
 
         $perusahaan_id = resolveEntityId(
-            fn() => PerusahaanRepository::findByName($koneksi, $nama_perusahaan),
+            fn() => PerusahaanRepository::findUniqueByName($koneksi, $nama_perusahaan),
             'Perusahaan',
             $nama_perusahaan
         );
@@ -75,34 +73,25 @@ try {
     }
 
     if ($action === 'edit') {
-        $id = (int) ($_POST['id'] ?? 0);
-        $nama_siswa = trim($_POST['nama_siswa'] ?? '');
-        $nama_perusahaan = trim($_POST['nama_perusahaan'] ?? '');
-        $pembimbing = trim($_POST['pembimbing'] ?? '');
-        $tanggal_mulai = trim($_POST['tanggal_mulai'] ?? '');
-        $tanggal_selesai = trim($_POST['tanggal_selesai'] ?? '');
-        $status_penempatan = trim($_POST['status_penempatan'] ?? 'Draft');
-
-        if ($id <= 0) {
-            throw new InvalidArgumentException('ID PKL tidak valid.');
+        $id = validateInteger($_POST['id'] ?? null, 'ID PKL', 1, 2147483647);
+        $nama_siswa = validateString($_POST['nama_siswa'] ?? null, 'Nama siswa', 1, 150);
+        $nama_perusahaan = validateString($_POST['nama_perusahaan'] ?? null, 'Nama perusahaan', 1, 150);
+        $pembimbing = validateString($_POST['pembimbing'] ?? null, 'Nama pembimbing', 1, 100);
+        $tanggal_mulai = validateDate($_POST['tanggal_mulai'] ?? null, 'tanggal mulai');
+        $tanggal_selesai = validateDate($_POST['tanggal_selesai'] ?? null, 'tanggal selesai');
+        $status_penempatan = validateEnum($_POST['status_penempatan'] ?? 'Draft', ['Draft', 'Disetujui', 'Selesai'], 'status penempatan');
+        if ($tanggal_selesai < $tanggal_mulai) {
+            throw new InvalidArgumentException('Tanggal selesai harus sama atau setelah tanggal mulai.');
         }
 
-        requireNonEmptyFields([
-            $nama_siswa,
-            $nama_perusahaan,
-            $pembimbing,
-            $tanggal_mulai,
-            $tanggal_selesai,
-        ], 'Semua data PKL wajib diisi.');
-
         $siswa_id = resolveEntityId(
-            fn() => SiswaRepository::findByName($koneksi, $nama_siswa),
+            fn() => SiswaRepository::findUniqueByName($koneksi, $nama_siswa),
             'Siswa',
             $nama_siswa
         );
 
         $perusahaan_id = resolveEntityId(
-            fn() => PerusahaanRepository::findByName($koneksi, $nama_perusahaan),
+            fn() => PerusahaanRepository::findUniqueByName($koneksi, $nama_perusahaan),
             'Perusahaan',
             $nama_perusahaan
         );
@@ -122,11 +111,7 @@ try {
     }
 
     if ($action === 'hapus') {
-        $id = (int) ($_POST['id'] ?? 0);
-
-        if ($id <= 0) {
-            throw new InvalidArgumentException('ID PKL tidak valid.');
-        }
+        $id = validateInteger($_POST['id'] ?? null, 'ID PKL', 1, 2147483647);
 
         if (!PklRepository::delete($koneksi, $id)) {
             throw new Exception('Gagal menghapus data PKL.');
@@ -135,8 +120,7 @@ try {
         redirectPkl('Data PKL berhasil dihapus.');
     }
 
-    header('Location: ../pkl.php');
-    exit;
+    throw new InvalidArgumentException('Aksi PKL tidak valid.');
 } catch (Throwable $e) {
     redirectPkl('Gagal: ' . $e->getMessage(), 'danger');
 }

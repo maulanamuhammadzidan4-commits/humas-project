@@ -65,7 +65,10 @@ final class DashboardRepository
 
         $distribution = [];
         foreach ($rows as $row) {
-            $distribution[$row['status_alumni']] = (int)$row['n'];
+            $status = strtolower((string) $row['status_alumni']) === 'menikah'
+                ? 'Menikah'
+                : $row['status_alumni'];
+            $distribution[$status] = (int) ($distribution[$status] ?? 0) + (int) $row['n'];
         }
 
         return $distribution;

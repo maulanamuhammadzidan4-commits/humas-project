@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/../../backend/helpers.php'; ?>
 <section id="kontak" class="contact-section">
     <?php if (!empty($_SESSION['contact_flash'])): ?>
         <?php $contactFlash = $_SESSION['contact_flash']; unset($_SESSION['contact_flash']); ?>
@@ -115,6 +116,11 @@
                 action="<?= file_exists('components/header.php') ? '../backend/contact_handler.php' : '../../backend/contact_handler.php' ?>"
                 method="POST"
             >
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
+                <div aria-hidden="true" style="position:absolute;left:-9999px">
+                    <label for="website">Jangan isi kolom ini</label>
+                    <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+                </div>
 
 
                 <!-- NAMA -->
@@ -131,6 +137,7 @@
                             type="text"
                             id="nama"
                             name="nama"
+                            maxlength="100"
                             placeholder="Masukkan nama Anda"
                             required
                         >
@@ -157,6 +164,7 @@
                             type="email"
                             id="email"
                             name="email"
+                            maxlength="150"
                             placeholder="nama@email.com"
                             required
                         >
@@ -183,6 +191,7 @@
                             type="text"
                             id="subjek"
                             name="subjek"
+                            maxlength="200"
                             placeholder="Contoh: Kemitraan PKL"
                             required
                         >
@@ -206,6 +215,7 @@
                     <textarea
                         id="pesan"
                         name="pesan"
+                        maxlength="5000"
                         placeholder="Tuliskan pesan atau pertanyaan Anda di sini..."
                         required
                     ></textarea>

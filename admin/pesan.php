@@ -186,6 +186,7 @@ $page_title = "Pesan Masuk";
                                         !== 'Sudah Dibaca'
                                     ): ?>
                                         <form method="POST" action="backend/pesan_handler.php" onsubmit="return confirm('Apakah pesan ini sudah diterima?');">
+                                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
                                             <input type="hidden" name="id_kontak" value="<?= $row['id_kontak'] ?>">
                                             <button type="submit" name="terima_pesan" class="btn-terima-pesan">
                                                 <i class="fa-solid fa-check"></i>

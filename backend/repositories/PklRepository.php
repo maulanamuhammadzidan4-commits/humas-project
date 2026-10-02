@@ -5,7 +5,7 @@ final class PklRepository
     public static function countWithSearch(mysqli $connection, string $search): int
     {
         $where = $search === '' ? '' : ' WHERE s.nama_siswa LIKE ? OR pr.nama_perusahaan LIKE ? OR pk.pembimbing_guru LIKE ? OR pk.status_penempatan LIKE ?';
-        $params = $search === '' ? [] : array_fill(0, 4, "%$search%");
+        $params = $search === '' ? [] : array_fill(0, 4, RepositoryQuery::likePattern($search));
         $row = RepositoryQuery::fetchOne(
             $connection,
             "SELECT COUNT(*) AS total
@@ -25,7 +25,7 @@ final class PklRepository
         $types = $search === '' ? 'ii' : 'ssssii';
         $params = $search === ''
             ? [$limit, $offset]
-            : array_merge(array_fill(0, 4, "%$search%"), [$limit, $offset]);
+            : array_merge(array_fill(0, 4, RepositoryQuery::likePattern($search)), [$limit, $offset]);
 
         return RepositoryQuery::fetchAll(
             $connection,

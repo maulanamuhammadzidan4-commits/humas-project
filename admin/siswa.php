@@ -6,13 +6,15 @@ require_once 'includes/auth.php';
 /* =========================
     SEARCH & PAGINATION
 ========================= */
-$search = trim($_GET['search'] ?? '');
-$page = max(1, (int)($_GET['page'] ?? 1));
+$search = is_string($_GET['search'] ?? null) ? trim($_GET['search']) : '';
+$requestedPage = filter_var($_GET['page'] ?? '1', FILTER_VALIDATE_INT);
+$page = $requestedPage !== false && $requestedPage > 0 ? $requestedPage : 1;
 
 $limit = 10;
-$offset = ($page - 1) * $limit;
 $total = SiswaRepository::countWithSearch($koneksi, $search);
 $total_pages = max(1, (int)ceil($total / $limit));
+$page = min($page, $total_pages);
+$offset = ($page - 1) * $limit;
 $data = SiswaRepository::getPaginated($koneksi, $search, $limit, $offset);
 $page_title = "Data Siswa";
 ?>
@@ -78,7 +80,7 @@ $page_title = "Data Siswa";
                 <form method="GET" style="display:flex;gap:.5rem;align-items:center;">
                     <div class="search-box">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Cari NISN, nama, kelas...">
+                        <input type="text" name="search" maxlength="255" value="<?= htmlspecialchars($search) ?>" placeholder="Cari NISN, nama, kelas...">
                     </div>
 
                     <button type="submit" class="btn btn-outline btn-sm">
@@ -230,13 +232,14 @@ $page_title = "Data Siswa";
         </div>
 
         <form method="POST" action="backend/siswa_handler.php">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="action" value="tambah">
             <div class="modal-body">
                 <!-- NISN + NAMA -->
                 <div class="form-row">
                     <div class="form-group">
                         <label>NISN <span class="required">*</span></label>
-                        <input type="text" name="nisn" class="form-control" required maxlength="10" placeholder="10 digit NISN">
+                        <input type="text" name="nisn" class="form-control" required maxlength="10" pattern="[0-9]{10}" inputmode="numeric" placeholder="10 digit NISN">
                     </div>
 
                     <div class="form-group">
@@ -249,12 +252,12 @@ $page_title = "Data Siswa";
                 <div class="form-row">
                     <div class="form-group">
                         <label>Kelas <span class="required">*</span></label>
-                        <input type="text" name="kelas" class="form-control" required maxlength="50" placeholder="XII RPL 1">
+                        <input type="text" name="kelas" class="form-control" required maxlength="20" placeholder="XII RPL 1">
                     </div>
 
                     <div class="form-group">
                         <label>Jurusan <span class="required">*</span></label>
-                        <input type="text" name="jurusan" class="form-control" required maxlength="100" placeholder="PPLG / TKJ / Akuntansi">
+                        <input type="text" name="jurusan" class="form-control" required maxlength="50" placeholder="PPLG / TKJ / Akuntansi">
                     </div>
                 </div>
 
@@ -303,6 +306,7 @@ $page_title = "Data Siswa";
         </div>
 
         <form method="POST" action="backend/siswa_handler.php">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="action" value="edit">
             <input type="hidden" name="id" id="e_id">
             <div class="modal-body">
@@ -310,7 +314,7 @@ $page_title = "Data Siswa";
                 <div class="form-row">
                     <div class="form-group">
                         <label>NISN <span class="required">*</span></label>
-                        <input type="text" name="nisn" id="e_nisn" class="form-control" required maxlength="10">
+                        <input type="text" name="nisn" id="e_nisn" class="form-control" required maxlength="10" pattern="[0-9]{10}" inputmode="numeric">
                     </div>
 
                     <div class="form-group">
@@ -323,12 +327,12 @@ $page_title = "Data Siswa";
                 <div class="form-row">
                     <div class="form-group">
                         <label>Kelas <span class="required">*</span></label>
-                        <input type="text" name="kelas" id="e_kelas" class="form-control" required maxlength="50">
+                        <input type="text" name="kelas" id="e_kelas" class="form-control" required maxlength="20">
                     </div>
 
                     <div class="form-group">
                         <label>Jurusan <span class="required">*</span></label>
-                        <input type="text" name="jurusan" id="e_jurusan" class="form-control" required maxlength="100">
+                        <input type="text" name="jurusan" id="e_jurusan" class="form-control" required maxlength="50">
                     </div>
                 </div>
 
@@ -351,6 +355,7 @@ $page_title = "Data Siswa";
 
 <!-- FORM HAPUS -->
 <form method="POST" action="backend/siswa_handler.php" id="formHapus">
+    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
     <input type="hidden" name="action" value="hapus">
     <input type="hidden" name="id" id="hapus_id">
 </form>

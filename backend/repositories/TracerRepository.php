@@ -11,7 +11,7 @@ final class TracerRepository
              FROM tracer_study ts
              INNER JOIN siswa s ON s.id = ts.siswa_id$where",
             $search === '' ? '' : 'ssssss',
-            $search === '' ? [] : array_fill(0, 6, "%$search%")
+            $search === '' ? [] : array_fill(0, 6, RepositoryQuery::likePattern($search))
         );
 
         return (int)($row['total'] ?? 0);
@@ -23,7 +23,7 @@ final class TracerRepository
         $types = $search === '' ? 'ii' : 'ssssssii';
         $params = $search === ''
             ? [$limit, $offset]
-            : array_merge(array_fill(0, 6, "%$search%"), [$limit, $offset]);
+            : array_merge(array_fill(0, 6, RepositoryQuery::likePattern($search)), [$limit, $offset]);
 
         return RepositoryQuery::fetchAll(
             $connection,
@@ -46,17 +46,30 @@ final class TracerRepository
             $connection,
             'SELECT status_alumni, COUNT(*) AS total FROM tracer_study GROUP BY status_alumni'
         );
-        $stats = ['total' => 0, 'Bekerja' => 0, 'Kuliah' => 0, 'Wirausaha' => 0, 'Mencari Kerja' => 0];
+        $stats = ['total' => 0, 'Bekerja' => 0, 'Kuliah' => 0, 'Wirausaha' => 0, 'Mencari Kerja' => 0, 'Menikah' => 0];
 
         foreach ($rows as $row) {
             $count = (int)$row['total'];
             $stats['total'] += $count;
-            if (array_key_exists($row['status_alumni'], $stats)) {
-                $stats[$row['status_alumni']] = $count;
+            $status = strtolower((string) $row['status_alumni']) === 'menikah'
+                ? 'Menikah'
+                : $row['status_alumni'];
+            if (array_key_exists($status, $stats)) {
+                $stats[$status] += $count;
             }
         }
 
         return $stats;
+    }
+
+    public static function findByStudentId(mysqli $connection, int $studentId, int $excludeId = 0): ?array
+    {
+        return RepositoryQuery::fetchOne(
+            $connection,
+            'SELECT id FROM tracer_study WHERE siswa_id = ? AND id != ? LIMIT 1',
+            'ii',
+            [$studentId, $excludeId]
+        );
     }
 
     public static function create(mysqli $connection, array $data): bool

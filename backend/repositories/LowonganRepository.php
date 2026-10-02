@@ -11,7 +11,7 @@ final class LowonganRepository
              FROM lowongan_kerja lk
              INNER JOIN perusahaan p ON p.id = lk.perusahaan_id$where",
             $search === '' ? '' : 'ss',
-            $search === '' ? [] : ["%$search%", "%$search%"]
+            $search === '' ? [] : array_fill(0, 2, RepositoryQuery::likePattern($search))
         );
 
         return (int)($row['total'] ?? 0);
@@ -23,7 +23,7 @@ final class LowonganRepository
         $types = $search === '' ? 'ii' : 'ssii';
         $params = $search === ''
             ? [$limit, $offset]
-            : ["%$search%", "%$search%", $limit, $offset];
+            : [RepositoryQuery::likePattern($search), RepositoryQuery::likePattern($search), $limit, $offset];
 
         return RepositoryQuery::fetchAll(
             $connection,

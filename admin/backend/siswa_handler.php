@@ -21,14 +21,20 @@ function redirectSiswa(string $message, string $type = 'success'): void
 $action = $_POST['action'] ?? '';
 
 try {
-    if ($action === 'tambah') {
-        $nisn = trim($_POST['nisn'] ?? '');
-        $nama_siswa = trim($_POST['nama_siswa'] ?? '');
-        $kelas = trim($_POST['kelas'] ?? '');
-        $jurusan = trim($_POST['jurusan'] ?? '');
-        $status_alumni = isset($_POST['status_alumni']) ? 1 : 0;
+    verifyCsrfToken($_POST['csrf_token'] ?? null);
 
-        requireNonEmptyFields([$nisn, $nama_siswa, $kelas, $jurusan], 'Semua data siswa wajib diisi.');
+    if ($action === 'tambah') {
+        $nisn = validateString($_POST['nisn'] ?? null, 'NISN', 10, 10);
+        $nama_siswa = validateString($_POST['nama_siswa'] ?? null, 'Nama siswa', 1, 150);
+        $kelas = validateString($_POST['kelas'] ?? null, 'Kelas', 1, 20);
+        $jurusan = validateString($_POST['jurusan'] ?? null, 'Jurusan', 1, 50);
+        $status_alumni = isset($_POST['status_alumni'])
+            ? (validateEnum($_POST['status_alumni'], ['1'], 'status alumni') === '1' ? 1 : 0)
+            : 0;
+
+        if (!preg_match('/^[0-9]{10}$/D', $nisn)) {
+            throw new InvalidArgumentException('NISN harus terdiri dari tepat 10 digit angka.');
+        }
 
         if (SiswaRepository::findByNisn($koneksi, $nisn)) {
             throw new Exception('NISN tersebut sudah terdaftar.');
@@ -48,18 +54,18 @@ try {
     }
 
     if ($action === 'edit') {
-        $id = (int) ($_POST['id'] ?? 0);
-        $nisn = trim($_POST['nisn'] ?? '');
-        $nama_siswa = trim($_POST['nama_siswa'] ?? '');
-        $kelas = trim($_POST['kelas'] ?? '');
-        $jurusan = trim($_POST['jurusan'] ?? '');
-        $status_alumni = isset($_POST['status_alumni']) ? 1 : 0;
+        $id = validateInteger($_POST['id'] ?? null, 'ID siswa', 1, 2147483647);
+        $nisn = validateString($_POST['nisn'] ?? null, 'NISN', 10, 10);
+        $nama_siswa = validateString($_POST['nama_siswa'] ?? null, 'Nama siswa', 1, 150);
+        $kelas = validateString($_POST['kelas'] ?? null, 'Kelas', 1, 20);
+        $jurusan = validateString($_POST['jurusan'] ?? null, 'Jurusan', 1, 50);
+        $status_alumni = isset($_POST['status_alumni'])
+            ? (validateEnum($_POST['status_alumni'], ['1'], 'status alumni') === '1' ? 1 : 0)
+            : 0;
 
-        if ($id <= 0) {
-            throw new InvalidArgumentException('ID siswa tidak valid.');
+        if (!preg_match('/^[0-9]{10}$/D', $nisn)) {
+            throw new InvalidArgumentException('NISN harus terdiri dari tepat 10 digit angka.');
         }
-
-        requireNonEmptyFields([$nisn, $nama_siswa, $kelas, $jurusan], 'Semua data siswa wajib diisi.');
 
         if (SiswaRepository::findByNisnExcept($koneksi, $nisn, $id)) {
             throw new Exception('NISN tersebut sudah digunakan siswa lain.');
@@ -79,11 +85,7 @@ try {
     }
 
     if ($action === 'hapus') {
-        $id = (int) ($_POST['id'] ?? 0);
-
-        if ($id <= 0) {
-            throw new InvalidArgumentException('ID siswa tidak valid.');
-        }
+        $id = validateInteger($_POST['id'] ?? null, 'ID siswa', 1, 2147483647);
 
         if (!SiswaRepository::delete($koneksi, $id)) {
             throw new Exception('Gagal menghapus data siswa.');
@@ -92,8 +94,7 @@ try {
         redirectSiswa('Data siswa berhasil dihapus.');
     }
 
-    header('Location: ../siswa.php');
-    exit;
+    throw new InvalidArgumentException('Aksi siswa tidak valid.');
 } catch (Throwable $e) {
     redirectSiswa('Gagal: ' . $e->getMessage(), 'danger');
 }
