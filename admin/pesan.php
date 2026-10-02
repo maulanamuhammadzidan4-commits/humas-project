@@ -21,318 +21,128 @@ $page_title = "Pesan Masuk";
     <!-- CSS ADMIN -->
     <link rel="stylesheet" href="assets/admin-style.css">
 </head>
-
-
 <body>
-
-
 <?php include 'includes/sidebar.php'; ?>
-
-
 <div class="admin-main">
-
-
     <?php include 'includes/header.php'; ?>
-
-
     <main class="admin-content">
 
-
-        <!-- =================================================
-             HEADER HALAMAN
-        ================================================= -->
-
+        <!--HEADER HALAMAN-->
         <div class="page-header">
-
             <div class="page-header-left">
-
-                <h2>
-
-                    <i
-                        class="fa-solid fa-envelope"
-                        style="color:var(--blue);margin-right:8px;"
-                    ></i>
-
+                <h2><i class="fa-solid fa-envelope" style="color:var(--blue);margin-right:8px;"></i>
                     Pesan Masuk
-
                 </h2>
-
-                <p>
-
-                    Kelola pesan yang dikirim melalui formulir kontak website.
-
-                </p>
-
+                <p>Kelola pesan yang dikirim melalui formulir kontak website.</p>
             </div>
-
         </div>
 
-
-
-        <!-- =================================================
-             STATISTIK
-        ================================================= -->
-
+        <!--STATISTIK-->
         <div class="message-stats">
-
-
-            <!-- TOTAL -->
-
             <div class="message-stat">
-
                 <div class="message-stat-icon">
-
                     <i class="fa-solid fa-envelope"></i>
-
                 </div>
-
                 <div class="message-stat-info">
-
-                    <span>
-                        Total Pesan
-                    </span>
-
-                    <strong>
-                        <?= $totalPesan ?>
-                    </strong>
-
+                    <span>Total Pesan</span>
+                    <strong><?= $totalPesan ?></strong>
                 </div>
-
             </div>
-
-
-
-            <!-- SUDAH -->
-
             <div class="message-stat">
-
                 <div class="message-stat-icon">
-
                     <i class="fa-solid fa-envelope-open"></i>
-
                 </div>
-
                 <div class="message-stat-info">
-
-                    <span>
-                        Sudah Diterima
-                    </span>
-
-                    <strong>
-                        <?= $sudahDibaca ?>
-                    </strong>
-
+                    <span>Sudah Diterima</span>
+                    <strong><?= $sudahDibaca ?></strong>
                 </div>
-
             </div>
-
-
-
-            <!-- BELUM -->
-
             <div class="message-stat">
-
                 <div class="message-stat-icon">
-
                     <i class="fa-solid fa-bell"></i>
-
                 </div>
-
                 <div class="message-stat-info">
-
-                    <span>
-                        Belum Diterima
-                    </span>
-
-                    <strong>
-                        <?= $belumDibaca ?>
-                    </strong>
-
+                    <span>Belum Diterima</span>
+                    <strong><?= $belumDibaca ?></strong>
                 </div>
-
             </div>
-
-
         </div>
 
-
-
-        <!-- =================================================
-             TABLE CARD
-        ================================================= -->
-
+        <!--TABLE CARD-->
         <div class="card">
-
-
             <!-- CARD HEADER -->
-
             <div class="card-header">
-
                 <span class="card-title">
-
                     <i class="fa-solid fa-list"></i>
-
                     Daftar Pesan
                     (<?= $totalPesan ?>)
-
                 </span>
-
             </div>
 
-
-
             <!-- TABLE -->
-
             <div class="table-wrapper">
-
                 <table>
-
-
                     <thead>
-
                         <tr>
-
-                            <th width="40">
-                                No
-                            </th>
-
-                            <th>
-                                Nama
-                            </th>
-
-                            <th>
-                                Email
-                            </th>
-
-                            <th>
-                                Subjek
-                            </th>
-
-                            <th>
-                                Pesan
-                            </th>
-
-                            <th>
-                                Tanggal
-                            </th>
-
-                            <th>
-                                Status
-                            </th>
-
-                            <th width="120">
-                                Aksi
-                            </th>
-
+                            <th width="40">No</th>
+                            <th>Nama</th>
+                            <th>Email</th>
+                            <th>Subjek</th>
+                            <th>Pesan</th>
+                            <th>Tanggal</th>
+                            <th>Status</th>
+                            <th width="120">Aksi</th>
                         </tr>
-
                     </thead>
-
-
                     <tbody>
-
-
                     <?php if (empty($data)): ?>
-
-
                         <tr>
-
                             <td colspan="8">
-
                                 <div class="pesan-empty">
-
-                                    <i
-                                        class="fa-regular fa-envelope"
-                                    ></i>
-
-                                    <h3>
-                                        Belum Ada Pesan
-                                    </h3>
-
-                                    <p>
-                                        Pesan dari website akan muncul di sini.
-                                    </p>
-
+                                    <i class="fa-regular fa-envelope"></i>
+                                    <h3>Belum Ada Pesan</h3>
+                                    <p>Pesan dari website akan muncul di sini.</p>
                                 </div>
-
                             </td>
-
                         </tr>
-
-
                     <?php else: ?>
-
-
                         <?php foreach ($data as $i => $row): ?>
-
-
                             <tr>
-
-
                                 <!-- NO -->
-
                                 <td class="td-no">
-
                                     <?= $i + 1 ?>
-
                                 </td>
 
-
-
                                 <!-- NAMA -->
-
                                 <td>
-
                                     <div class="message-name">
-
                                         <?= htmlspecialchars(
                                             $row['nama']
                                         ) ?>
-
                                     </div>
-
                                 </td>
 
-
-
                                 <!-- EMAIL -->
-
                                 <td>
-
                                     <div class="message-email">
-
                                         <?= htmlspecialchars(
                                             $row['email']
                                         ) ?>
-
                                     </div>
-
                                 </td>
 
-
-
                                 <!-- SUBJEK -->
-
                                 <td>
-
                                     <div class="message-subject">
-
                                         <?= htmlspecialchars(
                                             $row['subjek']
                                         ) ?>
-
                                     </div>
-
                                 </td>
 
-
-
                                 <!-- PESAN -->
-
                                 <td>
-
                                     <div class="message-text">
-
                                         <?= nl2br(
                                             htmlspecialchars(
                                                 $row['pesan']
