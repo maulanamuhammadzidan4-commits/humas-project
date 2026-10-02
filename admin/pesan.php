@@ -2,225 +2,23 @@
 session_start();
 require_once '../backend/connection.php';
 require_once 'includes/auth.php';
+require_once 'backend/pesan_data.php';
 
-/* PROSES TANDAI PESAN SUDAH DITERIMA */
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['terima_pesan'])) {
-        $id_kontak = (int)($_POST['id_kontak'] ?? 0);
-        if ($id_kontak > 0) {
-            $stmt = mysqli_prepare(
-                $koneksi,
-                "UPDATE kontak
-                 SET status = 'Sudah Dibaca'
-                 WHERE id_kontak = ?"
-            );
-            mysqli_stmt_bind_param(
-                $stmt,
-                "i",
-                $id_kontak
-            );
-            mysqli_stmt_execute($stmt);
-            mysqli_stmt_close($stmt);
-        }
-        header("Location: pesan.php");
-        exit;
-    }
-}
-
-/*AMBIL DATA PESAN */
-$sql = "
-    SELECT
-        id_kontak,
-        nama,
-        email,
-        subjek,
-        pesan,
-        tanggal_kirim,
-        status
-    FROM kontak
-    ORDER BY tanggal_kirim DESC
-";
-$result = mysqli_query($koneksi, $sql);
-if (!$result) {
-    die(
-        "Gagal mengambil data pesan: "
-        . mysqli_error($koneksi)
-    );
-}
-$data = mysqli_fetch_all(
-    $result,
-    MYSQLI_ASSOC
-);
-
-/* STATISTIK*/
-$totalPesan = count($data);
-$belumDibaca = 0;
-$sudahDibaca = 0;
-foreach ($data as $row) {
-    if ($row['status'] === 'Sudah Dibaca') {
-        $sudahDibaca++;
-    } else {
-        $belumDibaca++;
-    }
-}
+$page_title = "Pesan Masuk";
 ?>
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pesan Masuk — Admin Humas SMK</title>
+    <!-- GOOGLE FONT -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FONT AWESOME -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CSS ADMIN -->
     <link rel="stylesheet" href="assets/admin-style.css">
-    <style>
-        /*STATISTIK PESAN*/
-        .message-stats {
-            display: grid;
-            grid-template-columns:
-                repeat(3, 1fr);
-            gap: 18px;
-            margin-bottom: 22px;
-        }
-
-        .message-stat {
-            background: #fff;
-            border: 1px solid #e8ecf3;
-            border-radius: 16px;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .message-stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 13px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #f0f4f9;
-            color: var(--blue);
-            font-size: 19px;
-        }
-
-        .message-stat-info span {
-            display: block;
-            font-size: 12px;
-            color: #7b8495;
-            margin-bottom: 4px;
-        }
-
-        .message-stat-info strong {
-            font-size: 22px;
-            color: #172033;
-        }
-
-        /* PESAN*/
-        .message-text {
-            max-width: 350px;
-            line-height: 1.7;
-            color: #687386;
-        }
-
-        .message-name {
-            font-weight: 700;
-            color: #172033;
-        }
-
-        .message-email {
-            color: var(--blue);
-            font-size: 13px;
-        }
-
-        .message-subject {
-            font-weight: 600;
-            color: #303b4f;
-        }
-
-        .message-date {
-            white-space: nowrap;
-            color: #7b8495;
-            font-size: 12px;
-            line-height: 1.6;
-        }
-
-        /* BADGE STATUS*/
-        .message-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 7px 11px;
-            border-radius: 30px;
-            font-size: 11px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .message-badge.unread {
-            background: #fff4d6;
-            color: #9a6900;
-        }
-
-        .message-badge.read {
-            background: #e7f7ee;
-            color: #21804b;
-        }
-
-        /*TOMBOL TERIMA */
-        .btn-terima-pesan {
-            border: none;
-            background: var(--blue);
-            color: #fff;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: .2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            white-space: nowrap;
-        }
-
-        .btn-terima-pesan:hover {
-            transform: translateY(-1px);
-            opacity: .9;
-        }
-
-        .pesan-diterima {
-            color: #21804b;
-            font-size: 12px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .pesan-empty {
-            text-align: center;
-            padding: 60px 20px;
-            color: #8992a3;
-        }
-
-        .pesan-empty i {
-            font-size: 45px;
-            margin-bottom: 15px;
-            opacity: .4;
-        }
-
-        .pesan-empty p {
-            margin-top: 5px;
-            font-size: 13px;
-        }
-
-        @media (max-width: 900px) {
-            .message-stats {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
 </head>
 <body>
 <?php include 'includes/sidebar.php'; ?>
@@ -228,19 +26,18 @@ foreach ($data as $row) {
     <?php include 'includes/header.php'; ?>
     <main class="admin-content">
 
-        <!--HEADER HALAMAN -->
+        <!--HEADER HALAMAN-->
         <div class="page-header">
             <div class="page-header-left">
                 <h2><i class="fa-solid fa-envelope" style="color:var(--blue);margin-right:8px;"></i>
-                    Pesan Masuk</h2>
+                    Pesan Masuk
+                </h2>
                 <p>Kelola pesan yang dikirim melalui formulir kontak website.</p>
             </div>
         </div>
 
-        <!--STATISTIK -->
+        <!--STATISTIK-->
         <div class="message-stats">
-
-            <!-- TOTAL -->
             <div class="message-stat">
                 <div class="message-stat-icon">
                     <i class="fa-solid fa-envelope"></i>
@@ -250,8 +47,6 @@ foreach ($data as $row) {
                     <strong><?= $totalPesan ?></strong>
                 </div>
             </div>
-
-            <!-- SUDAH -->
             <div class="message-stat">
                 <div class="message-stat-icon">
                     <i class="fa-solid fa-envelope-open"></i>
@@ -261,8 +56,6 @@ foreach ($data as $row) {
                     <strong><?= $sudahDibaca ?></strong>
                 </div>
             </div>
-
-            <!-- BELUM -->
             <div class="message-stat">
                 <div class="message-stat-icon">
                     <i class="fa-solid fa-bell"></i>
@@ -391,7 +184,8 @@ foreach ($data as $row) {
                                         $row['status']
                                         !== 'Sudah Dibaca'
                                     ): ?>
-                                        <form method="POST" onsubmit="return confirm('Apakah pesan ini sudah diterima?');">
+                                        <form method="POST" action="backend/pesan_handler.php" onsubmit="return confirm('Apakah pesan ini sudah diterima?');">
+                                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
                                             <input type="hidden" name="id_kontak" value="<?= $row['id_kontak'] ?>">
                                             <button type="submit" name="terima_pesan" class="btn-terima-pesan">
                                                 <i class="fa-solid fa-check"></i>
@@ -414,5 +208,7 @@ foreach ($data as $row) {
         </div>
     </main>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="assets/admin.js"></script>
 </body>
 </html>

@@ -2,132 +2,26 @@
 session_start();
 
 require_once '../backend/connection.php';
+require_once '../backend/repositories/bootstrap.php';
 require_once 'includes/auth.php';
 
 /*--PENCARIAN & PAGINATION--*/
-$search = trim($_GET['search'] ?? '');
-$page   = max(1, (int)($_GET['page'] ?? 1));
+$search = is_string($_GET['search'] ?? null) ? trim($_GET['search']) : '';
+$requestedPage = filter_var($_GET['page'] ?? '1', FILTER_VALIDATE_INT);
+$page = $requestedPage !== false && $requestedPage > 0 ? $requestedPage : 1;
 
 $limit  = 10;
-$offset = ($page - 1) * $limit;
 
-/*--WHERE--*/
-$where = '';
-if ($search !== '') {
-    $where = "
-        WHERE lk.judul_posisi LIKE ?
-        OR p.nama_perusahaan LIKE ?
-    ";
-}
-
-/*--HITUNG TOTAL DATA--*/
-$count_sql = "SELECT COUNT(*) AS n
-    FROM lowongan_kerja AS lk
-    INNER JOIN perusahaan AS p
-    ON p.id = lk.perusahaan_id
-    $where";
-
-$stmt_count = mysqli_prepare($koneksi, $count_sql);
-if (!$stmt_count) {
-    die("Gagal menyiapkan query count: " . mysqli_error($koneksi));
-}
-if ($search !== '') {
-    $keyword = "%{$search}%";
-    mysqli_stmt_bind_param(
-        $stmt_count,
-        "ss",
-        $keyword,
-        $keyword
-    );
-}
-
-mysqli_stmt_execute($stmt_count);
-$result_count = mysqli_stmt_get_result($stmt_count);
-$row_count = mysqli_fetch_assoc($result_count);
-$total = (int)($row_count['n'] ?? 0);
+$total = LowonganRepository::countWithSearch($koneksi, $search);
 $total_pages = max(
     1,
     (int)ceil($total / $limit)
 );
-mysqli_stmt_close($stmt_count);
+$page = min($page, $total_pages);
+$offset = ($page - 1) * $limit;
 
-/*--DATA LOWONGAN--*/
-$data_sql = "
-    SELECT
-        lk.id,
-        lk.perusahaan_id,
-        lk.judul_posisi,
-        lk.deskripsi_pekerjaan,
-        lk.kuota,
-        lk.batas_pendaftaran,
-        lk.status_loker,
-        lk.created_at,
-        lk.updated_at,
-
-        p.nama_perusahaan
-    FROM lowongan_kerja AS lk
-    INNER JOIN perusahaan AS p
-        ON p.id = lk.perusahaan_id
-    $where
-    ORDER BY lk.created_at DESC
-    LIMIT ? OFFSET ?
-";
-
-$stmt_data = mysqli_prepare($koneksi, $data_sql);
-if (!$stmt_data) {
-    die("Gagal menyiapkan query data: " . mysqli_error($koneksi));
-}
-if ($search !== '') {
-    $keyword = "%{$search}%";
-    mysqli_stmt_bind_param(
-        $stmt_data,
-        "ssii",
-        $keyword,
-        $keyword,
-        $limit,
-        $offset
-    );
-
-} else {
-    mysqli_stmt_bind_param(
-        $stmt_data,
-        "ii",
-        $limit,
-        $offset
-    );
-}
-mysqli_stmt_execute($stmt_data);
-$result_data = mysqli_stmt_get_result($stmt_data);
-$data = mysqli_fetch_all(
-    $result_data,
-    MYSQLI_ASSOC
-);
-mysqli_stmt_close($stmt_data);
-
-/*--DATA PERUSAHAAN UNTUK SELECT--*/
-$perusahaan_sql = "
-    SELECT
-        id,
-        nama_perusahaan
-    FROM perusahaan
-    ORDER BY nama_perusahaan ASC
-";
-
-$result_perusahaan = mysqli_query(
-    $koneksi,
-    $perusahaan_sql
-);
-if (!$result_perusahaan) {
-    die(
-        "Gagal mengambil data perusahaan: "
-        . mysqli_error($koneksi)
-    );
-}
-
-$perusahaan_list = mysqli_fetch_all(
-    $result_perusahaan,
-    MYSQLI_ASSOC
-);
+$data = LowonganRepository::getPaginated($koneksi, $search, $limit, $offset);
+$perusahaan_list = PerusahaanRepository::getOptions($koneksi);
 
 $page_title = "Lowongan Kerja";
 ?>
@@ -149,9 +43,10 @@ $page_title = "Lowongan Kerja";
 
         <!-- FLASH MESSAGE -->
         <?php if (isset($_GET['msg'])): ?>
+            <?php $message_type = $_GET['type'] ?? 'success'; ?>
             <div class="alert alert-<?= htmlspecialchars($_GET['type'] ?? 'success') ?> flash-alert">
-                <i class="fa-solid fa-circle-check"></i>
-                <?= htmlspecialchars(urldecode($_GET['msg'])) ?>
+                <i class="fa-solid <?= $message_type === 'danger' ? 'fa-triangle-exclamation' : 'fa-circle-check' ?>"></i>
+                <?= htmlspecialchars($_GET['msg'], ENT_QUOTES, 'UTF-8') ?>
             </div>
         <?php endif; ?>
 
@@ -184,7 +79,7 @@ $page_title = "Lowongan Kerja";
                 <form method="GET" style="display:flex;gap:.5rem;align-items:center;">
                     <div class="search-box">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Cari posisi / perusahaan...">
+                        <input type="text" name="search" maxlength="255" value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8') ?>" placeholder="Cari posisi / perusahaan...">
                     </div>
 
                     <button type="submit" class="btn btn-outline btn-sm">
@@ -315,7 +210,7 @@ $page_title = "Lowongan Kerja";
                     <span class="pagination-info">Menampilkan
                         <?= $total > 0 ? $offset + 1 : 0 ?>
                         –
-                        <?= min($offset + $limit, $total) ?>dari <?= $total ?>
+                        <?= min($offset + $limit, $total) ?> dari <?= $total ?>
                     </span>
                     <div class="pagination-btns">
                         <?php if ($page > 1): ?>
@@ -356,6 +251,7 @@ $page_title = "Lowongan Kerja";
         </div>
 
         <form method="POST" action="backend/lowongan_handler.php">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="action" value="tambah">
             <div class="modal-body">
 
@@ -385,7 +281,7 @@ $page_title = "Lowongan Kerja";
                         <label>
                             Posisi<span class="required">*</span>
                         </label>
-                        <input type="text" name="judul_posisi" class="form-control" required maxlength="150" placeholder="Teknisi Komputer">
+                        <input type="text" name="judul_posisi" class="form-control" required maxlength="100" placeholder="Teknisi Komputer">
                     </div>
                 </div>
 
@@ -394,7 +290,7 @@ $page_title = "Lowongan Kerja";
                     <label>
                         Deskripsi<span class="required">*</span>
                     </label>
-                    <textarea name="deskripsi_pekerjaan" class="form-control" required rows="5" placeholder="Deskripsi pekerjaan dan persyaratan..."></textarea>
+                    <textarea name="deskripsi_pekerjaan" class="form-control" required maxlength="10000" rows="5" placeholder="Deskripsi pekerjaan dan persyaratan..."></textarea>
                 </div>
 
                 <!-- KUOTA + BATAS -->
@@ -403,7 +299,7 @@ $page_title = "Lowongan Kerja";
                         <label>
                             Kuota<span class="required">*</span>
                         </label>
-                        <input type="number" name="kuota" class="form-control" required min="1" placeholder="5">
+                        <input type="number" name="kuota" class="form-control" required min="1" max="2147483647" placeholder="5">
                     </div>
                     <div class="form-group">
                         <label>
@@ -458,6 +354,7 @@ $page_title = "Lowongan Kerja";
         </div>
 
         <form method="POST" action="backend/lowongan_handler.php">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="action" value="edit">
             <input type="hidden" name="id" id="e_id">
             <div class="modal-body">
@@ -483,7 +380,7 @@ $page_title = "Lowongan Kerja";
                         <label>
                             Posisi<span class="required">*</span>
                         </label>
-                        <input type="text" name="judul_posisi" id="e_judul_posisi" class="form-control" required maxlength="150">
+                        <input type="text" name="judul_posisi" id="e_judul_posisi" class="form-control" required maxlength="100">
                     </div>
                 </div>
 
@@ -492,7 +389,7 @@ $page_title = "Lowongan Kerja";
                     <label>
                         Deskripsi<span class="required">*</span>
                     </label>
-                    <textarea name="deskripsi_pekerjaan" id="e_deskripsi_pekerjaan" class="form-control" required rows="5"></textarea>
+                    <textarea name="deskripsi_pekerjaan" id="e_deskripsi_pekerjaan" class="form-control" required maxlength="10000" rows="5"></textarea>
                 </div>
 
                 <!-- KUOTA + BATAS -->
@@ -501,7 +398,7 @@ $page_title = "Lowongan Kerja";
                         <label>
                             Kuota<span class="required">*</span>
                         </label>
-                        <input type="number" name="kuota" id="e_kuota" class="form-control" required min="1">
+                        <input type="number" name="kuota" id="e_kuota" class="form-control" required min="1" max="2147483647">
                     </div>
                     <div class="form-group">
                         <label>
@@ -539,58 +436,11 @@ $page_title = "Lowongan Kerja";
 
 <!--FORM HAPUS -->
 <form method="POST" action="backend/lowongan_handler.php" id="formHapus">
+    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
     <input type="hidden" name="action" value="hapus">
     <input type="hidden" name="id" id="hapus_id">
 </form>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="assets/admin.js"></script>
-<script>
-
-/*--EDIT LOWONGAN--*/
-function editLoker(d) {
-    document.getElementById('e_id').value =
-        d.id;
-    document.getElementById('e_perusahaan_id').value =
-        d.perusahaan_id;
-    document.getElementById('e_judul_posisi').value =
-        d.judul_posisi;
-    document.getElementById('e_deskripsi_pekerjaan').value =
-        d.deskripsi_pekerjaan;
-    document.getElementById('e_kuota').value =
-        d.kuota;
-    document.getElementById('e_batas_pendaftaran').value =
-        d.batas_pendaftaran;
-    document.getElementById('e_status_loker').value =
-        d.status_loker;
-    openModal('modalEdit');
-}
-
-/*--HAPUS LOWONGAN--*/
-function hapusLoker(id, nama) {
-    Swal.fire({
-        title: 'Hapus Lowongan?',
-        html:
-            'Lowongan <strong>' +
-            nama +
-            '</strong> akan dihapus permanen!',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#64748b',
-        confirmButtonText: 'Ya, Hapus!',
-        cancelButtonText: 'Batal',
-        reverseButtons: true
-    }).then((result) => {
-        if (result.isConfirmed) {
-            document.getElementById(
-                'hapus_id'
-            ).value = id;
-            document.getElementById(
-                'formHapus'
-            ).submit();
-        }
-    });
-}
-</script>
 </body>
 </html>

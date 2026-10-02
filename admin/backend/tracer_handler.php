@@ -2,62 +2,90 @@
 /**
  * Handler CRUD — Tracer Study
  */
-session_start();
 require_once '../../backend/connection.php';
+require_once '../../backend/helpers.php';
+require_once '../../backend/repositories/bootstrap.php';
+$authLoginPath = '../login_admin.php';
+require_once '../includes/auth.php';
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login_admin.php");
-    exit;
+function redirectTracer(string $message, string $type = 'success'): void
+{
+    redirectWithMessage('../tracer.php', $message, $type);
 }
-
-$action = $_POST['action'] ?? '';
 
 try {
-    if ($action === 'tambah') {
-        $pendapatan = !empty($_POST['pendapatan_bulanan']) ? (int)$_POST['pendapatan_bulanan'] : null;
-        $nama_instansi = !empty($_POST['nama_instansi']) ? $_POST['nama_instansi'] : null;
-        $stmt = mysqli_prepare($koneksi,
-            "INSERT INTO tracer_study (id_siswa, tahun_lulus, status_alumni, nama_instansi, pendapatan_bulanan)
-             VALUES (?,?,?,?,?)"
-        );
-        mysqli_stmt_bind_param($stmt, 'iissi',
-            $_POST['id_siswa'], $_POST['tahun_lulus'], $_POST['status_alumni'],
-            $nama_instansi, $pendapatan
-        );
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-        $msg = urlencode("Data tracer study berhasil ditambahkan!");
-        header("Location: ../tracer.php?msg=$msg&type=success");
-
-    } elseif ($action === 'edit') {
-        $pendapatan = !empty($_POST['pendapatan_bulanan']) ? (int)$_POST['pendapatan_bulanan'] : null;
-        $nama_instansi = !empty($_POST['nama_instansi']) ? $_POST['nama_instansi'] : null;
-        $stmt = mysqli_prepare($koneksi,
-            "UPDATE tracer_study SET id_siswa=?, tahun_lulus=?, status_alumni=?, nama_instansi=?, pendapatan_bulanan=?
-             WHERE id=?"
-        );
-        mysqli_stmt_bind_param($stmt, 'iissii',
-            $_POST['id_siswa'], $_POST['tahun_lulus'], $_POST['status_alumni'],
-            $nama_instansi, $pendapatan, $_POST['id']
-        );
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-        $msg = urlencode("Data tracer study berhasil diperbarui!");
-        header("Location: ../tracer.php?msg=$msg&type=success");
-
-    } elseif ($action === 'hapus') {
-        $stmt = mysqli_prepare($koneksi, "DELETE FROM tracer_study WHERE id=?");
-        mysqli_stmt_bind_param($stmt, 'i', $_POST['id']);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-        $msg = urlencode("Data tracer study berhasil dihapus.");
-        header("Location: ../tracer.php?msg=$msg&type=success");
-
-    } else {
-        header("Location: ../tracer.php");
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        throw new InvalidArgumentException('Akses tidak valid.');
     }
-} catch (Exception $e) {
-    $msg = urlencode("Gagal: " . $e->getMessage());
-    header("Location: ../tracer.php?msg=$msg&type=danger");
+
+    verifyCsrfToken($_POST['csrf_token'] ?? null);
+    $action = validateEnum($_POST['action'] ?? null, ['tambah', 'edit', 'hapus'], 'aksi');
+
+    if ($action === 'hapus') {
+        $id = validateInteger($_POST['id'] ?? null, 'ID tracer', 1, 2147483647);
+        if (!TracerRepository::delete($koneksi, $id)) {
+            throw new InvalidArgumentException('Data tracer tidak ditemukan.');
+        }
+        redirectTracer('Data tracer study berhasil dihapus.');
+    }
+
+    $id = $action === 'edit'
+        ? validateInteger($_POST['id'] ?? null, 'ID tracer', 1, 2147483647)
+        : 0;
+    $namaSiswa = validateString($_POST['nama_siswa'] ?? null, 'Nama siswa', 1, 150);
+    $siswa = SiswaRepository::findUniqueByName($koneksi, $namaSiswa);
+    if (!$siswa) {
+        throw new InvalidArgumentException('Nama siswa tidak ditemukan di data siswa.');
+    }
+
+    $siswaId = (int) $siswa['id'];
+    if (TracerRepository::findByStudentId($koneksi, $siswaId, $id)) {
+        throw new InvalidArgumentException('Siswa tersebut sudah memiliki data tracer study.');
+    }
+
+    $tahunLulus = validateInteger($_POST['tahun_lulus'] ?? null, 'Tahun lulus', 1901, (int) date('Y'));
+    $statusAlumni = validateEnum(
+        $_POST['status_alumni'] ?? null,
+        ['Bekerja', 'Kuliah', 'Wirausaha', 'Mencari Kerja', 'menikah'],
+        'status alumni'
+    );
+
+    $namaInstansi = $_POST['nama_instansi'] ?? '';
+    if (!is_string($namaInstansi)) {
+        throw new InvalidArgumentException('Nama instansi tidak valid.');
+    }
+    $namaInstansi = trim($namaInstansi) === ''
+        ? null
+        : validateString($namaInstansi, 'Nama instansi', 1, 150);
+
+    $pendapatanInput = $_POST['pendapatan_bulanan'] ?? '';
+    $pendapatan = $pendapatanInput === ''
+        ? null
+        : validateInteger($pendapatanInput, 'Pendapatan bulanan', 0, 2147483647);
+
+    $data = [
+        'siswa_id' => $siswaId,
+        'tahun_lulus' => $tahunLulus,
+        'status_alumni' => $statusAlumni,
+        'nama_instansi' => $namaInstansi,
+        'pendapatan_bulanan' => $pendapatan,
+    ];
+
+    $saved = $action === 'tambah'
+        ? TracerRepository::create($koneksi, $data)
+        : TracerRepository::update($koneksi, $id, $data);
+    if (!$saved) {
+        throw new RuntimeException($action === 'tambah'
+            ? 'Gagal menyimpan data tracer study.'
+            : 'Gagal memperbarui data tracer study.');
+    }
+
+    redirectTracer($action === 'tambah'
+        ? 'Data tracer study berhasil ditambahkan!'
+        : 'Data tracer study berhasil diperbarui!');
+} catch (InvalidArgumentException $e) {
+    redirectTracer('Gagal: ' . $e->getMessage(), 'danger');
+} catch (Throwable $e) {
+    error_log('Tracer handler error: ' . $e->getMessage());
+    redirectTracer('Terjadi kesalahan saat memproses data tracer study.', 'danger');
 }
-exit;

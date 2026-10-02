@@ -2,160 +2,8 @@
 session_start();
 require_once '../backend/connection.php';
 require_once 'includes/auth.php';
-$stats = [];
+require_once 'backend/dashboard_data.php';
 
-/*--STATISTIK DASHBOARD--*/
-$queries = [
-
-    // Jumlah perusahaan
-    'perusahaan' => "
-        SELECT COUNT(*) AS n
-        FROM perusahaan
-    ",
-
-    // Jumlah perusahaan dengan status MOU
-    'mou_aktif' => "
-        SELECT COUNT(*) AS n
-        FROM perusahaan
-        WHERE status_mou IS NOT NULL
-        AND status_mou != ''
-    ",
-
-    // Jumlah semua lowongan
-    'lowongan' => "
-        SELECT COUNT(*) AS n
-        FROM lowongan_kerja
-    ",
-
-    // Jumlah lowongan yang masih buka
-    'loker_buka' => "
-        SELECT COUNT(*) AS n
-        FROM lowongan_kerja
-        WHERE status_loker = 'Buka'
-    ",
-
-    // Jumlah siswa
-    'siswa' => "
-        SELECT COUNT(*) AS n
-        FROM siswa
-    ",
-
-    // Jumlah alumni
-    'alumni' => "
-        SELECT COUNT(*) AS n
-        FROM siswa
-        WHERE status_alumni = 1
-    ",
-
-    // Jumlah penempatan PKL
-    'pkl' => "
-        SELECT COUNT(*) AS n
-        FROM pkl_penempatan
-    ",
-
-    // Jumlah PKL yang disetujui
-    'pkl_aktif' => "
-        SELECT COUNT(*) AS n
-        FROM pkl_penempatan
-        WHERE status_penempatan = 'Disetujui'
-    ",
-
-    // Jumlah data tracer study
-    'tracer' => "
-        SELECT COUNT(*) AS n
-        FROM tracer_study
-    ",
-
-    // Jumlah pengguna
-    'users' => "
-        SELECT COUNT(*) AS n
-        FROM users
-    "
-];
-
-/*--JALANKAN QUERY STATISTIK--*/
-foreach ($queries as $key => $sql) {
-    $res = mysqli_query($koneksi, $sql);
-    if ($res) {
-        $row = mysqli_fetch_assoc($res);
-        $stats[$key] = $row['n'] ?? 0;
-    } else {
-        $stats[$key] = 0;
-    }
-}
-
-/*--LOWONGAN YANG AKAN SEGERA DITUTUP--*/
-$sql_expiring = "
-    SELECT
-        lk.judul_posisi AS posisi,
-        p.nama_perusahaan AS perusahaan,
-        lk.batas_pendaftaran,
-        lk.status_loker
-
-    FROM lowongan_kerja lk
-
-    INNER JOIN perusahaan p
-        ON p.id = lk.perusahaan_id
-
-    WHERE lk.status_loker = 'Buka'
-
-    AND lk.batas_pendaftaran
-        BETWEEN CURDATE()
-        AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-
-    ORDER BY lk.batas_pendaftaran ASC
-
-    LIMIT 5
-";
-
-$expiring = mysqli_query($koneksi, $sql_expiring);
-$sql_pkl = "
-    SELECT
-        s.nama_siswa AS siswa,
-        p.nama_perusahaan AS perusahaan,
-        pk.pembimbing_guru,
-        pk.status_penempatan,
-        pk.tanggal_mulai,
-        pk.tanggal_selesai
-    FROM pkl_penempatan pk
-    INNER JOIN siswa s
-        ON s.id = pk.siswa_id
-    INNER JOIN perusahaan p
-        ON p.id = pk.perusahaan_id
-    ORDER BY pk.created_at DESC
-    LIMIT 6
-";
-$pkl_terbaru = mysqli_query($koneksi, $sql_pkl);
-$sql_tracer_dist = "
-    SELECT
-        status_alumni,
-        COUNT(*) AS n
-    FROM tracer_study
-    GROUP BY status_alumni
-";
-$tracer_dist = mysqli_query($koneksi, $sql_tracer_dist);
-$tracer_data = [];
-if ($tracer_dist) {
-    while ($r = mysqli_fetch_assoc($tracer_dist)) {
-        $tracer_data[$r['status_alumni']] = $r['n'];
-    }
-}
-
-/*--DEFAULT DATA TRACER--*/
-$tracer_data['Bekerja'] =
-    $tracer_data['Bekerja'] ?? 0;
-
-$tracer_data['Kuliah'] =
-    $tracer_data['Kuliah'] ?? 0;
-
-$tracer_data['Wirausaha'] =
-    $tracer_data['Wirausaha'] ?? 0;
-
-$tracer_data['Mencari Kerja'] =
-    $tracer_data['Mencari Kerja'] ?? 0;
-
-$tracer_data['Menikah'] =
-    $tracer_data['Menikah'] ?? 0;
 $page_title = "Dashboard";
 ?>
 <!DOCTYPE html>
@@ -168,60 +16,6 @@ $page_title = "Dashboard";
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/admin-style.css">
-    <style>
-        /* ── Dashboard Extras ── */
-        .welcome-banner {
-            background: linear-gradient(135deg, var(--navy) 0%, var(--slate) 60%, #1e3a8a 100%);
-            border-radius: var(--radius-lg);
-            padding: 1.75rem 2rem;
-            color: white;
-            display: flex; align-items: center;
-            justify-content: space-between; gap: 1rem;
-            position: relative; overflow: hidden;
-        }
-        .welcome-banner::before {
-            content: '';
-            position: absolute; top: -40px; right: -40px;
-            width: 200px; height: 200px;
-            background: radial-gradient(circle, rgba(37,99,235,.35) 0%, transparent 70%);
-        }
-        .welcome-banner::after {
-            content: '';
-            position: absolute; bottom: -60px; right: 120px;
-            width: 160px; height: 160px;
-            background: radial-gradient(circle, rgba(245,158,11,.2) 0%, transparent 70%);
-        }
-        .welcome-text h2 { font-size: 1.4rem; font-weight: 800; margin-bottom: .35rem; }
-        .welcome-text p  { font-size: .9rem; color: #94a3b8; font-weight: 500; }
-        .welcome-badge {
-            background: rgba(37,99,235,.25);
-            border: 1px solid rgba(96,165,250,.3);
-            color: #93c5fd; padding: .45rem 1rem;
-            border-radius: 20px; font-size: .8rem;
-            font-weight: 700; white-space: nowrap;
-            position: relative; z-index: 1;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 1.25rem;
-        }
-        .tracer-donut-wrap {
-            display: flex; flex-direction: column; gap: 1rem;
-            padding: 1.25rem;
-        }
-        .tracer-item {
-            display: flex; align-items: center;
-            justify-content: space-between; gap: .75rem;
-        }
-        .tracer-bar-wrap { flex: 1; height: 8px; background: var(--slate-200); border-radius: 10px; overflow: hidden; }
-        .tracer-bar { height: 100%; border-radius: 10px; transition: width .8s ease; }
-        .tracer-label { font-size: .82rem; font-weight: 600; color: var(--navy); min-width: 100px; }
-        .tracer-count { font-size: .82rem; font-weight: 700; color: var(--slate-600); min-width: 30px; text-align: right; }
-
-        @media (max-width: 900px) { .dashboard-grid { grid-template-columns: 1fr; } }
-    </style>
 </head>
 <body>
 <?php include 'includes/sidebar.php'; ?>
@@ -231,7 +25,8 @@ $page_title = "Dashboard";
 
         <!-- Flash Messages -->
         <?php if (isset($_GET['msg'])): ?>
-        <div class="alert alert-<?= $_GET['type'] ?? 'success' ?> flash-alert">
+        <?php $alertType = in_array($_GET['type'] ?? '', ['success', 'danger', 'warning', 'info'], true) ? $_GET['type'] : 'success'; ?>
+        <div class="alert alert-<?= htmlspecialchars($alertType, ENT_QUOTES, 'UTF-8') ?> flash-alert">
             <i class="fa-solid fa-circle-check"></i>
             <?= htmlspecialchars(urldecode($_GET['msg'])) ?>
         </div>
@@ -331,9 +126,8 @@ $page_title = "Dashboard";
                         </thead>
                         <tbody>
                         <?php
-                        $has_pkl = false;
-                        while ($row = mysqli_fetch_assoc($pkl_terbaru)):
-                            $has_pkl = true;
+                        $has_pkl = !empty($pkl_terbaru);
+                        foreach ($pkl_terbaru as $row):
                             $badge = match($row['status_penempatan']) {
                                 'Disetujui' => 'badge-green',
                                 'Selesai'   => 'badge-blue',
@@ -347,7 +141,7 @@ $page_title = "Dashboard";
                                 <td><?= date('d/m/Y', strtotime($row['tanggal_selesai'])) ?></td>
                                 <td><span class="badge <?= $badge ?>"><?= $row['status_penempatan'] ?></span></td>
                             </tr>
-                        <?php endwhile; ?>
+                        <?php endforeach; ?>
                         <?php if (!$has_pkl): ?>
                             <tr><td colspan="5">
                                 <div class="table-empty">
@@ -410,8 +204,7 @@ $page_title = "Dashboard";
 
         <!-- Lowongan Akan Segera Tutup -->
         <?php
-        $expiring_rows = [];
-        while ($r = mysqli_fetch_assoc($expiring)) $expiring_rows[] = $r;
+        $expiring_rows = $expiring;
         if (!empty($expiring_rows)):
         ?>
         <div class="card">

@@ -1,58 +1,83 @@
 <?php
-session_start();
 require_once '../../backend/connection.php';
+require_once '../../backend/helpers.php';
+require_once '../../backend/repositories/bootstrap.php';
+$authLoginPath = '../login_admin.php';
+require_once '../includes/auth.php';
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login_admin.php");
-    exit;
+function redirectPerusahaan(string $message, string $type = 'success'): void
+{
+    redirectWithMessage('../perusahaan.php', $message, $type);
 }
 
 $action = $_POST['action'] ?? '';
 
 try {
-    if ($action === 'tambah') {
-        $stmt = mysqli_prepare($koneksi,
-            "INSERT INTO perusahaan (nama_perusahaan, sektor_bidang, jurusan, alamat, penanggung_jawab, no_telepon, status_mou)
-             VALUES (?,?,?,?,?,?,?)"
-        );
-        mysqli_stmt_bind_param($stmt, 'sssssss',
-            $_POST['nama_perusahaan'], $_POST['sektor_bidang'], $_POST['jurusan'], $_POST['alamat'],
-            $_POST['penanggung_jawab'], $_POST['no_telepon'], $_POST['status_mou']
-        );
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-        $msg = urlencode("Perusahaan berhasil ditambahkan!");
-        header("Location: ../perusahaan.php?msg=$msg&type=success");
+    verifyCsrfToken($_POST['csrf_token'] ?? null);
 
-    } elseif ($action === 'edit') {
-        $stmt = mysqli_prepare($koneksi,
-            "UPDATE perusahaan SET nama_perusahaan=?, sektor_bidang=?, jurusan=?, alamat=?, penanggung_jawab=?, no_telepon=?, status_mou=?
-             WHERE id=?"
-        );
-        mysqli_stmt_bind_param($stmt, 'sssssssi',
-            $_POST['nama_perusahaan'], $_POST['sektor_bidang'], 
-            $_POST['jurusan'], $_POST['alamat'],
-            $_POST['penanggung_jawab'], $_POST['no_telepon'],
-            $_POST['status_mou'], $_POST['id']
-        );
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-        $msg = urlencode("Data perusahaan berhasil diperbarui!");
-        header("Location: ../perusahaan.php?msg=$msg&type=success");
-
-    } elseif ($action === 'hapus') {
-        $stmt = mysqli_prepare($koneksi, "DELETE FROM perusahaan WHERE id=?");
-        mysqli_stmt_bind_param($stmt, 'i', $_POST['id']);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-        $msg = urlencode("Perusahaan berhasil dihapus.");
-        header("Location: ../perusahaan.php?msg=$msg&type=success");
-
-    } else {
-        header("Location: ../perusahaan.php");
+    if ($action !== 'hapus') {
+        $nama_perusahaan = validateString($_POST['nama_perusahaan'] ?? null, 'Nama perusahaan', 1, 150);
+        $sektor_bidang = validateString($_POST['sektor_bidang'] ?? null, 'Sektor bidang', 1, 100);
+        $jurusan = validateString($_POST['jurusan'] ?? null, 'Jurusan', 1, 5000);
+        $alamat = validateString($_POST['alamat'] ?? null, 'Alamat', 1, 5000);
+        $penanggung_jawab = validateString($_POST['penanggung_jawab'] ?? null, 'Penanggung jawab', 1, 100);
+        $no_telepon = validateString($_POST['no_telepon'] ?? null, 'Nomor telepon', 1, 20);
+        $jumlahDigitTelepon = strlen((string) preg_replace('/\D/', '', $no_telepon));
+        if (
+            !preg_match('/^\+?[0-9][0-9() .-]*[0-9]$/D', $no_telepon)
+            || $jumlahDigitTelepon < 5
+            || $jumlahDigitTelepon > 15
+        ) {
+            throw new InvalidArgumentException('Nomor telepon harus berisi 5 sampai 15 digit dan hanya menggunakan format telepon yang valid.');
+        }
+        $status_mou = validateEnum($_POST['status_mou'] ?? null, ['Proses', 'Aktif', 'Kadaluarsa'], 'status MoU');
     }
-} catch (Exception $e) {
-    $msg = urlencode("Gagal: " . $e->getMessage());
-    header("Location: ../perusahaan.php?msg=$msg&type=danger");
+
+    if ($action === 'tambah') {
+        if (!PerusahaanRepository::create($koneksi, [
+            'nama_perusahaan' => $nama_perusahaan,
+            'sektor_bidang' => $sektor_bidang,
+            'jurusan' => $jurusan,
+            'alamat' => $alamat,
+            'penanggung_jawab' => $penanggung_jawab,
+            'no_telepon' => $no_telepon,
+            'status_mou' => $status_mou,
+        ])) {
+            throw new RuntimeException('Gagal menyimpan data perusahaan.');
+        }
+
+        redirectPerusahaan('Perusahaan berhasil ditambahkan!');
+    }
+
+    if ($action === 'edit') {
+        $perusahaan_id = validateInteger($_POST['id'] ?? null, 'ID perusahaan', 1, 2147483647);
+
+        if (!PerusahaanRepository::update($koneksi, $perusahaan_id, [
+            'nama_perusahaan' => $nama_perusahaan,
+            'sektor_bidang' => $sektor_bidang,
+            'jurusan' => $jurusan,
+            'alamat' => $alamat,
+            'penanggung_jawab' => $penanggung_jawab,
+            'no_telepon' => $no_telepon,
+            'status_mou' => $status_mou,
+        ])) {
+            throw new RuntimeException('Gagal memperbarui data perusahaan.');
+        }
+
+        redirectPerusahaan('Data perusahaan berhasil diperbarui!');
+    }
+
+    if ($action === 'hapus') {
+        $id = validateInteger($_POST['id'] ?? null, 'ID perusahaan', 1, 2147483647);
+
+        if (!PerusahaanRepository::delete($koneksi, $id)) {
+            throw new RuntimeException('Gagal menghapus data perusahaan.');
+        }
+        redirectPerusahaan('Perusahaan berhasil dihapus.');
+    }
+
+    throw new InvalidArgumentException('Aksi perusahaan tidak valid.');
+} catch (Throwable $e) {
+    redirectPerusahaan('Gagal: ' . $e->getMessage(), 'danger');
 }
 exit;
