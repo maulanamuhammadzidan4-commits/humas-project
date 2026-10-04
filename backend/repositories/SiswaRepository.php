@@ -2,6 +2,20 @@
 
 final class SiswaRepository
 {
+    private const CLASS_MAJORS = ['AT', 'TJKT', 'PPLG', 'TE'];
+
+    public static function getClassOptions(): array
+    {
+        $classes = [];
+        foreach (self::CLASS_MAJORS as $major) {
+            for ($number = 1; $number <= 5; $number++) {
+                $classes[] = "XII {$major} {$number}";
+            }
+        }
+
+        return $classes;
+    }
+
     public static function countWithSearch(mysqli $connection, string $search): int
     {
         $where = $search === '' ? '' : ' WHERE nisn LIKE ? OR nama_siswa LIKE ? OR kelas LIKE ? OR jurusan LIKE ?';
