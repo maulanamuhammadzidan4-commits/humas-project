@@ -27,7 +27,7 @@ try {
         $nisn = validateString($_POST['nisn'] ?? null, 'NISN', 10, 10);
         $nama_siswa = validateString($_POST['nama_siswa'] ?? null, 'Nama siswa', 1, 150);
         $kelas = validateEnum($_POST['kelas'] ?? null, SiswaRepository::getClassOptions(), 'kelas');
-        $jurusan = validateString($_POST['jurusan'] ?? null, 'Jurusan', 1, 50);
+        $jurusan = validateEnum($_POST['jurusan'] ?? null, SiswaRepository::getMajorOptions(), 'jurusan');
         $status_alumni = isset($_POST['status_alumni'])
             ? (validateEnum($_POST['status_alumni'], ['1'], 'status alumni') === '1' ? 1 : 0)
             : 0;
@@ -58,7 +58,7 @@ try {
         $nisn = validateString($_POST['nisn'] ?? null, 'NISN', 10, 10);
         $nama_siswa = validateString($_POST['nama_siswa'] ?? null, 'Nama siswa', 1, 150);
         $kelas = validateEnum($_POST['kelas'] ?? null, SiswaRepository::getClassOptions(), 'kelas');
-        $jurusan = validateString($_POST['jurusan'] ?? null, 'Jurusan', 1, 50);
+        $jurusan = validateEnum($_POST['jurusan'] ?? null, SiswaRepository::getMajorOptions(), 'jurusan');
         $status_alumni = isset($_POST['status_alumni'])
             ? (validateEnum($_POST['status_alumni'], ['1'], 'status alumni') === '1' ? 1 : 0)
             : 0;
