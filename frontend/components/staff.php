@@ -40,7 +40,7 @@
                     <img src="assets/img/bu_dede.jpg" alt="Staff Humas 2">
                 </div>
                 <h3>Dede Rasih, S.Pd</h3>
-                <span class="staff-role">Bursa Kerja Khusus (BKK)</span>
+                <span class="staff-role">Arsip dan Protokoler</span>
                 <p>Mengelola dokumentasi, portal berita, dan saluran komunikasi resmi sekolah.</p>
                 <div class="staff-socials">
                     <a href="#" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>
@@ -53,7 +53,7 @@
                     <img src="assets/img/pa_firman.jpg" alt="Staff Humas 2">
                 </div>
                 <h3> Firman Herdiana, S.Pd.</h3>
-                <span class="staff-role">Bursa Kerja Khusus (BKK)</span>
+                <span class="staff-role">Publikasi dan Informasi</span>
                 <p>Mengelola dokumentasi, portal berita, dan saluran komunikasi resmi sekolah.</p>
                 <div class="staff-socials">
                     <a href="#" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>
@@ -66,7 +66,7 @@
                     <img src="assets/img/pa_guntur.jpg" alt="Staff Humas 2">
                 </div>
                 <h3>Guntur Irfan Haerudin, S.Kom</h3>
-                <span class="staff-role">Bursa Kerja Khusus (BKK)</span>
+                <span class="staff-role">Hubungan Eksternal</span>
                 <p>Mengelola dokumentasi, portal berita, dan saluran komunikasi resmi sekolah.</p>
                 <div class="staff-socials">
                     <a href="#" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>
@@ -80,7 +80,7 @@
                         alt="Staff Humas 2">
                 </div>
                 <h3>Sutanto Wibowo, S.Pd.</h3>
-                <span class="staff-role">Bursa Kerja Khusus (BKK)</span>
+                <span class="staff-role">Publikasi dan Informasi</span>
                 <p>Mengelola dokumentasi, portal berita, dan saluran komunikasi resmi sekolah.</p>
                 <div class="staff-socials">
                     <a href="#" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>
