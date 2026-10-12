@@ -33,7 +33,7 @@
                     <li><a href="#kegiatan"><i class="fa-solid fa-chevron-right"></i> Kunjungan Industri</a></li>
                     <li><a href="#kegiatan"><i class="fa-solid fa-chevron-right"></i> Kemitraan Perusahaan</a></li>
                     <li><a href="#kegiatan"><i class="fa-solid fa-chevron-right"></i> Program Magang PKL</a></li>
-                    <li><a href="/humas-project/admin/login_admin.php"><i class="fa-solid fa-chevron-right"></i> Portal Admin</a></li>
+                    <li><a href="/admin/login_admin.php"><i class="fa-solid fa-chevron-right"></i> Portal Admin</a></li>
                 </ul>
             </div>
 
