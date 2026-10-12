@@ -3,7 +3,7 @@
             <span class="section-tag">KABAR TERBARU</span>
             <h2>Berita & Informasi</h2>
             <p>
-                Informasi terbaru, pengumuman, dan liputan kegiatan dari Humas SMK.
+                Informasi terbaru, pengumuman, dan liputan kegiatan dari Humas SMKN 1 Maja.
             </p>
         </div>
 

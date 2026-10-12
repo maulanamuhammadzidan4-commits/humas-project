@@ -3,10 +3,10 @@
         <div class="footer-container">
             <div class="footer-col">
                 <div class="logo" style="color: white; margin-bottom: 16px;">
-                    <i class="fa-solid fa-graduation-cap"></i> HUMAS <span style="color: var(--brand-gold);">SMK</span>
+                    <i class="fa-solid fa-graduation-cap"></i> HUMAS <span style="color: var(--brand-gold);">SMKN 1 Maja</span>
                 </div>
                 <p>
-                    Portal Resmi Hubungan Masyarakat SMK. Berkomitmen membangun sinergi antara dunia pendidikan
+                    Portal Resmi Hubungan Masyarakat SMKN 1 Maja. Berkomitmen membangun sinergi antara dunia pendidikan
                     kejuruan dan dunia kerja secara berkelanjutan.
                 </p>
                 <div class="footer-socials">
@@ -39,15 +39,14 @@
 
             <div class="footer-col">
                 <h4>Hubungi Kami</h4>
-                <p><i class="fa-solid fa-location-dot" style="color: var(--brand-gold);"></i> Jl. Contoh No. 123, Jawa
-                    Barat</p>
-                <p><i class="fa-solid fa-phone" style="color: var(--brand-gold);"></i> (021) 555-0123</p>
-                <p><i class="fa-solid fa-envelope" style="color: var(--brand-gold);"></i> humas@smk.sch.id</p>
+                <p><i class="fa-solid fa-location-dot" style="color: var(--brand-gold);"></i> Jl. Pasukan Sindangkasih No. 155, Desa Maja Selatan, Kecamatan Maja, Kabupaten Majalengka, Jawa Barat.</p>
+                <p><i class="fa-solid fa-phone" style="color: var(--brand-gold);"></i> (0233) 282480.</p>
+                <p><i class="fa-solid fa-envelope" style="color: var(--brand-gold);"></i> smkn1maja@yahoo.co.id</p>
             </div>
         </div>
 
         <div class="footer-bottom">
-            <p>&copy; 2026 Humas SMK. All Rights Reserved.</p>
+            <p>&copy; 2026 Humas SMKN 1 Maja. All Rights Reserved.</p>
             <p>Website Hubungan Masyarakat & Kemitraan Industri Sekolah</p>
         </div>
     </footer>

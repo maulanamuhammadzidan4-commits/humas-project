@@ -2,7 +2,7 @@
     <nav>
         <div class="logo">
             <i class="fa-solid fa-graduation-cap"></i>
-            HUMAS <span>SMK</span>
+            HUMAS <span>SMKN 1 MAJA</span>
         </div>
 
         <ul class="menu" id="navMenu">

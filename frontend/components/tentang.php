@@ -3,7 +3,7 @@
             <span class="section-tag">PERAN & FUNGSI</span>
             <h2>Tentang Humas</h2>
             <p>
-                Mengenal lebih dekat peran strategis dan fungsi Humas SMK dalam membangun kemitraan berkelanjutan.
+                Mengenal lebih dekat peran strategis dan fungsi Humas SMKN 1 Maja dalam membangun kemitraan berkelanjutan.
             </p>
         </div>
 
