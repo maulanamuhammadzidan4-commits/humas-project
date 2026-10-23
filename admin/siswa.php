@@ -252,12 +252,22 @@ $page_title = "Data Siswa";
                 <div class="form-row">
                     <div class="form-group">
                         <label>Kelas <span class="required">*</span></label>
-                        <input type="text" name="kelas" class="form-control" required maxlength="20" placeholder="XII RPL 1">
+                        <select name="kelas" class="form-control" required>
+                            <option value="">Pilih kelas</option>
+                            <?php foreach (SiswaRepository::getClassOptions() as $kelas): ?>
+                                <option value="<?= htmlspecialchars($kelas, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($kelas, ENT_QUOTES, 'UTF-8') ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
 
                     <div class="form-group">
                         <label>Jurusan <span class="required">*</span></label>
-                        <input type="text" name="jurusan" class="form-control" required maxlength="50" placeholder="PPLG / TKJ / Akuntansi">
+                        <select name="jurusan" class="form-control" required>
+                            <option value="">Pilih jurusan</option>
+                            <?php foreach (SiswaRepository::getMajorOptions() as $jurusan): ?>
+                                <option value="<?= htmlspecialchars($jurusan, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($jurusan, ENT_QUOTES, 'UTF-8') ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                 </div>
 
@@ -327,12 +337,22 @@ $page_title = "Data Siswa";
                 <div class="form-row">
                     <div class="form-group">
                         <label>Kelas <span class="required">*</span></label>
-                        <input type="text" name="kelas" id="e_kelas" class="form-control" required maxlength="20">
+                        <select name="kelas" id="e_kelas" class="form-control" required>
+                            <option value="">Pilih kelas</option>
+                            <?php foreach (SiswaRepository::getClassOptions() as $kelas): ?>
+                                <option value="<?= htmlspecialchars($kelas, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($kelas, ENT_QUOTES, 'UTF-8') ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
 
                     <div class="form-group">
                         <label>Jurusan <span class="required">*</span></label>
-                        <input type="text" name="jurusan" id="e_jurusan" class="form-control" required maxlength="50">
+                        <select name="jurusan" id="e_jurusan" class="form-control" required>
+                            <option value="">Pilih jurusan</option>
+                            <?php foreach (SiswaRepository::getMajorOptions() as $jurusan): ?>
+                                <option value="<?= htmlspecialchars($jurusan, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($jurusan, ENT_QUOTES, 'UTF-8') ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                 </div>
 

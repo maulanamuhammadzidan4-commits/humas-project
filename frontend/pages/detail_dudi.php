@@ -1,10 +1,9 @@
 <?php
 session_start();
-require_once __DIR__ . '/../../config.php';
 
 try{
-    require_once ROOT_PATH . 'backend/connection.php';
-    require_once ROOT_PATH . 'backend/helpers.php';
+    require_once __DIR__ . '/../../backend/connection.php';
+    require_once __DIR__ . '/../../backend/helpers.php';
 } catch (Exception $e){
     echo $e->getMessage();
 }
@@ -28,7 +27,7 @@ $berita = getBeritaById($koneksi, $id);
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
-    <?php include ROOT_PATH . 'frontend/components/header.php'; ?>
+    <?php include __DIR__ . '/../components/header.php'; ?>
 
     <?php if ($berita): ?>
         <header class="detail-header">
@@ -119,10 +118,10 @@ $berita = getBeritaById($koneksi, $id);
             </div>
         </main>
     <?php else: ?>
-        <?php include ROOT_PATH . 'frontend/components/detail-not-found.php'; ?>
+        <?php include __DIR__ . '/../components/detail-not-found.php'; ?>
     <?php endif; ?>
 
-    <?php include ROOT_PATH . 'frontend/components/footer.php'; ?>
+    <?php include __DIR__ . '/../components/footer.php'; ?>
     <script src="../js/script.js"></script>
 </body>
 </html>

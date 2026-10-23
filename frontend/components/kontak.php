@@ -12,7 +12,7 @@
         </span>
         <h2>Hubungi Kami</h2>
         <p>
-            Silakan hubungi Humas SMK untuk informasi kemitraan,
+            Silakan hubungi Humas SMKN 1 Maja untuk informasi kemitraan,
             PKL, atau pertanyaan seputar sekolah.
         </p>
     </div>
@@ -28,220 +28,133 @@
                 </div>
 
                 <div class="info-text">
-
-                    <h3>Alamat Kantor</h3>
-
+                    <h3>Alamat Sekolah</h3>
                     <p>
-                        Jl. Contoh No. 123, Kabupaten/Kota,<br>
-                        Jawa Barat, Indonesia
+                        Jl. Pasukan Sindangkasih No. 155, Desa Maja Selatan, Kecamatan Maja,<br>
+                         Kabupaten Majalengka, Jawa Barat, Indonesia.
                     </p>
-
                 </div>
-
             </div>
 
-
             <div class="info-item">
-
                 <div class="info-icon">
                     <i class="fa-solid fa-phone"></i>
                 </div>
-
                 <div class="info-text">
-
                     <h3>Telepon & WhatsApp</h3>
-
-                    <p>
-                        0812-3456-7890 / (021) 555-0123
-                    </p>
-
+                    <p>(0233) 282480</p>
                 </div>
-
             </div>
-
-
             <div class="info-item">
-
                 <div class="info-icon">
                     <i class="fa-solid fa-envelope"></i>
                 </div>
-
                 <div class="info-text">
-
                     <h3>Email Resmi</h3>
-
-                    <p>
-                        humas@smk.sch.id
-                    </p>
-
+                    <p>smkn1maja@yahoo.co.id</p>
                 </div>
-
             </div>
-
-
             <div class="info-item">
-
                 <div class="info-icon">
                     <i class="fa-solid fa-clock"></i>
                 </div>
-
                 <div class="info-text">
-
                     <h3>Jam Pelayanan</h3>
-
                     <p>
                         Senin - Jumat: 07.00 - 15.00 WIB<br>
                         (Sabtu & Minggu Libur)
                     </p>
-
                 </div>
-
             </div>
-
         </div>
-
-
 
         <!-- =========================
              FORM KONTAK
         ========================== -->
-
         <div class="contact-form-card">
-
             <h3>Kirim Pesan Langsung</h3>
-
-
             <form
                 class="contact-form"
                 action="<?= file_exists('components/header.php') ? '../backend/contact_handler.php' : '../../backend/contact_handler.php' ?>"
-                method="POST"
-            >
+                method="POST">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
                 <div aria-hidden="true" style="position:absolute;left:-9999px">
                     <label for="website">Jangan isi kolom ini</label>
                     <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
                 </div>
 
-
                 <!-- NAMA -->
-
                 <div class="form-group">
-
                     <label for="nama">
                         Nama Lengkap
                     </label>
-
                     <div class="input-with-icon">
-
                         <input
                             type="text"
                             id="nama"
                             name="nama"
                             maxlength="100"
                             placeholder="Masukkan nama Anda"
-                            required
-                        >
-
+                            required>
                         <i class="fa-solid fa-user"></i>
-
                     </div>
-
                 </div>
 
-
-
                 <!-- EMAIL -->
-
                 <div class="form-group">
-
                     <label for="email">
                         Alamat Email
                     </label>
-
                     <div class="input-with-icon">
-
                         <input
                             type="email"
                             id="email"
                             name="email"
                             maxlength="150"
                             placeholder="nama@email.com"
-                            required
-                        >
-
+                            required>
                         <i class="fa-solid fa-envelope"></i>
-
                     </div>
-
                 </div>
 
-
-
                 <!-- SUBJEK -->
-
                 <div class="form-group">
-
                     <label for="subjek">
                         Subjek Pesan
                     </label>
-
                     <div class="input-with-icon">
-
                         <input
                             type="text"
                             id="subjek"
                             name="subjek"
                             maxlength="200"
                             placeholder="Contoh: Kemitraan PKL"
-                            required
-                        >
-
+                            required>
                         <i class="fa-solid fa-tag"></i>
-
                     </div>
-
                 </div>
 
-
-
                 <!-- PESAN -->
-
                 <div class="form-group">
-
                     <label for="pesan">
                         Pesan Anda
                     </label>
-
                     <textarea
                         id="pesan"
                         name="pesan"
                         maxlength="5000"
                         placeholder="Tuliskan pesan atau pertanyaan Anda di sini..."
-                        required
-                    ></textarea>
-
+                        required></textarea>
                 </div>
 
-
-
                 <!-- TOMBOL -->
-
                 <button
                     type="submit"
-                    class="btn"
-                >
-
+                    class="btn">
                     <i class="fa-solid fa-paper-plane"></i>
-
                     Kirim Pesan
-
                 </button>
-
-
             </form>
-
         </div>
-
     </div>
-
 </section>
