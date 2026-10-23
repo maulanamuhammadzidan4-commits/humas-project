@@ -6,7 +6,7 @@ require_once __DIR__ . '/backend/connection.php';
 
 mysqli_set_charset($koneksi, 'utf8mb4');
 
-// Token keamanan formulir (CSRF)
+// Token keamanan formulir
 if (empty($_SESSION['csrf_tracer'])) {
     $_SESSION['csrf_tracer'] = bin2hex(random_bytes(32));
 }
@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pendapatan = trim($_POST['pendapatan_bulanan'] ?? '');
     $csrf = $_POST['csrf_token'] ?? '';
 
-    // Status alumni yang diperbolehkan
+    // Status yang diperbolehkan
     $statusValid = [
         'Bekerja',
         'Kuliah',
@@ -39,7 +39,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'menikah'
     ];
 
-    // Validasi token CSRF
+    // Jika menikah, instansi tidak digunakan
+    if ($status === 'menikah') {
+        $instansi = '';
+    }
+
+    // Validasi CSRF
     if (
         !is_string($csrf) ||
         !hash_equals($_SESSION['csrf_tracer'], $csrf)
@@ -53,8 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mb_strlen($nama) > 150 ||
         !preg_match('/^[0-9]{10}$/', $nisn) ||
         !ctype_digit($tahun) ||
-        (int) $tahun < 2000 ||
-        (int) $tahun > (int) date('Y') + 1 ||
+        (int)$tahun < 2000 ||
+        (int)$tahun > (int)date('Y') + 1 ||
         !in_array($status, $statusValid, true)
     ) {
         $pesan = 'Periksa kembali nama, NISN, tahun lulus, dan status.';
@@ -65,23 +70,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pendapatan !== '' &&
         (
             !ctype_digit($pendapatan) ||
-            (float) $pendapatan > 2147483647
+            (float)$pendapatan > 2147483647
         )
     ) {
         $pesan = 'Pendapatan harus berupa angka yang valid.';
         $jenisPesan = 'error';
 
-    // Validasi nama instansi
+    // Validasi instansi
     } elseif (mb_strlen($instansi) > 150) {
         $pesan = 'Nama instansi maksimal 150 karakter.';
         $jenisPesan = 'error';
 
     } else {
         try {
-            /*
-             * Cari siswa berdasarkan NISN.
-             * Nama tidak harus sama persis dengan database.
-             */
+            // Cari siswa berdasarkan NISN
             $stmt = mysqli_prepare(
                 $koneksi,
                 "SELECT id, nama_siswa
@@ -104,22 +106,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $jenisPesan = 'error';
 
             } else {
-                $siswaId = (int) $siswa['id'];
-                $tahunLulus = (int) $tahun;
+                $siswaId = (int)$siswa['id'];
+                $tahunLulus = (int)$tahun;
 
-                // Kolom opsional dapat disimpan sebagai NULL
+                // Simpan instansi sebagai NULL jika kosong
                 $namaInstansi = $instansi === ''
                     ? null
                     : $instansi;
 
+                // Simpan pendapatan sebagai NULL jika kosong
                 $pendapatanNilai = $pendapatan === ''
                     ? null
-                    : (int) $pendapatan;
+                    : (int)$pendapatan;
 
-                /*
-                 * Simpan data tracer study.
-                 * Pastikan nama dan tipe kolom sesuai database.
-                 */
+                // Simpan data tracer study
                 $stmt = mysqli_prepare(
                     $koneksi,
                     "INSERT INTO tracer_study
@@ -146,7 +146,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 mysqli_stmt_execute($stmt);
                 mysqli_stmt_close($stmt);
 
-                // Pesan berhasil
                 $pesan = 'Data tracer study berhasil dikirim. Terima kasih!';
                 $jenisPesan = 'sukses';
 
@@ -158,19 +157,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $instansi = '';
                 $pendapatan = '';
 
-                // Buat token baru setelah pengiriman berhasil
+                // Perbarui token setelah pengiriman berhasil
                 $_SESSION['csrf_tracer'] = bin2hex(random_bytes(32));
             }
 
         } catch (mysqli_sql_exception $e) {
-            // Catat detail error di log server
             error_log('Tracer Study Error: ' . $e->getMessage());
 
-            if ((int) $e->getCode() === 1062) {
+            if ((int)$e->getCode() === 1062) {
                 $pesan = 'Data tracer study untuk siswa ini sudah pernah dikirim.';
             } else {
                 $pesan = 'Terjadi kesalahan saat menyimpan data. '
-                       . 'Periksa database atau hubungi administrator.';
+                       . 'Silakan periksa database atau hubungi administrator.';
             }
 
             $jenisPesan = 'error';
@@ -336,8 +334,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             value="<?= htmlspecialchars($nama, ENT_QUOTES, 'UTF-8') ?>"
         >
         <small>
-            Masukkan nama lengkap. Nama ini tidak harus sama persis
-            dengan penulisan di database.
+            Masukkan nama lengkap untuk konfirmasi data.
         </small>
 
         <label for="nisn">NISN (10 digit) *</label>
@@ -353,7 +350,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             value="<?= htmlspecialchars($nisn, ENT_QUOTES, 'UTF-8') ?>"
         >
         <small>
-            NISN digunakan untuk mencocokkan data siswa sekolah.
+            Pastikan NISN benar. NISN digunakan untuk mencocokkan data siswa.
         </small>
 
         <label for="tahun_lulus">Tahun lulus *</label>
@@ -362,7 +359,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             id="tahun_lulus"
             name="tahun_lulus"
             min="2000"
-            max="<?= (int) date('Y') + 1 ?>"
+            max="<?= (int)date('Y') + 1 ?>"
             required
             value="<?= htmlspecialchars($tahun, ENT_QUOTES, 'UTF-8') ?>"
         >
@@ -391,19 +388,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endforeach; ?>
         </select>
 
-        <label for="nama_instansi">
-            Nama perusahaan, perguruan tinggi, atau usaha
-        </label>
-        <input
-            type="text"
-            id="nama_instansi"
-            name="nama_instansi"
-            maxlength="150"
-            value="<?= htmlspecialchars($instansi, ENT_QUOTES, 'UTF-8') ?>"
-        >
-        <small>
-            Isi jika relevan dengan statusmu.
-        </small>
+        <div id="instansiGroup">
+            <label for="nama_instansi">
+                Nama perusahaan, perguruan tinggi, atau usaha
+            </label>
+
+            <input
+                type="text"
+                id="nama_instansi"
+                name="nama_instansi"
+                maxlength="150"
+                value="<?= htmlspecialchars($instansi, ENT_QUOTES, 'UTF-8') ?>"
+            >
+
+            <small id="instansiHint">
+                Isi nama instansi sesuai status setelah lulus.
+            </small>
+        </div>
 
         <label for="pendapatan_bulanan">
             Pendapatan bulanan (rupiah)
@@ -424,5 +425,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <button type="submit">Kirim Data Tracer Study</button>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const statusSelect = document.getElementById('status_alumni');
+    const instansiGroup = document.getElementById('instansiGroup');
+    const instansiInput = document.getElementById('nama_instansi');
+    const instansiHint = document.getElementById('instansiHint');
+
+    function aturInstansi() {
+        const status = statusSelect.value;
+
+        if (status === 'menikah') {
+            // Sembunyikan kolom instansi dan kosongkan nilainya
+            instansiGroup.hidden = true;
+            instansiInput.value = '';
+            instansiInput.disabled = true;
+
+        } else {
+            instansiGroup.hidden = false;
+            instansiInput.disabled = false;
+
+            if (status === 'Bekerja') {
+                instansiHint.textContent =
+                    'Isi nama perusahaan tempat kamu bekerja.';
+
+            } else if (status === 'Kuliah') {
+                instansiHint.textContent =
+                    'Isi nama perguruan tinggi tempat kamu kuliah.';
+
+            } else if (status === 'Wirausaha') {
+                instansiHint.textContent =
+                    'Isi nama usaha kamu.';
+
+            } else if (status === 'Mencari Kerja') {
+                instansiHint.textContent =
+                    'Boleh dikosongkan atau isi tanda strip (-).';
+
+            } else {
+                instansiHint.textContent =
+                    'Isi jika relevan dengan statusmu.';
+            }
+        }
+    }
+
+    statusSelect.addEventListener('change', aturInstansi);
+
+    // Atur tampilan awal dan setelah validasi PHP
+    aturInstansi();
+});
+</script>
 </body>
 </html>
