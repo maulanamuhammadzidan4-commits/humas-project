@@ -41,7 +41,7 @@
                 </div>
                 <h3>Dede Rasih, S.Pd</h3>
                 <span class="staff-role">Arsip dan Protokoler</span>
-                <p>Mengelola arsip, dokumentasi, dan protokoler kegiatan resmi sekolah.</p>
+                <p>Mengelola dokumentasi, portal berita, dan saluran komunikasi resmi sekolah.</p>
                 <div class="staff-socials">
                     <a href="#" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>
                     <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
@@ -54,7 +54,7 @@
                 </div>
                 <h3> Firman Herdiana, S.Pd.</h3>
                 <span class="staff-role">Publikasi dan Informasi</span>
-                <p>Mengelola publikasi, berita, dan informasi resmi sekolah.</p>
+                <p>Mengelola dokumentasi, portal berita, dan saluran komunikasi resmi sekolah.</p>
                 <div class="staff-socials">
                     <a href="#" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>
                     <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
@@ -67,7 +67,7 @@
                 </div>
                 <h3>Guntur Irfan Haerudin, S.Kom</h3>
                 <span class="staff-role">Hubungan Eksternal</span>
-                <p>Menjalin kerja sama dan hubungan komunikasi dengan pihak luar sekolah.</p>
+                <p>Mengelola dokumentasi, portal berita, dan saluran komunikasi resmi sekolah.</p>
                 <div class="staff-socials">
                     <a href="#" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>
                     <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
@@ -81,7 +81,7 @@
                 </div>
                 <h3>Sutanto Wibowo, S.Pd.</h3>
                 <span class="staff-role">Publikasi dan Informasi</span>
-                <p>Menyebarkan informasi dan mendokumentasikan kegiatan sekolah untuk publikasi.</p>
+                <p>Mengelola dokumentasi, portal berita, dan saluran komunikasi resmi sekolah.</p>
                 <div class="staff-socials">
                     <a href="#" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>
                     <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>

@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 require_once '../backend/connection.php';
 require_once 'includes/auth.php';
 require_once 'backend/dashboard_data.php';
@@ -20,10 +19,8 @@ $page_title = "Dashboard";
 </head>
 <body>
 <?php include 'includes/sidebar.php'; ?>
-
 <div class="admin-main">
     <?php include 'includes/header.php'; ?>
-
     <main class="admin-content">
 
         <!-- Flash Messages -->
@@ -244,7 +241,6 @@ $page_title = "Dashboard";
 
     </main>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="assets/admin.js"></script>
 </body>

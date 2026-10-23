@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 require_once '../backend/connection.php';
 require_once '../backend/helpers.php';
 require_once '../backend/repositories/bootstrap.php';
@@ -78,7 +77,7 @@ $page_title = "Tracer Study";
 					<span class="card-title">
 						<i class="fa-solid fa-list"></i>
 						Data Tracer Study
-						(<?= $total ?>)
+						(<?= (int) $total ?>)
 					</span>
 
 					<form method="GET" style="display:flex;gap:.5rem;align-items:center;">
