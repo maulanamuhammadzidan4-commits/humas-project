@@ -205,9 +205,15 @@ function ensureAdminAuthenticated(string $loginPath = 'login_admin.php'): void
 function perusahaanMouStorageDirectory(bool $create = false): ?string
 {
     $configuredDirectory = getenv('HUMAS_MOU_STORAGE_DIR');
-    $directory = $configuredDirectory !== false && $configuredDirectory !== ''
-        ? $configuredDirectory
-        : dirname(__DIR__, 2) . '/humas-project-private/mou';
+    $usingDefaultDirectory = $configuredDirectory === false || $configuredDirectory === '';
+    $projectRoot = realpath(dirname(__DIR__));
+    if ($projectRoot === false) {
+        throw new RuntimeException('Direktori proyek tidak dapat ditentukan.');
+    }
+
+    $directory = $usingDefaultDirectory
+        ? $projectRoot . DIRECTORY_SEPARATOR . 'mou'
+        : $configuredDirectory;
 
     if ($directory[0] !== DIRECTORY_SEPARATOR) {
         throw new RuntimeException('Lokasi penyimpanan dokumen MoU harus berupa path absolut.');
@@ -223,16 +229,44 @@ function perusahaanMouStorageDirectory(bool $create = false): ?string
     }
 
     $resolvedDirectory = realpath($directory);
-    $projectRoot = realpath(dirname(__DIR__));
     if (
         $resolvedDirectory === false
-        || $projectRoot === false
         || !is_dir($resolvedDirectory)
         || !is_writable($resolvedDirectory)
-        || $resolvedDirectory === $projectRoot
-        || str_starts_with($resolvedDirectory, $projectRoot . DIRECTORY_SEPARATOR)
+        || ($usingDefaultDirectory && $resolvedDirectory !== $directory)
+        || (!$usingDefaultDirectory && (
+            $resolvedDirectory === $projectRoot
+            || str_starts_with($resolvedDirectory, $projectRoot . DIRECTORY_SEPARATOR)
+        ))
     ) {
-        throw new RuntimeException('Direktori penyimpanan dokumen MoU tidak valid atau harus berada di luar proyek.');
+        throw new RuntimeException('Direktori penyimpanan dokumen MoU tidak valid.');
+    }
+
+    if ($usingDefaultDirectory) {
+        if (!chmod($resolvedDirectory, 0700)) {
+            throw new RuntimeException('Izin akses direktori dokumen MoU gagal diamankan.');
+        }
+
+        $accessControlPath = $resolvedDirectory . DIRECTORY_SEPARATOR . '.htaccess';
+        $denyRules = "Options -Indexes\n<IfModule mod_authz_core.c>\n    Require all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\n    Order allow,deny\n    Deny from all\n</IfModule>\n";
+        $accessControlRules = is_file($accessControlPath)
+            ? file_get_contents($accessControlPath)
+            : false;
+
+        if ($accessControlRules === false && $create) {
+            $writtenBytes = file_put_contents($accessControlPath, $denyRules, LOCK_EX);
+            if ($writtenBytes !== strlen($denyRules) || !chmod($accessControlPath, 0600)) {
+                throw new RuntimeException('Aturan akses privat direktori dokumen MoU gagal dibuat.');
+            }
+            $accessControlRules = $denyRules;
+        }
+
+        if (
+            $accessControlRules !== $denyRules
+            || !chmod($accessControlPath, 0600)
+        ) {
+            throw new RuntimeException('Aturan akses langsung direktori dokumen MoU tidak tersedia atau tidak aman.');
+        }
     }
 
     return $resolvedDirectory;
