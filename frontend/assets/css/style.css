@@ -163,7 +163,7 @@ nav {
     width: 100%;
 }
 
-.btn-login {
+.menu a.btn-login {
     background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-blue-hover) 100%);
     color: white !important;
     padding: 10px 22px;
@@ -187,7 +187,7 @@ nav {
     font-size: 13px;
 }
 
-.btn-tracer {
+.menu a.btn-tracer {
     background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-hover) 100%);
     color: var(--primary-navy) !important;
     padding: 10px 22px;
@@ -395,7 +395,9 @@ nav {
    SECTIONS & TYPOGRAPHY
    ========================================================================== */
 section {
+    width: 100%;
     padding: 100px 8%;
+    padding-inline: clamp(20px, 8vw, 120px);
     position: relative;
 }
 
