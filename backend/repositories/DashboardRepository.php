@@ -8,7 +8,7 @@ final class DashboardRepository
             $connection,
             "SELECT
                 (SELECT COUNT(*) FROM perusahaan) AS perusahaan,
-                (SELECT COUNT(*) FROM perusahaan WHERE status_mou IS NOT NULL AND status_mou != '') AS mou_aktif,
+                (SELECT COUNT(*) FROM perusahaan_mou WHERE status = 'Aktif') AS mou_aktif,
                 (SELECT COUNT(*) FROM lowongan_kerja) AS lowongan,
                 (SELECT COUNT(*) FROM lowongan_kerja WHERE status_loker = 'Buka') AS loker_buka,
                 (SELECT COUNT(*) FROM siswa) AS siswa,

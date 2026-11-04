@@ -40,6 +40,11 @@ function nav_active($pages) {
             <span>Perusahaan Mitra</span>
         </a>
 
+        <a href="status_mou.php" class="nav-item <?= nav_active('status_mou.php') ?>">
+            <i class="fa-solid fa-file-signature"></i>
+            <span>Status MoU</span>
+        </a>
+
         <a href="lowongan.php" class="nav-item <?= nav_active('lowongan.php') ?>">
             <i class="fa-solid fa-briefcase"></i>
             <span>Lowongan Kerja</span>

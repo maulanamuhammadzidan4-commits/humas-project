@@ -25,7 +25,12 @@ final class PerusahaanRepository
 
         return RepositoryQuery::fetchAll(
             $connection,
-            "SELECT * FROM perusahaan$where ORDER BY created_at DESC LIMIT ? OFFSET ?",
+            "SELECT p.*, COALESCE(pm.status, 'Proses') AS status_mou
+             FROM perusahaan AS p
+             LEFT JOIN perusahaan_mou AS pm ON pm.perusahaan_id = p.id
+             $where
+             ORDER BY p.created_at DESC
+             LIMIT ? OFFSET ?",
             $types,
             $params
         );
@@ -63,9 +68,9 @@ final class PerusahaanRepository
     {
         return RepositoryQuery::execute(
             $connection,
-            'INSERT INTO perusahaan (nama_perusahaan, sektor_bidang, jurusan, alamat, penanggung_jawab, no_telepon, status_mou) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            'sssssss',
-            [$data['nama_perusahaan'], $data['sektor_bidang'], $data['jurusan'], $data['alamat'], $data['penanggung_jawab'], $data['no_telepon'], $data['status_mou']]
+            'INSERT INTO perusahaan (nama_perusahaan, sektor_bidang, jurusan, alamat, penanggung_jawab, no_telepon) VALUES (?, ?, ?, ?, ?, ?)',
+            'ssssss',
+            [$data['nama_perusahaan'], $data['sektor_bidang'], $data['jurusan'], $data['alamat'], $data['penanggung_jawab'], $data['no_telepon']]
         );
     }
 
@@ -73,9 +78,9 @@ final class PerusahaanRepository
     {
         return RepositoryQuery::execute(
             $connection,
-            'UPDATE perusahaan SET nama_perusahaan = ?, sektor_bidang = ?, jurusan = ?, alamat = ?, penanggung_jawab = ?, no_telepon = ?, status_mou = ? WHERE id = ?',
-            'sssssssi',
-            [$data['nama_perusahaan'], $data['sektor_bidang'], $data['jurusan'], $data['alamat'], $data['penanggung_jawab'], $data['no_telepon'], $data['status_mou'], $id]
+            'UPDATE perusahaan SET nama_perusahaan = ?, sektor_bidang = ?, jurusan = ?, alamat = ?, penanggung_jawab = ?, no_telepon = ? WHERE id = ?',
+            'ssssssi',
+            [$data['nama_perusahaan'], $data['sektor_bidang'], $data['jurusan'], $data['alamat'], $data['penanggung_jawab'], $data['no_telepon'], $id]
         );
     }
 

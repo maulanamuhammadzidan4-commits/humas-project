@@ -201,3 +201,48 @@ function ensureAdminAuthenticated(string $loginPath = 'login_admin.php'): void
 
     unset($_SESSION['login_success_flash']);
 }
+
+function perusahaanMouStorageDirectory(bool $create = false): ?string
+{
+    $configuredDirectory = getenv('HUMAS_MOU_STORAGE_DIR');
+    $directory = $configuredDirectory !== false && $configuredDirectory !== ''
+        ? $configuredDirectory
+        : dirname(__DIR__, 2) . '/humas-project-private/mou';
+
+    if ($directory[0] !== DIRECTORY_SEPARATOR) {
+        throw new RuntimeException('Lokasi penyimpanan dokumen MoU harus berupa path absolut.');
+    }
+
+    if (!is_dir($directory)) {
+        if (!$create) {
+            return null;
+        }
+        if (!mkdir($directory, 0700, true) && !is_dir($directory)) {
+            throw new RuntimeException('Direktori penyimpanan dokumen MoU tidak dapat dibuat.');
+        }
+    }
+
+    $resolvedDirectory = realpath($directory);
+    $projectRoot = realpath(dirname(__DIR__));
+    if (
+        $resolvedDirectory === false
+        || $projectRoot === false
+        || !is_dir($resolvedDirectory)
+        || !is_writable($resolvedDirectory)
+        || $resolvedDirectory === $projectRoot
+        || str_starts_with($resolvedDirectory, $projectRoot . DIRECTORY_SEPARATOR)
+    ) {
+        throw new RuntimeException('Direktori penyimpanan dokumen MoU tidak valid atau harus berada di luar proyek.');
+    }
+
+    return $resolvedDirectory;
+}
+
+function perusahaanMouStoredFilePath(string $fileName, string $storageDirectory): ?string
+{
+    if (!preg_match('/^[a-f0-9]{64}\.(?:pdf|jpg|png|webp)$/D', $fileName)) {
+        return null;
+    }
+
+    return $storageDirectory . DIRECTORY_SEPARATOR . $fileName;
+}

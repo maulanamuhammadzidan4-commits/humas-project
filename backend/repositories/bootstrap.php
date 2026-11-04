@@ -4,6 +4,7 @@ require_once __DIR__ . '/RepositoryQuery.php';
 require_once __DIR__ . '/DashboardRepository.php';
 require_once __DIR__ . '/LowonganRepository.php';
 require_once __DIR__ . '/PerusahaanRepository.php';
+require_once __DIR__ . '/PerusahaanMouRepository.php';
 require_once __DIR__ . '/KontakRepository.php';
 require_once __DIR__ . '/PklRepository.php';
 require_once __DIR__ . '/SiswaRepository.php';

@@ -139,8 +139,7 @@ function editPerusahaan(data) {
         ['edit_jurusan', data.jurusan],
         ['edit_alamat', data.alamat],
         ['edit_penanggung_jawab', data.penanggung_jawab],
-        ['edit_no_telepon', data.no_telepon],
-        ['edit_status_mou', data.status_mou]
+        ['edit_no_telepon', data.no_telepon]
     ];
     fields.forEach(([id, val]) => {
         const el = document.getElementById(id);
@@ -159,7 +158,7 @@ function hapusPerusahaan(id, nama_perusahaan) {
     }
     Swal.fire({
         title: 'Hapus Perusahaan?',
-        html: `Data <strong>${nama_perusahaan}</strong> akan dihapus beserta semua lowongan terkait!`,
+        html: `Data <strong>${nama_perusahaan}</strong> akan dihapus beserta lowongan terkait. Perusahaan dengan penempatan PKL aktif tidak dapat dihapus.`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ef4444',

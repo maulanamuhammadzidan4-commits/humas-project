@@ -44,7 +44,7 @@ $page_title = "Perusahaan Mitra";
         <div class="page-header">
             <div class="page-header-left">
                 <h2><i class="fa-solid fa-building" style="color:var(--blue);margin-right:8px;"></i>Perusahaan Mitra</h2>
-                <p>Kelola data perusahaan mitra dan status MoU</p>
+                <p>Kelola profil perusahaan mitra. Status MoU dikelola di halaman Status MoU.</p>
             </div>
             <button class="btn btn-primary" onclick="openModal('modalTambah')">
                 <i class="fa-solid fa-plus"></i> Tambah Perusahaan
@@ -83,7 +83,7 @@ $page_title = "Perusahaan Mitra";
                     </thead>
                     <tbody>
                     <?php if (empty($data)): ?>
-                        <tr><td colspan="7">
+                        <tr><td colspan="9">
                             <div class="table-empty">
                                 <i class="fa-solid fa-building-circle-xmark"></i>
                                 <p>Belum ada data perusahaan.</p>
@@ -91,7 +91,10 @@ $page_title = "Perusahaan Mitra";
                         </td></tr>
                     <?php else: ?>
                         <?php foreach ($data as $i => $row):
-                            $badge = match($row['status_mou']) {
+                            $statusMou = in_array($row['status_mou'] ?? null, ['Proses', 'Aktif', 'Kadaluarsa'], true)
+                                ? $row['status_mou']
+                                : 'Proses';
+                            $badge = match($statusMou) {
                                 'Aktif'     => 'badge-green',
                                 'Kadaluarsa'=> 'badge-red',
                                 default     => 'badge-gold',
@@ -105,7 +108,7 @@ $page_title = "Perusahaan Mitra";
                             <td><?= htmlspecialchars($row['alamat']) ?></td>
                             <td><?= htmlspecialchars($row['penanggung_jawab']) ?></td>
                             <td><?= htmlspecialchars($row['no_telepon']) ?></td>
-                            <td><span class="badge <?= $badge ?>"><?= $row['status_mou'] ?></span></td>
+                            <td><span class="badge <?= $badge ?>"><?= htmlspecialchars($statusMou, ENT_QUOTES, 'UTF-8') ?></span></td>
                             <td>
                                 <div class="action-btns">
                                     <button class="btn btn-warning btn-sm btn-icon"
@@ -188,16 +191,6 @@ $page_title = "Perusahaan Mitra";
                         <input type="text" name="no_telepon" class="form-control" required maxlength="20" pattern="[0-9+(). -]+" placeholder="0812-xxxx-xxxx">
                     </div>
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Status MoU <span class="required">*</span></label>
-                        <select name="status_mou" class="form-control" required>
-                            <option value="Proses">Proses</option>
-                            <option value="Aktif">Aktif</option>
-                            <option value="Kadaluarsa">Kadaluarsa</option>
-                        </select>
-                    </div>
-                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline" onclick="closeModal('modalTambah')">Batal</button>
@@ -245,16 +238,6 @@ $page_title = "Perusahaan Mitra";
                     <div class="form-group">
                         <label>No. Telepon <span class="required">*</span></label>
                         <input type="text" name="no_telepon" id="edit_no_telepon" class="form-control" required maxlength="20" pattern="[0-9+(). -]+">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Status MoU <span class="required">*</span></label>
-                        <select name="status_mou" id="edit_status_mou" class="form-control" required>
-                            <option value="Proses">Proses</option>
-                            <option value="Aktif">Aktif</option>
-                            <option value="Kadaluarsa">Kadaluarsa</option>
-                        </select>
                     </div>
                 </div>
             </div>

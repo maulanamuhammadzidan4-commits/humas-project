@@ -30,7 +30,6 @@ try {
         ) {
             throw new InvalidArgumentException('Nomor telepon harus berisi 5 sampai 15 digit dan hanya menggunakan format telepon yang valid.');
         }
-        $status_mou = validateEnum($_POST['status_mou'] ?? null, ['Proses', 'Aktif', 'Kadaluarsa'], 'status MoU');
     }
 
     if ($action === 'tambah') {
@@ -41,7 +40,6 @@ try {
             'alamat' => $alamat,
             'penanggung_jawab' => $penanggung_jawab,
             'no_telepon' => $no_telepon,
-            'status_mou' => $status_mou,
         ])) {
             throw new RuntimeException('Gagal menyimpan data perusahaan.');
         }
@@ -59,7 +57,6 @@ try {
             'alamat' => $alamat,
             'penanggung_jawab' => $penanggung_jawab,
             'no_telepon' => $no_telepon,
-            'status_mou' => $status_mou,
         ])) {
             throw new RuntimeException('Gagal memperbarui data perusahaan.');
         }
@@ -69,10 +66,33 @@ try {
 
     if ($action === 'hapus') {
         $id = validateInteger($_POST['id'] ?? null, 'ID perusahaan', 1, 2147483647);
+        $mouRecord = PerusahaanMouRepository::getByPerusahaanId($koneksi, $id);
 
         if (!PerusahaanRepository::delete($koneksi, $id)) {
             throw new RuntimeException('Gagal menghapus data perusahaan.');
         }
+
+        $fileName = $mouRecord['file_path'] ?? null;
+        if (is_string($fileName) && $fileName !== '') {
+            try {
+                $storageDirectory = perusahaanMouStorageDirectory();
+                if ($storageDirectory !== null) {
+                    $filePath = perusahaanMouStoredFilePath($fileName, $storageDirectory);
+                    if ($filePath === null) {
+                        error_log('Path berkas MoU tidak valid setelah penghapusan perusahaan ID ' . $id . '.');
+                        redirectPerusahaan('Perusahaan berhasil dihapus, tetapi dokumen MoU lama gagal dibersihkan. Hubungi administrator.', 'warning');
+                    }
+                    if (is_file($filePath) && !unlink($filePath)) {
+                        error_log('Gagal menghapus berkas MoU setelah penghapusan perusahaan ID ' . $id . '.');
+                        redirectPerusahaan('Perusahaan berhasil dihapus, tetapi dokumen MoU lama gagal dibersihkan. Hubungi administrator.', 'warning');
+                    }
+                }
+            } catch (RuntimeException $exception) {
+                error_log('Lokasi berkas MoU tidak dapat diakses setelah penghapusan perusahaan ID ' . $id . ': ' . $exception->getMessage());
+                redirectPerusahaan('Perusahaan berhasil dihapus, tetapi dokumen MoU lama gagal dibersihkan. Hubungi administrator.', 'warning');
+            }
+        }
+
         redirectPerusahaan('Perusahaan berhasil dihapus.');
     }
 

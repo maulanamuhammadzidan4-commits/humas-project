@@ -53,7 +53,7 @@ $page_title = "Dashboard";
                     <span class="stat-label">Perusahaan Mitra</span>
                 </div>
             </a>
-            <a href="perusahaan.php" class="stat-card" style="--card-color:#10b981;--card-bg:#d1fae5; text-decoration:none;">
+            <a href="status_mou.php" class="stat-card" style="--card-color:#10b981;--card-bg:#d1fae5; text-decoration:none;">
                 <div class="stat-icon"><i class="fa-solid fa-handshake"></i></div>
                 <div class="stat-info">
                     <span class="stat-value"><?= $stats['mou_aktif'] ?></span>
