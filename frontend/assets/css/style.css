@@ -187,6 +187,30 @@ nav {
     font-size: 13px;
 }
 
+.btn-tracer {
+    background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-hover) 100%);
+    color: var(--primary-navy) !important;
+    padding: 10px 22px;
+    border-radius: var(--radius-full);
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+    transition: var(--transition-normal);
+}
+
+.btn-tracer:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
+    background: linear-gradient(135deg, var(--brand-gold-hover) 0%, #b45309 100%);
+}
+
+.btn-tracer i {
+    font-size: 13px;
+}
+
 /* Mobile Menu Toggle */
 .mobile-toggle {
     display: none;

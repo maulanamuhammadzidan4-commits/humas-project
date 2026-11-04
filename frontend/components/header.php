@@ -13,6 +13,11 @@
             <li><a href="/frontend/index.php#staff">Staff</a></li>
             <li><a href="/frontend/index.php#kontak">Kontak</a></li>
             <li>
+                <a href="/tracer_study_form.php" class="btn-tracer">
+                    <i class="fa-solid fa-route"></i> Tracer Study
+                </a>
+            </li>
+            <li>
                 <a href="/admin/login_admin.php" class="btn-login">
                     <i class="fa-solid fa-right-to-bracket"></i> Login
                 </a>

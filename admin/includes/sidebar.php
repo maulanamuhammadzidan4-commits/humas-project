@@ -63,10 +63,9 @@ function nav_active($pages) {
         </a>
 
         
-        <a href="tracer_study.php"
-        class="nav-item <?= nav_active(['tracer.php', 'tracer_study.php']) ?>">
-        <i class="fa-solid fa-route"></i>
-        <span>Tracer Study</span>
+        <a href="tracer.php" class="nav-item <?= nav_active('tracer.php') ?>">
+            <i class="fa-solid fa-route"></i>
+            <span>Tracer Study</span>
         </a>
 
 

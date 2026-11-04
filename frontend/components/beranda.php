@@ -18,6 +18,9 @@
                 <a href="#kontak" class="btn btn-outline">
                     <i class="fa-solid fa-paper-plane"></i> Hubungi Kami
                 </a>
+                <a href="/tracer_study_form.php" class="btn btn-outline">
+                    <i class="fa-solid fa-route"></i> Tracer Study Alumni
+                </a>
             </div>
         </div>
 
