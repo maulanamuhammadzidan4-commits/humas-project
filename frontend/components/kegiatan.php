@@ -3,7 +3,7 @@
             <span class="section-tag">PROGRAM UNGGULAN</span>
             <h2>Kegiatan Humas</h2>
             <p>
-                Berbagai aktivitas dan agenda strategis yang dilaksanakan oleh tim Humas SMK.
+                Berbagai aktivitas dan agenda strategis yang dilaksanakan oleh tim Humas SMKN 1 Maja.
             </p>
         </div>
 

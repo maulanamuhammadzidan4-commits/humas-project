@@ -1,22 +1,19 @@
-<?php
-require_once __DIR__ . '/../../config.php';
-?>
 
     <nav>
         <div class="logo">
             <i class="fa-solid fa-graduation-cap"></i>
-            HUMAS <span>SMK</span>
+            HUMAS <span>SMKN 1 MAJA</span>
         </div>
 
         <ul class="menu" id="navMenu">
-            <li><a href="<?= BASE_URL ?>frontend/index.php#beranda">Beranda</a></li>
-            <li><a href="<?= BASE_URL ?>frontend/index.php#tentang">Tentang</a></li>
-            <li><a href="<?= BASE_URL ?>frontend/index.php#kegiatan">Kegiatan</a></li>
-            <li><a href="<?= BASE_URL ?>frontend/index.php#berita">Berita</a></li>
-            <li><a href="<?= BASE_URL ?>frontend/index.php#staff">Staff</a></li>
-            <li><a href="<?= BASE_URL ?>frontend/index.php#kontak">Kontak</a></li>
+            <li><a href="/frontend/index.php#beranda">Beranda</a></li>
+            <li><a href="/frontend/index.php#tentang">Tentang</a></li>
+            <li><a href="/frontend/index.php#kegiatan">Kegiatan</a></li>
+            <li><a href="/frontend/index.php#berita">Berita</a></li>
+            <li><a href="/frontend/index.php#staff">Staff</a></li>
+            <li><a href="/frontend/index.php#kontak">Kontak</a></li>
             <li>
-                <a href="<?= BASE_URL ?>admin/login_admin.php" class="btn-login">
+                <a href="/admin/login_admin.php" class="btn-login">
                     <i class="fa-solid fa-right-to-bracket"></i> Login
                 </a>
             </li>
