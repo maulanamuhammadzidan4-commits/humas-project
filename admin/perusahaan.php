@@ -46,9 +46,14 @@ $page_title = "Perusahaan Mitra";
                 <h2><i class="fa-solid fa-building" style="color:var(--blue);margin-right:8px;"></i>Perusahaan Mitra</h2>
                 <p>Kelola data perusahaan mitra dan status MoU</p>
             </div>
-            <button class="btn btn-primary" onclick="openModal('modalTambah')">
-                <i class="fa-solid fa-plus"></i> Tambah Perusahaan
-            </button>
+           <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <button class="btn btn-outline" onclick="openModal('modalImport')">
+        <i class="fa-solid fa-file-import"></i> Import Excel / CSV
+    </button>
+
+    <button class="btn btn-primary" onclick="openModal('modalTambah')">
+        <i class="fa-solid fa-plus"></i> Tambah Perusahaan
+    </button>
         </div>
 
         <!-- Table Card -->
@@ -147,6 +152,118 @@ $page_title = "Perusahaan Mitra";
             <?php endif; ?>
         </div>
     </main>
+</div>
+
+
+
+<!-- MODAL IMPORT PERUSAHAAN -->
+<div class="modal-overlay" id="modalImport">
+    <div class="modal">
+
+        <div class="modal-header">
+            <span class="modal-title">
+                <i class="fa-solid fa-file-excel"></i>
+                Import Data Perusahaan
+            </span>
+
+            <button class="modal-close"
+                onclick="closeModal('modalImport')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form method="POST"
+              action="backend/perusahaan_import.php"
+              enctype="multipart/form-data">
+
+            <input type="hidden"
+                name="csrf_token"
+                value="<?= htmlspecialchars(generateCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
+
+            <div class="modal-body">
+
+                <div class="alert alert-info">
+                    <strong>
+                        <i class="fa-solid fa-circle-info"></i>
+                        Petunjuk Import
+                    </strong>
+
+                    <p>
+                        Unduh template Excel terlebih dahulu,
+                        kemudian isi data perusahaan dan Status MOU.
+                    </p>
+
+                    <a href="backend/perusahaan_template.php"
+                       class="btn btn-outline"
+                       style="margin-top:10px;">
+                        <i class="fa-solid fa-download"></i>
+                        Download Template Excel
+                    </a>
+                </div>
+
+                <div class="form-group">
+                    <label>Pilih File Excel / CSV</label>
+
+                    <input
+                        type="file"
+                        name="file_import"
+                        class="form-control"
+                        accept=".xlsx,.xls,.csv"
+                        required
+                    >
+
+                    <small>
+                        Format XLSX, XLS, atau CSV.
+                        Maksimal 5 MB.
+                    </small>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>Kolom Excel:</strong>
+
+                    <p>
+                        Nama Perusahaan, Sektor Bidang,
+                        Jurusan, Alamat, Penanggung Jawab,
+                        No. Telepon, Status MOU.
+                    </p>
+
+                    <small>
+                        Nama Perusahaan dan Status MOU wajib diisi.
+                        Data perusahaan baru wajib memiliki seluruh
+                        informasi perusahaan.
+                    </small>
+                </div>
+
+                <div class="alert alert-warning">
+                    <strong>Perhatian:</strong>
+
+                    <p>
+                        Perusahaan yang sudah terdaftar akan
+                        diperbarui Status MOU-nya.
+                        Perusahaan yang belum terdaftar akan
+                        ditambahkan secara otomatis.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                    class="btn btn-outline"
+                    onclick="closeModal('modalImport')">
+                    Batal
+                </button>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-upload"></i>
+                    Import Sekarang
+                </button>
+
+            </div>
+
+        </form>
+    </div>
 </div>
 
 <!-- ══ MODAL TAMBAH ══ -->
