@@ -2,8 +2,8 @@
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 $hostname = "localhost";
-$username = "humas_user";
-$password = "password_humas123";
+$username = "root";
+$password = "";
 $dbname = "db_humas_smk";
 
 try {
