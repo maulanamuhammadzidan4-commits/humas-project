@@ -3,18 +3,31 @@
 
 final class PklRepository
 {
-    public static function countWithSearch(mysqli $connection, string $search): int
-    {
+    /**
+     * Menghitung jumlah data PKL berdasarkan pencarian.
+     * Pencarian mencakup nama siswa, kelas, jurusan,
+     * perusahaan, pembimbing, dan status.
+     */
+    public static function countWithSearch(
+        mysqli $connection,
+        string $search
+    ): int {
         $where = $search === ''
             ? ''
             : ' WHERE s.nama_siswa LIKE ?
+                OR s.kelas LIKE ?
+                OR s.jurusan LIKE ?
                 OR pr.nama_perusahaan LIKE ?
                 OR pk.pembimbing_guru LIKE ?
                 OR pk.status_penempatan LIKE ?';
 
         $params = $search === ''
             ? []
-            : array_fill(0, 4, RepositoryQuery::likePattern($search));
+            : array_fill(
+                0,
+                6,
+                RepositoryQuery::likePattern($search)
+            );
 
         $row = RepositoryQuery::fetchOne(
             $connection,
@@ -22,13 +35,16 @@ final class PklRepository
              FROM pkl_penempatan pk
              LEFT JOIN siswa s ON pk.siswa_id = s.id
              LEFT JOIN perusahaan pr ON pk.perusahaan_id = pr.id$where",
-            $search === '' ? '' : 'ssss',
+            $search === '' ? '' : 'ssssss',
             $params
         );
 
-        return (int)($row['total'] ?? 0);
+        return (int) ($row['total'] ?? 0);
     }
 
+    /**
+     * Mengambil data PKL dengan pagination.
+     */
     public static function getPaginated(
         mysqli $connection,
         string $search,
@@ -38,16 +54,24 @@ final class PklRepository
         $where = $search === ''
             ? ''
             : ' WHERE s.nama_siswa LIKE ?
+                OR s.kelas LIKE ?
+                OR s.jurusan LIKE ?
                 OR pr.nama_perusahaan LIKE ?
                 OR pk.pembimbing_guru LIKE ?
                 OR pk.status_penempatan LIKE ?';
 
-        $types = $search === '' ? 'ii' : 'ssssii';
+        $types = $search === ''
+            ? 'ii'
+            : 'ssssssii';
 
         $params = $search === ''
             ? [$limit, $offset]
             : array_merge(
-                array_fill(0, 4, RepositoryQuery::likePattern($search)),
+                array_fill(
+                    0,
+                    6,
+                    RepositoryQuery::likePattern($search)
+                ),
                 [$limit, $offset]
             );
 
@@ -57,7 +81,10 @@ final class PklRepository
                 pk.id,
                 pk.siswa_id,
                 pk.perusahaan_id,
+                s.nisn,
                 s.nama_siswa,
+                s.kelas,
+                s.jurusan,
                 pr.nama_perusahaan,
                 pk.pembimbing_guru AS pembimbing,
                 pk.tanggal_mulai,
@@ -75,8 +102,13 @@ final class PklRepository
         );
     }
 
-    public static function create(mysqli $connection, array $data): bool
-    {
+    /**
+     * Menambahkan data penempatan PKL.
+     */
+    public static function create(
+        mysqli $connection,
+        array $data
+    ): bool {
         return RepositoryQuery::execute(
             $connection,
             'INSERT INTO pkl_penempatan
@@ -101,6 +133,9 @@ final class PklRepository
         );
     }
 
+    /**
+     * Memperbarui data penempatan PKL.
+     */
     public static function update(
         mysqli $connection,
         int $id,
@@ -129,8 +164,13 @@ final class PklRepository
         );
     }
 
-    public static function delete(mysqli $connection, int $id): bool
-    {
+    /**
+     * Menghapus data penempatan PKL.
+     */
+    public static function delete(
+        mysqli $connection,
+        int $id
+    ): bool {
         return RepositoryQuery::execute(
             $connection,
             'DELETE FROM pkl_penempatan WHERE id = ?',
@@ -142,14 +182,17 @@ final class PklRepository
     /**
      * Mengambil seluruh data PKL untuk kebutuhan ekspor.
      */
-    public static function getAllForExport(mysqli $connection): array
-    {
+    public static function getAllForExport(
+        mysqli $connection
+    ): array {
         return RepositoryQuery::fetchAll(
             $connection,
             "SELECT
                 pk.id,
                 s.nisn,
                 s.nama_siswa,
+                s.kelas,
+                s.jurusan,
                 pr.nama_perusahaan,
                 pr.alamat AS alamat_penempatan,
                 pk.pembimbing_guru AS pembimbing,

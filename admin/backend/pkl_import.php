@@ -1,407 +1,564 @@
 
 <?php
-declare(strict_types=1);
+/**
+ * Handler Import — Penempatan PKL
+ */
 
-session_start();
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
 
 require_once __DIR__ . '/../../backend/connection.php';
 require_once __DIR__ . '/../../backend/helpers.php';
+require_once __DIR__ . '/../../backend/repositories/bootstrap.php';
+
+$authLoginPath = '../login_admin.php';
 require_once __DIR__ . '/../includes/auth.php';
+
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
-$halamanKembali = '../pkl.php';
+/*
+|--------------------------------------------------------------------------
+| KONFIGURASI
+|--------------------------------------------------------------------------
+*/
 
-try {
+$berhasil = 0;
+$dilewati = 0;
+$gagal = 0;
+$detailGagal = [];
 
-    // ==========================================
-    // 1. VALIDASI METODE REQUEST DAN CSRF
-    // ==========================================
+$maksimalUkuran = 5 * 1024 * 1024;
 
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        throw new RuntimeException('Metode permintaan tidak diizinkan.');
-    }
+$allowedStatus = [
+    'Draft',
+    'Disetujui',
+    'Selesai'
+];
 
-    verifyCsrfToken($_POST['csrf_token'] ?? '');
+/*
+|--------------------------------------------------------------------------
+| FUNGSI BANTU
+|--------------------------------------------------------------------------
+*/
 
-    // ==========================================
-    // 2. VALIDASI FILE
-    // ==========================================
-
-    if (!isset($_FILES['file_import'])) {
-        throw new RuntimeException('File Excel belum dipilih.');
-    }
-
-    $file = $_FILES['file_import'];
-
-    if ($file['error'] !== UPLOAD_ERR_OK) {
-        throw new RuntimeException('Terjadi kesalahan saat mengunggah file.');
-    }
-
-    if ($file['size'] <= 0 || $file['size'] > 10 * 1024 * 1024) {
-        throw new RuntimeException('Ukuran file harus maksimal 10 MB.');
-    }
-
-    $ekstensi = strtolower(
-        pathinfo($file['name'], PATHINFO_EXTENSION)
+function pklNormalizeHeader(string $header): string
+{
+    return strtolower(
+        preg_replace('/[^a-zA-Z0-9]/', '', trim($header))
     );
+}
 
-    $ekstensiDiizinkan = ['xlsx', 'xls', 'csv'];
 
-    if (!in_array($ekstensi, $ekstensiDiizinkan, true)) {
-        throw new RuntimeException(
-            'Format file harus XLSX, XLS, atau CSV.'
-        );
+function pklGetCellValue($sheet, int $column, int $row): string
+{
+    return trim((string) $sheet
+        ->getCell([$column, $row])
+        ->getFormattedValue());
+}
+
+
+function pklConvertDate($value): string
+{
+    if ($value === null || $value === '') {
+        throw new RuntimeException('Tanggal belum diisi.');
     }
 
-    // ==========================================
-    // 3. MEMBACA FILE EXCEL
-    // ==========================================
-
-    $spreadsheet = IOFactory::load($file['tmp_name']);
-
-    $sheet = null;
-
-    foreach ($spreadsheet->getWorksheetIterator() as $worksheet) {
-        if (strtolower(trim($worksheet->getTitle())) === 'peserta') {
-            $sheet = $worksheet;
-            break;
-        }
+    // Tanggal Excel berbentuk angka serial.
+    if (is_numeric($value)) {
+        return ExcelDate::excelToDateTimeObject((float) $value)
+            ->format('Y-m-d');
     }
 
-    if ($sheet === null) {
-        $sheet = $spreadsheet->getActiveSheet();
-    }
+    $value = trim((string) $value);
 
-    $barisTerakhir = $sheet->getHighestDataRow();
-    $kolomTerakhir = $sheet->getHighestDataColumn();
+    $formats = [
+        'Y-m-d',
+        'd/m/Y',
+        'd-m-Y',
+        'm/d/Y',
+        'd.m.Y'
+    ];
 
-    // ==========================================
-    // 4. MENCARI BARIS HEADER
-    // ==========================================
-
-    $barisHeader = 0;
-    $kolom = [];
-
-    for ($baris = 1; $baris <= min(20, $barisTerakhir); $baris++) {
-
-        $header = [];
-
-        foreach (
-            $sheet->rangeToArray(
-                'A' . $baris . ':' . $kolomTerakhir . $baris,
-                null,
-                true,
-                true,
-                false
-            )[0] as $index => $nilai
-        ) {
-
-            $namaHeader = strtolower(
-                preg_replace('/\s+/', ' ', trim((string) $nilai))
-            );
-
-            $header[$namaHeader] = $index;
-        }
+    foreach ($formats as $format) {
+        $date = DateTime::createFromFormat('!' . $format, $value);
 
         if (
-            isset($header['nisn']) &&
-            isset($header['iduka']) &&
-            isset($header['guru pembimbing'])
+            $date !== false &&
+            $date->format($format) === $value
         ) {
-            $barisHeader = $baris;
-            $kolom = $header;
-            break;
+            return $date->format('Y-m-d');
         }
     }
 
-    if ($barisHeader === 0) {
-        throw new RuntimeException(
-            'Header NISN, IDUKA, dan Guru Pembimbing tidak ditemukan.'
-        );
-    }
-
-    // ==========================================
-    // 5. FUNGSI NORMALISASI
-    // ==========================================
-
-    $normalisasi = static function ($nilai): string {
-
-        $nilai = trim((string) $nilai);
-
-        $nilai = preg_replace('/\s+/u', ' ', $nilai);
-
-        return function_exists('mb_strtolower')
-            ? mb_strtolower($nilai, 'UTF-8')
-            : strtolower($nilai);
-    };
-
-    // ==========================================
-    // 6. MEMUAT DATA PERUSAHAAN
-    // ==========================================
-
-    $perusahaanMap = [];
-
-    $queryPerusahaan = mysqli_query(
-        $koneksi,
-        "SELECT id, nama_perusahaan
-         FROM perusahaan"
+    throw new RuntimeException(
+        "Format tanggal '{$value}' tidak valid."
     );
+}
 
-    while ($perusahaan = mysqli_fetch_assoc($queryPerusahaan)) {
 
-        $namaNormal = $normalisasi(
-            $perusahaan['nama_perusahaan']
-        );
+function pklFindSiswaId(
+    mysqli $koneksi,
+    string $nisn
+): ?int {
 
-        if ($namaNormal === '') {
-            continue;
-        }
-
-        $perusahaanMap[$namaNormal][] = (int) $perusahaan['id'];
-    }
-
-    // ==========================================
-    // 7. MENYIAPKAN QUERY DATABASE
-    // ==========================================
-
-    $stmtSiswa = mysqli_prepare(
-        $koneksi,
+    $stmt = $koneksi->prepare(
         "SELECT id
          FROM siswa
          WHERE TRIM(nisn) = ?
          LIMIT 2"
     );
 
-    $stmtCekPenempatan = mysqli_prepare(
-        $koneksi,
+    $stmt->bind_param('s', $nisn);
+    $stmt->execute();
+    $stmt->store_result();
+
+    if ($stmt->num_rows !== 1) {
+        $stmt->close();
+        return null;
+    }
+
+    $stmt->bind_result($id);
+    $stmt->fetch();
+    $stmt->close();
+
+    return (int) $id;
+}
+
+
+function pklFindPerusahaanId(
+    mysqli $koneksi,
+    string $nama
+): ?int {
+
+    $stmt = $koneksi->prepare(
+        "SELECT id
+         FROM perusahaan
+         WHERE LOWER(TRIM(nama_perusahaan)) = LOWER(?)
+         LIMIT 2"
+    );
+
+    $stmt->bind_param('s', $nama);
+    $stmt->execute();
+    $stmt->store_result();
+
+    if ($stmt->num_rows !== 1) {
+        $stmt->close();
+        return null;
+    }
+
+    $stmt->bind_result($id);
+    $stmt->fetch();
+    $stmt->close();
+
+    return (int) $id;
+}
+
+
+function pklIsDuplicate(
+    mysqli $koneksi,
+    int $siswaId,
+    int $perusahaanId,
+    string $tanggalMulai,
+    string $tanggalSelesai
+): bool {
+
+    $stmt = $koneksi->prepare(
         "SELECT id
          FROM pkl_penempatan
          WHERE siswa_id = ?
+           AND perusahaan_id = ?
+           AND tanggal_mulai = ?
+           AND tanggal_selesai = ?
          LIMIT 1"
     );
 
-    $stmtInsert = mysqli_prepare(
-        $koneksi,
-        "INSERT INTO pkl_penempatan
-        (
-            siswa_id,
-            perusahaan_id,
-            pembimbing_guru,
-            tanggal_mulai,
-            tanggal_selesai,
-            status_penempatan
-        )
-        VALUES (?, ?, ?, ?, ?, ?)"
+    $stmt->bind_param(
+        'iiss',
+        $siswaId,
+        $perusahaanId,
+        $tanggalMulai,
+        $tanggalSelesai
     );
 
-    // ==========================================
-    // 8. PROSES IMPOR
-    // ==========================================
+    $stmt->execute();
+    $stmt->store_result();
 
-    $berhasil = 0;
-    $dilewati = 0;
-    $gagal = 0;
-    $detailGagal = [];
+    $duplicate = $stmt->num_rows > 0;
 
-    $tanggalMulai = '2026-11-11';
-    $tanggalSelesai = '2027-03-11';
-    $status = 'Draft';
+    $stmt->close();
 
-    mysqli_begin_transaction($koneksi);
+    return $duplicate;
+}
 
-    for (
-        $baris = $barisHeader + 1;
-        $baris <= $barisTerakhir;
-        $baris++
-    ) {
 
-        $nilaiBaris = $sheet->rangeToArray(
-            'A' . $baris . ':' . $kolomTerakhir . $baris,
-            null,
-            true,
-            true,
-            false
-        )[0];
+/*
+|--------------------------------------------------------------------------
+| PROSES IMPOR
+|--------------------------------------------------------------------------
+*/
 
-        $nisn = trim(
-            (string) ($nilaiBaris[$kolom['nisn']] ?? '')
+try {
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        throw new RuntimeException(
+            'Metode pengiriman tidak valid.'
         );
-
-        $namaPerusahaan = trim(
-            (string) ($nilaiBaris[$kolom['iduka']] ?? '')
-        );
-
-        $guruPembimbing = trim(
-            (string) ($nilaiBaris[$kolom['guru pembimbing']] ?? '')
-        );
-
-        // Lewati baris kosong
-        if (
-            $nisn === '' &&
-            $namaPerusahaan === '' &&
-            $guruPembimbing === ''
-        ) {
-            continue;
-        }
-
-        // Validasi data wajib
-        if (
-            $nisn === '' ||
-            $namaPerusahaan === '' ||
-            $guruPembimbing === ''
-        ) {
-
-            $dilewati++;
-
-            $detailGagal[] =
-                "Baris {$baris}: NISN, IDUKA, atau Guru Pembimbing kosong.";
-
-            continue;
-        }
-
-        // --------------------------------------
-        // CARI SISWA BERDASARKAN NISN
-        // --------------------------------------
-
-        mysqli_stmt_bind_param(
-            $stmtSiswa,
-            's',
-            $nisn
-        );
-
-        mysqli_stmt_execute($stmtSiswa);
-
-        $hasilSiswa = mysqli_stmt_get_result($stmtSiswa);
-
-        if (mysqli_num_rows($hasilSiswa) !== 1) {
-
-            $dilewati++;
-
-            $detailGagal[] =
-                "Baris {$baris}: NISN {$nisn} tidak ditemukan atau tidak unik.";
-
-            continue;
-        }
-
-        $dataSiswa = mysqli_fetch_assoc($hasilSiswa);
-        $siswaId = (int) $dataSiswa['id'];
-
-        // --------------------------------------
-        // CARI PERUSAHAAN BERDASARKAN IDUKA
-        // --------------------------------------
-
-        $namaNormal = $normalisasi($namaPerusahaan);
-
-        $daftarPerusahaan = $perusahaanMap[$namaNormal] ?? [];
-
-        if (count($daftarPerusahaan) !== 1) {
-
-            $dilewati++;
-
-            $detailGagal[] =
-                "Baris {$baris}: Perusahaan '{$namaPerusahaan}' tidak ditemukan atau tidak unik.";
-
-            continue;
-        }
-
-        $perusahaanId = (int) $daftarPerusahaan[0];
-
-        // --------------------------------------
-        // CEK PENEMPATAN PKL SEBELUMNYA
-        // --------------------------------------
-
-        mysqli_stmt_bind_param(
-            $stmtCekPenempatan,
-            'i',
-            $siswaId
-        );
-
-        mysqli_stmt_execute($stmtCekPenempatan);
-
-        $hasilPenempatan = mysqli_stmt_get_result(
-            $stmtCekPenempatan
-        );
-
-        if (mysqli_num_rows($hasilPenempatan) > 0) {
-
-            $dilewati++;
-
-            $detailGagal[] =
-                "Baris {$baris}: Siswa dengan NISN {$nisn} sudah memiliki penempatan PKL.";
-
-            continue;
-        }
-
-        // --------------------------------------
-        // SIMPAN PENEMPATAN PKL
-        // --------------------------------------
-
-        mysqli_stmt_bind_param(
-            $stmtInsert,
-            'iissss',
-            $siswaId,
-            $perusahaanId,
-            $guruPembimbing,
-            $tanggalMulai,
-            $tanggalSelesai,
-            $status
-        );
-
-        mysqli_stmt_execute($stmtInsert);
-
-        $berhasil++;
     }
 
-    // ==========================================
-    // 9. COMMIT TRANSAKSI
-    // ==========================================
+    if (!$koneksi) {
+        throw new RuntimeException(
+            'Koneksi database gagal.'
+        );
+    }
 
-    mysqli_commit($koneksi);
+    // Verifikasi CSRF sesuai form di pkl.php.
+    verifyCsrfToken($_POST['csrf_token'] ?? null);
 
-    // Tutup statement
-    mysqli_stmt_close($stmtSiswa);
-    mysqli_stmt_close($stmtCekPenempatan);
-    mysqli_stmt_close($stmtInsert);
+    if (!isset($_FILES['file_import'])) {
+        throw new RuntimeException(
+            'File Excel belum dipilih.'
+        );
+    }
 
+    $file = $_FILES['file_import'];
+
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        throw new RuntimeException(
+            'Upload file gagal. Kode: ' . $file['error']
+        );
+    }
+
+    if ($file['size'] > $maksimalUkuran) {
+        throw new RuntimeException(
+            'Ukuran file maksimal 5 MB.'
+        );
+    }
+
+    if (!is_uploaded_file($file['tmp_name'])) {
+        throw new RuntimeException(
+            'File upload tidak valid.'
+        );
+    }
+
+    $extension = strtolower(
+        pathinfo($file['name'], PATHINFO_EXTENSION)
+    );
+
+    if (!in_array($extension, ['xlsx', 'xls', 'csv'], true)) {
+        throw new RuntimeException(
+            'Format file harus XLSX, XLS, atau CSV.'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | MEMBACA FILE
+    |--------------------------------------------------------------------------
+    */
+
+    $reader = IOFactory::createReaderForFile(
+        $file['tmp_name']
+    );
+
+    $reader->setReadDataOnly(true);
+
+    $spreadsheet = $reader->load($file['tmp_name']);
+
+    $sheet = $spreadsheet->getActiveSheet();
+
+    $lastRow = $sheet->getHighestDataRow();
+
+    $lastColumn = \PhpOffice\PhpSpreadsheet\Cell\Coordinate
+        ::columnIndexFromString(
+            $sheet->getHighestDataColumn()
+        );
+
+    /*
+    |--------------------------------------------------------------------------
+    | MEMBACA HEADER EXCEL
+    |--------------------------------------------------------------------------
+    */
+
+    $headers = [];
+
+    for ($column = 1; $column <= $lastColumn; $column++) {
+
+        $header = pklNormalizeHeader(
+            pklGetCellValue($sheet, $column, 1)
+        );
+
+        if ($header !== '') {
+            $headers[$header] = $column;
+        }
+    }
+
+    $columnNisn = $headers['nisn'] ?? null;
+    $columnNama = $headers['namasiswa'] ?? null;
+    $columnIduka = $headers['iduka'] ?? null;
+
+    $columnGuru =
+        $headers['gurupembingbing']
+        ?? $headers['gurupembimbing']
+        ?? null;
+
+    $columnMulai = $headers['tanggalmulai'] ?? null;
+    $columnSelesai = $headers['tanggalselesai'] ?? null;
+
+    $columnStatus = $headers['statuspenempatan'] ?? null;
+
+    if (
+        !$columnNisn ||
+        !$columnNama ||
+        !$columnIduka ||
+        !$columnGuru ||
+        !$columnMulai ||
+        !$columnSelesai
+    ) {
+        throw new RuntimeException(
+            'Header Excel tidak lengkap. Pastikan terdapat kolom: nisn, nama siswa, iduka, guru pembingbing, tanggal_mulai, dan tanggal_selesai.'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | PROSES SETIAP BARIS
+    |--------------------------------------------------------------------------
+    */
+
+    for ($row = 2; $row <= $lastRow; $row++) {
+
+        $nisn = pklGetCellValue(
+            $sheet,
+            $columnNisn,
+            $row
+        );
+
+        $namaSiswa = pklGetCellValue(
+            $sheet,
+            $columnNama,
+            $row
+        );
+
+        $namaPerusahaan = pklGetCellValue(
+            $sheet,
+            $columnIduka,
+            $row
+        );
+
+        $guru = pklGetCellValue(
+            $sheet,
+            $columnGuru,
+            $row
+        );
+
+        $rawMulai = $sheet
+            ->getCell([$columnMulai, $row])
+            ->getValue();
+
+        $rawSelesai = $sheet
+            ->getCell([$columnSelesai, $row])
+            ->getValue();
+
+        $status = $columnStatus
+            ? pklGetCellValue($sheet, $columnStatus, $row)
+            : 'Draft';
+
+        // Lewati baris yang benar-benar kosong.
+        if (
+            $nisn === '' &&
+            $namaSiswa === '' &&
+            $namaPerusahaan === '' &&
+            $guru === ''
+        ) {
+            $dilewati++;
+            continue;
+        }
+
+        $transactionStarted = false;
+
+        try {
+
+            if (
+                $nisn === '' ||
+                $namaSiswa === '' ||
+                $namaPerusahaan === '' ||
+                $guru === ''
+            ) {
+                throw new RuntimeException(
+                    'NISN, nama siswa, IDUKA, atau guru pembimbing kosong.'
+                );
+            }
+
+            if (strlen($guru) > 100) {
+                throw new RuntimeException(
+                    'Nama guru pembimbing melebihi 100 karakter.'
+                );
+            }
+
+            $tanggalMulai = pklConvertDate($rawMulai);
+            $tanggalSelesai = pklConvertDate($rawSelesai);
+
+            if ($tanggalSelesai < $tanggalMulai) {
+                throw new RuntimeException(
+                    'Tanggal selesai lebih awal daripada tanggal mulai.'
+                );
+            }
+
+            if ($status === '') {
+                $status = 'Draft';
+            }
+
+            if (!in_array($status, $allowedStatus, true)) {
+                throw new RuntimeException(
+                    "Status '{$status}' tidak dikenal."
+                );
+            }
+
+            /*
+             * Cari siswa berdasarkan NISN.
+             */
+
+            $siswaId = pklFindSiswaId(
+                $koneksi,
+                $nisn
+            );
+
+            if ($siswaId === null) {
+                throw new RuntimeException(
+                    "Siswa dengan NISN {$nisn} tidak ditemukan atau tidak unik."
+                );
+            }
+
+            /*
+             * Cari perusahaan berdasarkan nama IDUKA.
+             */
+
+            $perusahaanId = pklFindPerusahaanId(
+                $koneksi,
+                $namaPerusahaan
+            );
+
+            if ($perusahaanId === null) {
+                throw new RuntimeException(
+                    "Perusahaan '{$namaPerusahaan}' tidak ditemukan atau tidak unik."
+                );
+            }
+
+            /*
+             * Periksa duplikasi.
+             */
+
+            if (
+                pklIsDuplicate(
+                    $koneksi,
+                    $siswaId,
+                    $perusahaanId,
+                    $tanggalMulai,
+                    $tanggalSelesai
+                )
+            ) {
+                $dilewati++;
+                continue;
+            }
+
+            /*
+             * Simpan data.
+             */
+
+            $koneksi->begin_transaction();
+            $transactionStarted = true;
+
+            $dataPkl = [
+                'siswa_id' => $siswaId,
+                'perusahaan_id' => $perusahaanId,
+                'pembimbing_guru' => $guru,
+                'tanggal_mulai' => $tanggalMulai,
+                'tanggal_selesai' => $tanggalSelesai,
+                'status_penempatan' => $status
+            ];
+
+            if (!PklRepository::create($koneksi, $dataPkl)) {
+                throw new RuntimeException(
+                    'Gagal menyimpan data penempatan PKL.'
+                );
+            }
+
+            $koneksi->commit();
+            $transactionStarted = false;
+
+            $berhasil++;
+
+        } catch (Throwable $e) {
+
+            if ($transactionStarted) {
+                try {
+                    $koneksi->rollback();
+                } catch (Throwable $rollbackError) {
+                    error_log(
+                        'PKL rollback error: ' .
+                        $rollbackError->getMessage()
+                    );
+                }
+            }
+
+            $gagal++;
+
+            $detailGagal[] =
+                "Baris {$row}: " . $e->getMessage();
+
+            error_log(
+                "PKL IMPORT BARIS {$row}: " .
+                $e->getMessage()
+            );
+        }
+    }
+    
     $spreadsheet->disconnectWorksheets();
+    unset($spreadsheet);
 
-    // ==========================================
-    // 10. SIMPAN HASIL IMPOR
-    // ==========================================
+    $detail = [];
+
+    if (!empty($detailGagal)) {
+        $detail = array_slice($detailGagal, 0, 20);
+
+        if (count($detailGagal) > 20) {
+            $detail[] =
+                'Masih ada ' .
+                (count($detailGagal) - 20) .
+                ' kesalahan lainnya.';
+        }
+    }
 
     $_SESSION['pkl_import_result'] = [
         'berhasil' => $berhasil,
         'dilewati' => $dilewati,
         'gagal' => $gagal,
-        'detail' => $detailGagal
+        'detail' => $detail
     ];
 
-    header('Location: ' . $halamanKembali . '?import=success');
+    header('Location: ../pkl.php?import=success');
     exit;
 
 } catch (Throwable $e) {
 
-    if (isset($koneksi) && $koneksi instanceof mysqli) {
-        try {
-            mysqli_rollback($koneksi);
-        } catch (Throwable $rollbackError) {
-            error_log($rollbackError->getMessage());
-        }
-    }
-
-    error_log('PKL Import Error: ' . $e->getMessage());
+    error_log(
+        'PKL IMPORT ERROR: ' .
+        $e->getMessage() .
+        ' | File: ' . $e->getFile() .
+        ' | Line: ' . $e->getLine()
+    );
 
     $_SESSION['pkl_import_result'] = [
-        'berhasil' => 0,
-        'dilewati' => 0,
-        'gagal' => 1,
-        'detail' => [
-            'Impor gagal. Periksa format file, koneksi database, dan log PHP.'
-        ]
+        'berhasil' => $berhasil,
+        'dilewati' => $dilewati,
+        'gagal' => $gagal + 1,
+        'detail' => [$e->getMessage()]
     ];
 
-    header('Location: ' . $halamanKembali . '?import=error');
+    header('Location: ../pkl.php?import=error');
     exit;
 }

@@ -17,6 +17,7 @@
     align-items: center;
     gap: 10px;
 }
+
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 /* =========================================================
@@ -1709,7 +1710,7 @@ textarea.form-control {
     right: -40px;
     width: 200px;
     height: 200px;
-    background: radial-gradient(circle, rgba(37,99,235,.35) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(37, 99, 235, .35) 0%, transparent 70%);
 }
 
 .welcome-banner::after {
@@ -1719,7 +1720,7 @@ textarea.form-control {
     right: 120px;
     width: 160px;
     height: 160px;
-    background: radial-gradient(circle, rgba(245,158,11,.2) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(245, 158, 11, .2) 0%, transparent 70%);
 }
 
 .welcome-text {
@@ -1740,8 +1741,8 @@ textarea.form-control {
 }
 
 .welcome-badge {
-    background: rgba(37,99,235,.25);
-    border: 1px solid rgba(96,165,250,.3);
+    background: rgba(37, 99, 235, .25);
+    border: 1px solid rgba(96, 165, 250, .3);
     color: #93c5fd;
     padding: .45rem 1rem;
     border-radius: 20px;
@@ -1955,4 +1956,231 @@ textarea.form-control {
     .message-stats {
         grid-template-columns: 1fr;
     }
+}
+
+/* =========================================
+   HASIL IMPOR PKL
+========================================= */
+
+.import-result-card {
+    width: 100%;
+    box-sizing: border-box;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 22px;
+    margin: 0 0 24px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.import-result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 22px;
+}
+
+.import-result-title {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.import-result-icon {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eff6ff;
+    color: #2563eb;
+    border-radius: 12px;
+    font-size: 19px;
+}
+
+.import-result-title h3 {
+    margin: 0 0 5px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #172033;
+}
+
+.import-result-title p {
+    margin: 0;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.import-close-btn {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 9px;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.import-close-btn:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.import-result-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.import-stat {
+    min-width: 0;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 17px;
+    border-radius: 11px;
+}
+
+.import-stat-icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 19px;
+}
+
+.import-stat strong {
+    display: block;
+    font-size: 25px;
+    line-height: 1.2;
+    font-weight: 800;
+}
+
+.import-stat span {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+}
+
+.import-stat.success {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.import-stat.success .import-stat-icon {
+    background: #d1fae5;
+}
+
+.import-stat.skipped {
+    background: #fffbeb;
+    color: #b45309;
+}
+
+.import-stat.skipped .import-stat-icon {
+    background: #fef3c7;
+}
+
+.import-stat.failed {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.import-stat.failed .import-stat-icon {
+    background: #fee2e2;
+}
+
+.import-error-details {
+    margin-top: 20px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.import-error-details summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 15px;
+    cursor: pointer;
+    list-style: none;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+    background: #f8fafc;
+}
+
+.import-error-details summary::-webkit-details-marker {
+    display: none;
+}
+
+.import-error-details summary:hover {
+    background: #f1f5f9;
+}
+
+.import-error-details summary i {
+    margin-right: 7px;
+}
+
+.import-error-count {
+    color: #dc2626;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.import-error-content {
+    padding: 15px;
+}
+
+.import-error-content ul {
+    margin: 0;
+    padding-left: 22px;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.import-error-content li {
+    margin-bottom: 9px;
+    color: #b91c1c;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.import-more-error {
+    margin: 12px 0 0;
+    padding: 10px 12px;
+    background: #fff7ed;
+    color: #c2410c;
+    border-radius: 8px;
+    font-size: 12px;
+}
+
+@media (max-width: 700px) {
+
+    .import-result-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .import-result-card {
+        padding: 16px;
+    }
+
+}
+
+@media (max-width: 400px) {
+
+    .import-result-title p {
+        font-size: 11px;
+    }
+
 }

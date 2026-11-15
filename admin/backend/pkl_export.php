@@ -1,3 +1,4 @@
+
 <?php
 declare(strict_types=1);
 
@@ -6,7 +7,6 @@ session_start();
 require_once __DIR__ . '/../../backend/connection.php';
 require_once __DIR__ . '/../../backend/repositories/bootstrap.php';
 require_once __DIR__ . '/../includes/auth.php';
-
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -15,8 +15,17 @@ use PhpOffice\PhpSpreadsheet\Cell\DataType;
 
 try {
 
-    // Format ekspor
-    $format = strtolower(trim($_GET['format'] ?? 'xlsx'));
+    /*
+    |--------------------------------------------------------------------------
+    | FORMAT EKSPOR
+    |--------------------------------------------------------------------------
+    */
+
+    $formatInput = $_GET['format'] ?? 'xlsx';
+
+    $format = is_string($formatInput)
+        ? strtolower(trim($formatInput))
+        : 'xlsx';
 
     $formatDiizinkan = ['xlsx', 'csv', 'pdf'];
 
@@ -25,16 +34,33 @@ try {
         exit('Format ekspor tidak valid.');
     }
 
-    // Mengambil seluruh data PKL
+    /*
+    |--------------------------------------------------------------------------
+    | MENGAMBIL SELURUH DATA PKL
+    |--------------------------------------------------------------------------
+    */
+
     $data = PklRepository::getAllForExport($koneksi);
 
-    // Nama file
     $namaFile = 'Data_Penempatan_PKL_' . date('Ymd_His');
-
 
     /*
     |--------------------------------------------------------------------------
-    | KOLOM DATA EKSPOR
+    | FUNGSI ESCAPE HTML
+    |--------------------------------------------------------------------------
+    */
+
+    $escape = static function ($value): string {
+        return htmlspecialchars(
+            (string) $value,
+            ENT_QUOTES,
+            'UTF-8'
+        );
+    };
+
+    /*
+    |--------------------------------------------------------------------------
+    | HEADER KOLOM EKSPOR
     |--------------------------------------------------------------------------
     */
 
@@ -42,6 +68,8 @@ try {
         'No',
         'NISN',
         'Nama Siswa',
+        'Kelas',
+        'Jurusan',
         'Nama Perusahaan / Instansi',
         'Alamat Penempatan PKL',
         'Guru Pembimbing',
@@ -50,10 +78,9 @@ try {
         'Status Penempatan'
     ];
 
-
     /*
     |--------------------------------------------------------------------------
-    | FORMAT DATA
+    | FORMAT DATA EKSPOR
     |--------------------------------------------------------------------------
     */
 
@@ -65,19 +92,23 @@ try {
             $index + 1,
             $row['nisn'] ?? '-',
             $row['nama_siswa'] ?? '-',
+            $row['kelas'] ?? '-',
+            $row['jurusan'] ?? '-',
             $row['nama_perusahaan'] ?? '-',
             $row['alamat_penempatan'] ?? '-',
             $row['pembimbing'] ?? '-',
+
             !empty($row['tanggal_mulai'])
                 ? date('d-m-Y', strtotime($row['tanggal_mulai']))
                 : '-',
+
             !empty($row['tanggal_selesai'])
                 ? date('d-m-Y', strtotime($row['tanggal_selesai']))
                 : '-',
+
             $row['status_penempatan'] ?? '-'
         ];
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -99,23 +130,29 @@ try {
 
         $output = fopen('php://output', 'w');
 
-        // BOM agar karakter Indonesia terbaca baik di Excel
+        if ($output === false) {
+            throw new RuntimeException('Gagal membuat file CSV.');
+        }
+
+        // BOM agar karakter Indonesia terbaca dengan baik di Excel.
         fwrite($output, "\xEF\xBB\xBF");
 
+        // Header CSV.
         fputcsv($output, $headers, ';');
 
+        // Isi CSV.
         foreach ($rows as $row) {
             fputcsv($output, $row, ';');
         }
 
         fclose($output);
+
         exit;
     }
 
-
     /*
     |--------------------------------------------------------------------------
-    | EKSPOR EXCEL
+    | EKSPOR EXCEL XLSX
     |--------------------------------------------------------------------------
     */
 
@@ -127,18 +164,26 @@ try {
 
         $sheet->setTitle('Data PKL');
 
-        // Judul
-        $sheet->setCellValue('A1', 'DATA PENEMPATAN PRAKTIK KERJA LAPANGAN');
+        // Judul dokumen.
+        $sheet->setCellValue(
+            'A1',
+            'DATA PENEMPATAN PRAKTIK KERJA LAPANGAN'
+        );
 
-        $sheet->mergeCells('A1:I1');
+        // 11 kolom: A sampai K.
+        $sheet->mergeCells('A1:K1');
 
-        $sheet->getStyle('A1')->getFont()->setBold(true);
-        $sheet->getStyle('A1')->getFont()->setSize(14);
+        $sheet->getStyle('A1')->getFont()
+            ->setBold(true)
+            ->setSize(14);
 
         $sheet->getStyle('A1')->getAlignment()
-            ->setHorizontal('center');
+            ->setHorizontal('center')
+            ->setVertical('center');
 
-        // Header tabel
+        $sheet->getRowDimension(1)->setRowHeight(25);
+
+        // Header tabel.
         foreach ($headers as $index => $header) {
 
             $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(
@@ -148,7 +193,7 @@ try {
             $sheet->setCellValue($column . '3', $header);
         }
 
-        // Data
+        // Isi data.
         $baris = 4;
 
         foreach ($rows as $row) {
@@ -159,50 +204,72 @@ try {
                     $index + 1
                 );
 
-               $sheet->setCellValueExplicit(
-    $column . $baris,
-    (string) $value,
-    DataType::TYPE_STRING
-);
+                $sheet->setCellValueExplicit(
+                    $column . $baris,
+                    (string) $value,
+                    DataType::TYPE_STRING
+                );
             }
 
             $baris++;
         }
 
-        // Styling header
-        $sheet->getStyle('A3:I3')->getFont()->setBold(true);
+        /*
+        |--------------------------------------------------------------------------
+        | STYLING EXCEL
+        |--------------------------------------------------------------------------
+        */
 
-        $sheet->getStyle('A3:I3')->getAlignment()
+        // Styling header.
+        $sheet->getStyle('A3:K3')->getFont()
+            ->setBold(true);
+
+        $sheet->getStyle('A3:K3')->getAlignment()
             ->setHorizontal('center')
             ->setVertical('center')
             ->setWrapText(true);
 
-        // Border tabel
+        // Warna latar header.
+        $sheet->getStyle('A3:K3')->getFill()
+            ->setFillType(
+                \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID
+            )
+            ->getStartColor()
+            ->setRGB('DCE6F1');
+
+        // Menghitung baris terakhir.
         $barisAkhir = max(3, $baris - 1);
 
-        $sheet->getStyle('A3:I' . $barisAkhir)
+        // Border tabel.
+        $sheet->getStyle('A3:K' . $barisAkhir)
             ->getBorders()
             ->getAllBorders()
             ->setBorderStyle(
                 \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
             );
 
-        // Lebar kolom otomatis
-        foreach (range('A', 'I') as $column) {
+        // Lebar kolom otomatis.
+        foreach (range('A', 'K') as $column) {
+
             $sheet->getColumnDimension($column)
                 ->setAutoSize(true);
         }
 
-        // Tinggi header
+        // Tinggi header.
         $sheet->getRowDimension(3)->setRowHeight(35);
 
-        // Filter tabel
-        $sheet->setAutoFilter('A3:I' . $barisAkhir);
+        // Filter tabel.
+        $sheet->setAutoFilter('A3:K' . $barisAkhir);
 
-        // Freeze header
+        // Membekukan baris judul dan header.
         $sheet->freezePane('A4');
 
-        // Download
+        /*
+        |--------------------------------------------------------------------------
+        | DOWNLOAD EXCEL
+        |--------------------------------------------------------------------------
+        */
+
         header(
             'Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         );
@@ -223,7 +290,6 @@ try {
         exit;
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | EKSPOR PDF MELALUI CETAK BROWSER
@@ -243,7 +309,10 @@ try {
 
             <meta charset="UTF-8">
 
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta
+                name="viewport"
+                content="width=device-width, initial-scale=1.0"
+            >
 
             <title>Data Penempatan PKL</title>
 
@@ -274,15 +343,16 @@ try {
                 table {
                     width: 100%;
                     border-collapse: collapse;
-                    font-size: 10px;
+                    font-size: 9px;
                 }
 
                 th,
                 td {
                     border: 1px solid #333;
-                    padding: 6px;
+                    padding: 5px;
                     text-align: left;
                     vertical-align: top;
+                    overflow-wrap: anywhere;
                 }
 
                 th {
@@ -344,18 +414,24 @@ try {
                 Cetak / Simpan PDF
             </button>
 
-            <h2>DATA PENEMPATAN PRAKTIK KERJA LAPANGAN</h2>
+            <h2>
+                DATA PENEMPATAN PRAKTIK KERJA LAPANGAN
+            </h2>
 
             <div class="subtitle">
                 Data Penempatan PKL Siswa
             </div>
 
             <div class="info">
+
                 Tanggal ekspor:
-                <?= htmlspecialchars(date('d-m-Y H:i:s')) ?>
+                <?= $escape(date('d-m-Y H:i:s')) ?>
+
                 <br>
+
                 Jumlah peserta:
                 <?= count($rows) ?>
+
             </div>
 
             <table>
@@ -367,7 +443,7 @@ try {
                         <?php foreach ($headers as $header): ?>
 
                             <th>
-                                <?= htmlspecialchars($header) ?>
+                                <?= $escape($header) ?>
                             </th>
 
                         <?php endforeach; ?>
@@ -381,7 +457,7 @@ try {
                     <?php if (empty($rows)): ?>
 
                         <tr>
-                            <td colspan="9" style="text-align:center;">
+                            <td colspan="11" style="text-align:center;">
                                 Belum ada data penempatan PKL.
                             </td>
                         </tr>
@@ -395,7 +471,7 @@ try {
                                 <?php foreach ($row as $value): ?>
 
                                     <td>
-                                        <?= htmlspecialchars((string) $value) ?>
+                                        <?= $escape($value) ?>
                                     </td>
 
                                 <?php endforeach; ?>
@@ -425,7 +501,9 @@ try {
 
 } catch (Throwable $e) {
 
-    error_log('PKL Export Error: ' . $e->getMessage());
+    error_log(
+        'PKL Export Error: ' . $e->getMessage()
+    );
 
     http_response_code(500);
 

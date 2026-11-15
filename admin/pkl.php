@@ -1,9 +1,23 @@
+
 <?php
 session_start();
 
 require_once '../backend/connection.php';
 require_once '../backend/repositories/bootstrap.php';
 require_once 'includes/auth.php';
+
+/* =========================================
+   HELPER
+========================================= */
+
+function e($value): string
+{
+    return htmlspecialchars(
+        (string) ($value ?? ''),
+        ENT_QUOTES,
+        'UTF-8'
+    );
+}
 
 /* =========================================
    SEARCH & PAGINATION
@@ -26,10 +40,7 @@ $limit = 10;
 
 $total = PklRepository::countWithSearch($koneksi, $search);
 
-$total_pages = max(
-    1,
-    (int) ceil($total / $limit)
-);
+$total_pages = max(1, (int) ceil($total / $limit));
 
 $page = min($page, $total_pages);
 $offset = ($page - 1) * $limit;
@@ -44,17 +55,34 @@ $data = PklRepository::getPaginated(
 $siswa_list = SiswaRepository::getOptions($koneksi);
 $perusahaan_list = PerusahaanRepository::getOptions($koneksi);
 
-$page_title = "Penempatan PKL";
-
+$page_title = 'Penempatan PKL';
 $csrfToken = generateCsrfToken();
 
-function e($value): string
-{
-    return htmlspecialchars(
-        (string) ($value ?? ''),
-        ENT_QUOTES,
-        'UTF-8'
-    );
+/* =========================================
+   HASIL IMPOR
+========================================= */
+
+$hasilImport = null;
+
+if (isset($_GET['import'])) {
+    $hasilImport = $_SESSION['pkl_import_result'] ?? null;
+    unset($_SESSION['pkl_import_result']);
+}
+
+/* =========================================
+   NORMALISASI DETAIL IMPOR
+========================================= */
+
+$detailImport = [];
+
+if (is_array($hasilImport)) {
+    $detail = $hasilImport['detail'] ?? [];
+
+    if (is_string($detail) && trim($detail) !== '') {
+        $detailImport = [$detail];
+    } elseif (is_array($detail)) {
+        $detailImport = $detail;
+    }
 }
 ?>
 
@@ -80,6 +108,78 @@ function e($value): string
     >
 
     <link rel="stylesheet" href="assets/admin-style.css">
+
+    <style>
+        .page-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .import-export-section {
+            margin-bottom: 24px;
+        }
+
+        .import-export-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .import-export-section h4 {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary, #172033);
+        }
+
+        .import-export-section p {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #777;
+            margin-bottom: 14px;
+        }
+
+        .import-export-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .import-export-divider {
+            border: 0;
+            border-top: 1px solid #e8edf3;
+            margin: 22px 0;
+        }
+
+        .import-file-info {
+            display: block;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #777;
+        }
+
+        @media (max-width: 600px) {
+            .page-header {
+                align-items: flex-start;
+                gap: 14px;
+                flex-direction: column;
+            }
+
+            .page-header-actions {
+                width: 100%;
+            }
+
+            .page-header-actions .btn {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .import-export-actions .btn {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -92,42 +192,193 @@ function e($value): string
 
     <main class="admin-content">
 
-        <!-- ALERT -->
+        <!-- =====================================
+             PESAN NOTIFIKASI
+        ====================================== -->
+
         <?php if (isset($_GET['msg'])): ?>
 
             <div class="alert alert-<?= e($_GET['type'] ?? 'success') ?> flash-alert">
+
                 <i class="fa-solid fa-circle-check"></i>
 
                 <?= e($_GET['msg']) ?>
+
             </div>
 
         <?php endif; ?>
 
 
-        <!-- ALERT IMPOR -->
-        <?php if (isset($_GET['import'])): ?>
+        <!-- =====================================
+             HASIL IMPOR
+        ====================================== -->
+
+        <?php if (is_array($hasilImport)): ?>
+
+            <div class="import-result-card" id="importResultCard">
+
+                <div class="import-result-header">
+
+                    <div class="import-result-title">
+
+                        <div class="import-result-icon">
+                            <i class="fa-solid fa-file-import"></i>
+                        </div>
+
+                        <div>
+                            <h3>Hasil Impor Data PKL</h3>
+                            <p>Ringkasan proses impor data penempatan PKL.</p>
+                        </div>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="import-close-btn"
+                        onclick="document.getElementById('importResultCard').remove()"
+                        aria-label="Tutup notifikasi"
+                    >
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+
+                </div>
+
+
+                <div class="import-result-stats">
+
+                    <div class="import-stat success">
+
+                        <div class="import-stat-icon">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+
+                        <div>
+                            <strong>
+                                <?= (int)($hasilImport['berhasil'] ?? 0) ?>
+                            </strong>
+                            <span>Berhasil</span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="import-stat skipped">
+
+                        <div class="import-stat-icon">
+                            <i class="fa-solid fa-circle-pause"></i>
+                        </div>
+
+                        <div>
+                            <strong>
+                                <?= (int)($hasilImport['dilewati'] ?? 0) ?>
+                            </strong>
+                            <span>Dilewati</span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="import-stat failed">
+
+                        <div class="import-stat-icon">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                        </div>
+
+                        <div>
+                            <strong>
+                                <?= (int)($hasilImport['gagal'] ?? 0) ?>
+                            </strong>
+                            <span>Gagal</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <?php if (!empty($detailImport)): ?>
+
+                    <details class="import-error-details">
+
+                        <summary>
+
+                            <span>
+                                <i class="fa-solid fa-list-ul"></i>
+                                Lihat rincian kesalahan
+                            </span>
+
+                            <span class="import-error-count">
+                                <?= count($detailImport) ?> detail
+                            </span>
+
+                        </summary>
+
+                        <div class="import-error-content">
+
+                            <ul>
+
+                                <?php foreach (array_slice($detailImport, 0, 20) as $pesan): ?>
+
+                                    <li>
+                                        <?= e((string)$pesan) ?>
+                                    </li>
+
+                                <?php endforeach; ?>
+
+                            </ul>
+
+                            <?php if (count($detailImport) > 20): ?>
+
+                                <p class="import-more-error">
+
+                                    Masih ada
+                                    <?= count($detailImport) - 20 ?>
+                                    kesalahan lainnya yang tidak ditampilkan.
+
+                                </p>
+
+                            <?php endif; ?>
+
+                        </div>
+
+                    </details>
+
+                <?php endif; ?>
+
+            </div>
+
+        <?php elseif (isset($_GET['import'])): ?>
 
             <div class="alert alert-info flash-alert">
-                <i class="fa-solid fa-file-import"></i>
 
-                <?= e($_GET['import']) ?>
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+                <strong>Informasi hasil impor tidak ditemukan.</strong>
+
+                Silakan periksa kembali proses impor atau log PHP.
+
             </div>
 
         <?php endif; ?>
 
 
-        <!-- HEADER -->
+        <!-- =====================================
+             HEADER HALAMAN
+        ====================================== -->
+
         <div class="page-header">
 
             <div class="page-header-left">
 
                 <h2>
+
                     <i
                         class="fa-solid fa-map-location-dot"
                         style="color:var(--orange);margin-right:8px;"
                     ></i>
 
                     Penempatan PKL
+
                 </h2>
 
                 <p>
@@ -136,146 +387,51 @@ function e($value): string
 
             </div>
 
-            <button
-                class="btn btn-primary"
-                type="button"
-                onclick="openModal('modalTambah')"
-            >
-                <i class="fa-solid fa-plus"></i>
-                Tambah PKL
-            </button>
 
-        </div>
+            <div class="page-header-actions">
 
-
-        <!-- CARD IMPOR DAN EKSPOR -->
-        <div class="card" style="margin-bottom:20px;">
-
-            <div class="card-header">
-
-                <span class="card-title">
-                    <i class="fa-solid fa-file-import"></i>
-                    Impor dan Ekspor Data PKL
-                </span>
-
-            </div>
-
-            <div style="padding:20px;">
-
-                <!-- FORM IMPOR -->
-                <form
-                    method="POST"
-                    action="backend/pkl_import.php"
-                    enctype="multipart/form-data"
-                    style="margin-bottom:20px;"
+                <button
+                    class="btn btn-primary"
+                    type="button"
+                    onclick="openModal('modalTambah')"
                 >
+                    <i class="fa-solid fa-plus"></i>
+                    Tambah PKL
+                </button>
 
-                    <input
-                        type="hidden"
-                        name="csrf_token"
-                        value="<?= e($csrfToken) ?>"
-                    >
-
-                    <div class="form-group">
-
-                        <label>
-                            Pilih File Excel atau CSV
-                        </label>
-
-                        <input
-                            type="file"
-                            name="file_import"
-                            class="form-control"
-                            accept=".xlsx,.xls,.csv"
-                            required
-                        >
-
-                        <small style="display:block;margin-top:8px;color:#777;">
-                            Format yang didukung: XLSX, XLS, dan CSV.
-                            Maksimal ukuran file 5 MB.
-                        </small>
-
-                    </div>
-
-                    <button
-                        type="submit"
-                        class="btn btn-primary"
-                        onclick="return confirm('Apakah kamu yakin ingin mengimpor data PKL dari file ini?');"
-                    >
-                        <i class="fa-solid fa-upload"></i>
-                        Impor Data PKL
-                    </button>
-
-                </form>
-
-
-                <hr style="margin:20px 0;border:0;border-top:1px solid #eee;">
-
-
-                <!-- TOMBOL EKSPOR -->
-                <div class="form-group">
-
-                    <label>
-                        Ekspor Data Penempatan PKL
-                    </label>
-
-                    <p style="font-size:13px;color:#777;margin-bottom:12px;">
-                        Unduh data PKL yang sudah tersimpan dalam database.
-                        Data alamat perusahaan juga disertakan.
-                    </p>
-
-                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-
-                        <a
-                            href="backend/pkl_export.php?format=xlsx"
-                            class="btn btn-primary"
-                        >
-                            <i class="fa-solid fa-file-excel"></i>
-                            Ekspor Excel
-                        </a>
-
-                        <a
-                            href="backend/pkl_export.php?format=csv"
-                            class="btn btn-outline"
-                        >
-                            <i class="fa-solid fa-file-csv"></i>
-                            Ekspor CSV
-                        </a>
-
-                        <a
-                            href="backend/pkl_export.php?format=pdf"
-                            target="_blank"
-                            class="btn btn-outline"
-                        >
-                            <i class="fa-solid fa-file-pdf"></i>
-                            Ekspor PDF
-                        </a>
-
-                    </div>
-
-                </div>
+                <button
+                    class="btn btn-primary"
+                    type="button"
+                    onclick="openModal('modalImportExport')"
+                >
+                    <i class="fa-solid fa-file-import"></i>
+                    Impor / Ekspor
+                </button>
 
             </div>
 
         </div>
 
 
-        <!-- CARD DATA PKL -->
+        <!-- =====================================
+             CARD DATA PKL
+        ====================================== -->
+
         <div class="card">
 
-            <!-- CARD HEADER -->
             <div class="card-header">
 
                 <span class="card-title">
 
                     <i class="fa-solid fa-list"></i>
 
-                    Data PKL (<?= (int) $total ?>)
+                    Data PKL (<?= (int)$total ?>)
 
                 </span>
 
 
                 <!-- SEARCH -->
+
                 <form
                     method="GET"
                     style="display:flex;gap:.5rem;align-items:center;"
@@ -290,7 +446,7 @@ function e($value): string
                             name="search"
                             maxlength="255"
                             value="<?= e($search) ?>"
-                            placeholder="Cari siswa / perusahaan..."
+                            placeholder="Cari nama, kelas, jurusan, perusahaan..."
                         >
 
                     </div>
@@ -318,7 +474,10 @@ function e($value): string
             </div>
 
 
-            <!-- TABLE -->
+            <!-- =====================================
+                 TABEL DATA PKL
+            ====================================== -->
+
             <div class="table-wrapper">
 
                 <table>
@@ -328,6 +487,8 @@ function e($value): string
                         <tr>
                             <th>No</th>
                             <th>Nama Siswa</th>
+                            <th>Kelas</th>
+                            <th>Jurusan</th>
                             <th>Perusahaan</th>
                             <th>Pembimbing</th>
                             <th>Mulai</th>
@@ -345,7 +506,7 @@ function e($value): string
 
                         <tr>
 
-                            <td colspan="8">
+                            <td colspan="10">
 
                                 <div class="table-empty">
 
@@ -378,79 +539,98 @@ function e($value): string
                                 default:
                                     $badge = 'badge-gold';
                                     break;
+
                             }
 
                             ?>
 
                             <tr>
 
+                                <!-- NOMOR -->
+
                                 <td class="td-no">
                                     <?= $offset + $i + 1 ?>
                                 </td>
 
 
+                                <!-- NAMA SISWA -->
+
                                 <td style="font-weight:600;">
-
-                                    <?= e($row['nama_siswa']) ?>
-
+                                    <?= e($row['nama_siswa'] ?? '-') ?>
                                 </td>
 
+
+                                <!-- KELAS -->
 
                                 <td>
-
-                                    <?= e($row['nama_perusahaan']) ?>
-
+                                    <?= e($row['kelas'] ?? '-') ?>
                                 </td>
 
+
+                                <!-- JURUSAN -->
 
                                 <td>
-
-                                    <?= e($row['pembimbing']) ?>
-
+                                    <?= e($row['jurusan'] ?? '-') ?>
                                 </td>
 
+
+                                <!-- PERUSAHAAN -->
+
+                                <td>
+                                    <?= e($row['nama_perusahaan'] ?? '-') ?>
+                                </td>
+
+
+                                <!-- PEMBIMBING -->
+
+                                <td>
+                                    <?= e($row['pembimbing'] ?? '-') ?>
+                                </td>
+
+
+                                <!-- TANGGAL MULAI -->
 
                                 <td>
 
                                     <?= !empty($row['tanggal_mulai'])
-                                        ? date(
-                                            'd/m/Y',
-                                            strtotime($row['tanggal_mulai'])
-                                        )
+                                        ? date('d/m/Y', strtotime($row['tanggal_mulai']))
                                         : '-' ?>
 
                                 </td>
 
+
+                                <!-- TANGGAL SELESAI -->
 
                                 <td>
 
                                     <?= !empty($row['tanggal_selesai'])
-                                        ? date(
-                                            'd/m/Y',
-                                            strtotime($row['tanggal_selesai'])
-                                        )
+                                        ? date('d/m/Y', strtotime($row['tanggal_selesai']))
                                         : '-' ?>
 
                                 </td>
 
+
+                                <!-- STATUS -->
 
                                 <td>
 
                                     <span class="badge <?= e($badge) ?>">
 
-                                        <?= e($row['status_penempatan']) ?>
+                                        <?= e($row['status_penempatan'] ?? '-') ?>
 
                                     </span>
 
                                 </td>
 
 
+                                <!-- AKSI -->
+
                                 <td>
 
                                     <div class="action-btns">
 
-
                                         <!-- EDIT -->
+
                                         <button
                                             type="button"
                                             class="btn btn-warning btn-sm btn-icon"
@@ -470,13 +650,14 @@ function e($value): string
 
 
                                         <!-- HAPUS -->
+
                                         <button
                                             type="button"
                                             class="btn btn-danger btn-sm btn-icon"
                                             onclick='hapusPkl(
-                                                <?= (int) $row['id'] ?>,
+                                                <?= (int)$row['id'] ?>,
                                                 <?= json_encode(
-                                                    $row['nama_siswa'],
+                                                    $row['nama_siswa'] ?? '',
                                                     JSON_HEX_TAG |
                                                     JSON_HEX_APOS |
                                                     JSON_HEX_QUOT |
@@ -507,7 +688,10 @@ function e($value): string
             </div>
 
 
-            <!-- PAGINATION -->
+            <!-- =====================================
+                 PAGINATION
+            ====================================== -->
+
             <?php if ($total_pages > 1): ?>
 
                 <div class="pagination">
@@ -520,12 +704,9 @@ function e($value): string
 
                         –
 
-                        <?= min(
-                            $offset + $limit,
-                            $total
-                        ) ?>
+                        <?= min($offset + $limit, $total) ?>
 
-                        dari <?= (int) $total ?>
+                        dari <?= (int)$total ?>
 
                     </span>
 
@@ -560,7 +741,9 @@ function e($value): string
                                 href="?page=<?= $p ?>&search=<?= urlencode($search) ?>"
                                 class="page-btn <?= $p == $page ? 'active' : '' ?>"
                             >
+
                                 <?= $p ?>
+
                             </a>
 
                         <?php endfor; ?>
@@ -588,6 +771,201 @@ function e($value): string
         </div>
 
     </main>
+
+</div>
+
+
+<!-- =====================================
+     MODAL IMPOR DAN EKSPOR
+===================================== -->
+
+<div class="modal-overlay" id="modalImportExport">
+
+    <div class="modal modal-lg">
+
+        <div class="modal-header">
+
+            <span class="modal-title">
+
+                <i class="fa-solid fa-file-import"></i>
+
+                Impor dan Ekspor Data PKL
+
+            </span>
+
+            <button
+                type="button"
+                class="modal-close"
+                onclick="closeModal('modalImportExport')"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+            <!-- FORM IMPOR -->
+
+            <div class="import-export-section">
+
+                <h4>
+
+                    <i class="fa-solid fa-file-arrow-up"></i>
+
+                    Impor Data Penempatan PKL
+
+                </h4>
+
+                <p>
+                    Unggah data penempatan PKL menggunakan file Excel atau CSV.
+                    Pastikan format kolom sesuai dengan template impor.
+                </p>
+
+
+                <form
+                    method="POST"
+                    action="backend/pkl_import.php"
+                    enctype="multipart/form-data"
+                    id="formImportPkl"
+                >
+
+                    <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="<?= e($csrfToken) ?>"
+                    >
+
+                    <div class="form-group">
+
+                        <label for="file_import">
+
+                            Pilih File Excel atau CSV
+
+                            <span class="required">*</span>
+
+                        </label>
+
+                        <input
+                            type="file"
+                            name="file_import"
+                            id="file_import"
+                            class="form-control"
+                            accept=".xlsx,.xls,.csv"
+                            required
+                        >
+
+                        <small class="import-file-info">
+
+                            Format yang didukung: XLSX, XLS, dan CSV.
+                            Maksimal ukuran file 5 MB.
+
+                        </small>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        onclick="return confirm('Apakah kamu yakin ingin mengimpor data PKL dari file ini?');"
+                    >
+
+                        <i class="fa-solid fa-upload"></i>
+
+                        Impor Data PKL
+
+                    </button>
+
+                </form>
+
+            </div>
+
+
+            <hr class="import-export-divider">
+
+
+            <!-- BAGIAN EKSPOR -->
+
+            <div class="import-export-section">
+
+                <h4>
+
+                    <i class="fa-solid fa-file-arrow-down"></i>
+
+                    Ekspor Data Penempatan PKL
+
+                </h4>
+
+                <p>
+
+                    Unduh seluruh data penempatan PKL yang sudah tersimpan
+                    dalam database. Data alamat perusahaan juga disertakan.
+
+                </p>
+
+
+                <div class="import-export-actions">
+
+                    <a
+                        href="backend/pkl_export.php?format=xlsx"
+                        class="btn btn-primary"
+                    >
+
+                        <i class="fa-solid fa-file-excel"></i>
+
+                        Ekspor Excel
+
+                    </a>
+
+
+                    <a
+                        href="backend/pkl_export.php?format=csv"
+                        class="btn btn-outline"
+                    >
+
+                        <i class="fa-solid fa-file-csv"></i>
+
+                        Ekspor CSV
+
+                    </a>
+
+
+                    <a
+                        href="backend/pkl_export.php?format=pdf"
+                        target="_blank"
+                        class="btn btn-outline"
+                    >
+
+                        <i class="fa-solid fa-file-pdf"></i>
+
+                        Ekspor PDF
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="modal-footer">
+
+            <button
+                type="button"
+                class="btn btn-outline"
+                onclick="closeModal('modalImportExport')"
+            >
+
+                Tutup
+
+            </button>
+
+        </div>
+
+    </div>
 
 </div>
 
@@ -638,12 +1016,14 @@ function e($value): string
 
             <div class="modal-body">
 
-                <!-- NAMA SISWA -->
                 <div class="form-group">
 
                     <label>
+
                         Nama Siswa
+
                         <span class="required">*</span>
+
                     </label>
 
                     <input
@@ -659,12 +1039,14 @@ function e($value): string
                 </div>
 
 
-                <!-- NAMA PERUSAHAAN -->
                 <div class="form-group">
 
                     <label>
+
                         Nama Perusahaan / Instansi
+
                         <span class="required">*</span>
+
                     </label>
 
                     <input
@@ -680,12 +1062,14 @@ function e($value): string
                 </div>
 
 
-                <!-- PEMBIMBING -->
                 <div class="form-group">
 
                     <label>
+
                         Nama Pembimbing
+
                         <span class="required">*</span>
+
                     </label>
 
                     <input
@@ -700,14 +1084,16 @@ function e($value): string
                 </div>
 
 
-                <!-- TANGGAL -->
                 <div class="form-row">
 
                     <div class="form-group">
 
                         <label>
+
                             Tanggal Mulai
+
                             <span class="required">*</span>
+
                         </label>
 
                         <input
@@ -723,8 +1109,11 @@ function e($value): string
                     <div class="form-group">
 
                         <label>
+
                             Tanggal Selesai
+
                             <span class="required">*</span>
+
                         </label>
 
                         <input
@@ -739,7 +1128,6 @@ function e($value): string
                 </div>
 
 
-                <!-- STATUS -->
                 <div class="form-group">
 
                     <label>Status Penempatan</label>
@@ -769,7 +1157,9 @@ function e($value): string
                     class="btn btn-outline"
                     onclick="closeModal('modalTambah')"
                 >
+
                     Batal
+
                 </button>
 
 
@@ -816,7 +1206,9 @@ function e($value): string
                 class="modal-close"
                 onclick="closeModal('modalEdit')"
             >
+
                 <i class="fa-solid fa-xmark"></i>
+
             </button>
 
         </div>
@@ -845,12 +1237,14 @@ function e($value): string
 
             <div class="modal-body">
 
-                <!-- NAMA SISWA -->
                 <div class="form-group">
 
                     <label>
+
                         Nama Siswa
+
                         <span class="required">*</span>
+
                     </label>
 
                     <input
@@ -865,12 +1259,14 @@ function e($value): string
                 </div>
 
 
-                <!-- NAMA PERUSAHAAN -->
                 <div class="form-group">
 
                     <label>
+
                         Nama Perusahaan / Instansi
+
                         <span class="required">*</span>
+
                     </label>
 
                     <input
@@ -885,12 +1281,14 @@ function e($value): string
                 </div>
 
 
-                <!-- PEMBIMBING -->
                 <div class="form-group">
 
                     <label>
+
                         Nama Pembimbing
+
                         <span class="required">*</span>
+
                     </label>
 
                     <input
@@ -905,14 +1303,16 @@ function e($value): string
                 </div>
 
 
-                <!-- TANGGAL -->
                 <div class="form-row">
 
                     <div class="form-group">
 
                         <label>
+
                             Tanggal Mulai
+
                             <span class="required">*</span>
+
                         </label>
 
                         <input
@@ -929,8 +1329,11 @@ function e($value): string
                     <div class="form-group">
 
                         <label>
+
                             Tanggal Selesai
+
                             <span class="required">*</span>
+
                         </label>
 
                         <input
@@ -946,7 +1349,6 @@ function e($value): string
                 </div>
 
 
-                <!-- STATUS -->
                 <div class="form-group">
 
                     <label>Status Penempatan</label>
@@ -977,7 +1379,9 @@ function e($value): string
                     class="btn btn-outline"
                     onclick="closeModal('modalEdit')"
                 >
+
                     Batal
+
                 </button>
 
 
@@ -1031,6 +1435,10 @@ function e($value): string
 
 </form>
 
+
+<!-- =====================================
+     JAVASCRIPT
+===================================== -->
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
