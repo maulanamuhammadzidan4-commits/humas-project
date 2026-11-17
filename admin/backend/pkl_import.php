@@ -45,14 +45,6 @@ $allowedStatus = [
 |--------------------------------------------------------------------------
 */
 
-function pklNormalizeHeader(string $header): string
-{
-    return strtolower(
-        preg_replace('/[^a-zA-Z0-9]/', '', trim($header))
-    );
-}
-
-
 function pklGetCellValue($sheet, int $column, int $row): string
 {
     return trim((string) $sheet
@@ -100,98 +92,134 @@ function pklConvertDate($value): string
 }
 
 
-function pklFindSiswaId(
-    mysqli $koneksi,
-    string $nisn
-): ?int {
-
-    $stmt = $koneksi->prepare(
-        "SELECT id
-         FROM siswa
-         WHERE TRIM(nisn) = ?
-         LIMIT 2"
-    );
-
-    $stmt->bind_param('s', $nisn);
-    $stmt->execute();
-    $stmt->store_result();
-
-    if ($stmt->num_rows !== 1) {
-        $stmt->close();
-        return null;
+function pklFetchIdsByValues(
+    mysqli $connection,
+    string $table,
+    string $column,
+    array $values,
+    bool $caseInsensitive = false
+): array {
+    if (
+        !in_array([$table, $column], [['siswa', 'nisn'], ['perusahaan', 'nama_perusahaan']], true)
+    ) {
+        throw new InvalidArgumentException('Kolom pencarian impor tidak valid.');
     }
 
-    $stmt->bind_result($id);
-    $stmt->fetch();
-    $stmt->close();
+    $matches = [];
 
-    return (int) $id;
-}
+    foreach (array_chunk(array_values(array_unique($values)), 200) as $chunk) {
+        $sourceRows = implode(
+            ' UNION ALL ',
+            array_fill(0, count($chunk), 'SELECT ? AS lookup_value')
+        );
+        $comparison = $caseInsensitive
+            ? "LOWER(TRIM(target.`{$column}`)) = LOWER(source.lookup_value)"
+            : "TRIM(target.`{$column}`) = source.lookup_value";
 
+        $stmt = $connection->prepare(
+            "SELECT source.lookup_value, target.id
+             FROM ({$sourceRows}) AS source
+             LEFT JOIN `{$table}` AS target ON {$comparison}"
+        );
 
-function pklFindPerusahaanId(
-    mysqli $koneksi,
-    string $nama
-): ?int {
+        $types = str_repeat('s', count($chunk));
+        $parameters = [$types];
+        foreach ($chunk as &$value) {
+            $parameters[] = &$value;
+        }
+        unset($value);
+        call_user_func_array([$stmt, 'bind_param'], $parameters);
 
-    $stmt = $koneksi->prepare(
-        "SELECT id
-         FROM perusahaan
-         WHERE LOWER(TRIM(nama_perusahaan)) = LOWER(?)
-         LIMIT 2"
-    );
+        $stmt->execute();
+        $stmt->bind_result($lookupValue, $id);
 
-    $stmt->bind_param('s', $nama);
-    $stmt->execute();
-    $stmt->store_result();
+        while ($stmt->fetch()) {
+            if ($id !== null) {
+                $matches[$lookupValue][] = (int) $id;
+            }
+        }
 
-    if ($stmt->num_rows !== 1) {
         $stmt->close();
-        return null;
     }
 
-    $stmt->bind_result($id);
-    $stmt->fetch();
-    $stmt->close();
-
-    return (int) $id;
+    return $matches;
 }
 
-
-function pklIsDuplicate(
-    mysqli $koneksi,
+function pklDuplicateKey(
     int $siswaId,
     int $perusahaanId,
     string $tanggalMulai,
     string $tanggalSelesai
-): bool {
-
-    $stmt = $koneksi->prepare(
-        "SELECT id
-         FROM pkl_penempatan
-         WHERE siswa_id = ?
-           AND perusahaan_id = ?
-           AND tanggal_mulai = ?
-           AND tanggal_selesai = ?
-         LIMIT 1"
-    );
-
-    $stmt->bind_param(
-        'iiss',
+): string {
+    return implode('|', [
         $siswaId,
         $perusahaanId,
         $tanggalMulai,
-        $tanggalSelesai
-    );
+        $tanggalSelesai,
+    ]);
+}
 
-    $stmt->execute();
-    $stmt->store_result();
+function pklFetchExistingDuplicates(mysqli $connection, array $records): array
+{
+    $duplicates = [];
 
-    $duplicate = $stmt->num_rows > 0;
+    foreach (array_chunk($records, 100) as $chunk) {
+        $sourceRows = [];
+        $types = '';
+        $values = [];
 
-    $stmt->close();
+        foreach ($chunk as $record) {
+            $sourceRows[] = 'SELECT ? AS siswa_id, ? AS perusahaan_id, ? AS tanggal_mulai, ? AS tanggal_selesai';
+            $types .= 'iiss';
+            $values[] = $record['siswa_id'];
+            $values[] = $record['perusahaan_id'];
+            $values[] = $record['tanggal_mulai'];
+            $values[] = $record['tanggal_selesai'];
+        }
 
-    return $duplicate;
+        $stmt = $connection->prepare(
+            'SELECT source.siswa_id, source.perusahaan_id,
+                    source.tanggal_mulai, source.tanggal_selesai,
+                    placement.id
+             FROM (' . implode(' UNION ALL ', $sourceRows) . ') AS source
+             LEFT JOIN pkl_penempatan AS placement
+               ON placement.siswa_id = source.siswa_id
+              AND placement.perusahaan_id = source.perusahaan_id
+              AND placement.tanggal_mulai = source.tanggal_mulai
+              AND placement.tanggal_selesai = source.tanggal_selesai'
+        );
+
+        $parameters = [$types];
+        foreach ($values as &$value) {
+            $parameters[] = &$value;
+        }
+        unset($value);
+        call_user_func_array([$stmt, 'bind_param'], $parameters);
+
+        $stmt->execute();
+        $stmt->bind_result(
+            $siswaId,
+            $perusahaanId,
+            $tanggalMulai,
+            $tanggalSelesai,
+            $placementId
+        );
+
+        while ($stmt->fetch()) {
+            if ($placementId !== null) {
+                $duplicates[pklDuplicateKey(
+                    (int) $siswaId,
+                    (int) $perusahaanId,
+                    $tanggalMulai,
+                    $tanggalSelesai
+                )] = true;
+            }
+        }
+
+        $stmt->close();
+    }
+
+    return $duplicates;
 }
 
 
@@ -287,7 +315,7 @@ try {
 
     for ($column = 1; $column <= $lastColumn; $column++) {
 
-        $header = pklNormalizeHeader(
+        $header = normalizeSpreadsheetHeader(
             pklGetCellValue($sheet, $column, 1)
         );
 
@@ -322,6 +350,58 @@ try {
             'Header Excel tidak lengkap. Pastikan terdapat kolom: nisn, nama siswa, iduka, guru pembingbing, tanggal_mulai, dan tanggal_selesai.'
         );
     }
+
+    $nisnValues = [];
+    $companyValues = [];
+    for ($lookupRow = 2; $lookupRow <= $lastRow; $lookupRow++) {
+        $nisnValue = pklGetCellValue($sheet, $columnNisn, $lookupRow);
+        $companyValue = pklGetCellValue($sheet, $columnIduka, $lookupRow);
+
+        if ($nisnValue !== '') {
+            $nisnValues[] = $nisnValue;
+        }
+        if ($companyValue !== '') {
+            $companyValues[] = $companyValue;
+        }
+    }
+
+    $siswaIdsByNisn = pklFetchIdsByValues(
+        $koneksi,
+        'siswa',
+        'nisn',
+        $nisnValues
+    );
+    $perusahaanIdsByName = pklFetchIdsByValues(
+        $koneksi,
+        'perusahaan',
+        'nama_perusahaan',
+        $companyValues,
+        true
+    );
+
+    $insertPkl = $koneksi->prepare(
+        "INSERT INTO pkl_penempatan
+            (siswa_id, perusahaan_id, pembimbing_guru, tanggal_mulai, tanggal_selesai, status_penempatan)
+         VALUES (?, ?, ?, ?, ?, ?)"
+    );
+
+    $siswaIdForInsert = 0;
+    $perusahaanIdForInsert = 0;
+    $guruForInsert = '';
+    $tanggalMulaiForInsert = '';
+    $tanggalSelesaiForInsert = '';
+    $statusForInsert = '';
+    $insertPkl->bind_param(
+        'iissss',
+        $siswaIdForInsert,
+        $perusahaanIdForInsert,
+        $guruForInsert,
+        $tanggalMulaiForInsert,
+        $tanggalSelesaiForInsert,
+        $statusForInsert
+    );
+
+    $rowsToInsert = [];
 
     /*
     |--------------------------------------------------------------------------
@@ -378,8 +458,6 @@ try {
             continue;
         }
 
-        $transactionStarted = false;
-
         try {
 
             if (
@@ -422,10 +500,8 @@ try {
              * Cari siswa berdasarkan NISN.
              */
 
-            $siswaId = pklFindSiswaId(
-                $koneksi,
-                $nisn
-            );
+            $siswaIds = $siswaIdsByNisn[$nisn] ?? [];
+            $siswaId = count($siswaIds) === 1 ? $siswaIds[0] : null;
 
             if ($siswaId === null) {
                 throw new RuntimeException(
@@ -437,10 +513,10 @@ try {
              * Cari perusahaan berdasarkan nama IDUKA.
              */
 
-            $perusahaanId = pklFindPerusahaanId(
-                $koneksi,
-                $namaPerusahaan
-            );
+            $perusahaanIds = $perusahaanIdsByName[$namaPerusahaan] ?? [];
+            $perusahaanId = count($perusahaanIds) === 1
+                ? $perusahaanIds[0]
+                : null;
 
             if ($perusahaanId === null) {
                 throw new RuntimeException(
@@ -448,63 +524,17 @@ try {
                 );
             }
 
-            /*
-             * Periksa duplikasi.
-             */
-
-            if (
-                pklIsDuplicate(
-                    $koneksi,
-                    $siswaId,
-                    $perusahaanId,
-                    $tanggalMulai,
-                    $tanggalSelesai
-                )
-            ) {
-                $dilewati++;
-                continue;
-            }
-
-            /*
-             * Simpan data.
-             */
-
-            $koneksi->begin_transaction();
-            $transactionStarted = true;
-
-            $dataPkl = [
+            $rowsToInsert[] = [
+                'row' => $row,
                 'siswa_id' => $siswaId,
                 'perusahaan_id' => $perusahaanId,
                 'pembimbing_guru' => $guru,
                 'tanggal_mulai' => $tanggalMulai,
                 'tanggal_selesai' => $tanggalSelesai,
-                'status_penempatan' => $status
+                'status_penempatan' => $status,
             ];
 
-            if (!PklRepository::create($koneksi, $dataPkl)) {
-                throw new RuntimeException(
-                    'Gagal menyimpan data penempatan PKL.'
-                );
-            }
-
-            $koneksi->commit();
-            $transactionStarted = false;
-
-            $berhasil++;
-
         } catch (Throwable $e) {
-
-            if ($transactionStarted) {
-                try {
-                    $koneksi->rollback();
-                } catch (Throwable $rollbackError) {
-                    error_log(
-                        'PKL rollback error: ' .
-                        $rollbackError->getMessage()
-                    );
-                }
-            }
-
             $gagal++;
 
             $detailGagal[] =
@@ -516,6 +546,50 @@ try {
             );
         }
     }
+
+    $duplicateCache = pklFetchExistingDuplicates($koneksi, $rowsToInsert);
+
+    foreach ($rowsToInsert as $record) {
+        $duplicateKey = pklDuplicateKey(
+            $record['siswa_id'],
+            $record['perusahaan_id'],
+            $record['tanggal_mulai'],
+            $record['tanggal_selesai']
+        );
+
+        if ($duplicateCache[$duplicateKey] ?? false) {
+            $dilewati++;
+            continue;
+        }
+
+        try {
+            $siswaIdForInsert = $record['siswa_id'];
+            $perusahaanIdForInsert = $record['perusahaan_id'];
+            $guruForInsert = $record['pembimbing_guru'];
+            $tanggalMulaiForInsert = $record['tanggal_mulai'];
+            $tanggalSelesaiForInsert = $record['tanggal_selesai'];
+            $statusForInsert = $record['status_penempatan'];
+
+            if (!$insertPkl->execute()) {
+                throw new RuntimeException(
+                    'Gagal menyimpan data penempatan PKL.'
+                );
+            }
+
+            $duplicateCache[$duplicateKey] = true;
+            $berhasil++;
+        } catch (Throwable $e) {
+            $gagal++;
+            $detailGagal[] = "Baris {$record['row']}: " . $e->getMessage();
+
+            error_log(
+                "PKL IMPORT BARIS {$record['row']}: " .
+                $e->getMessage()
+            );
+        }
+    }
+
+    $insertPkl->close();
     
     $spreadsheet->disconnectWorksheets();
     unset($spreadsheet);

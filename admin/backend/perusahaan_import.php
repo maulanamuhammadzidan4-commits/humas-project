@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 /**
  * Import perusahaan secara massal.
- * Perusahaan lama: hanya status_mou yang diperbarui.
+ * Perusahaan lama: hanya status MoU yang diperbarui.
  * Perusahaan baru: seluruh data wajib diisi dan ditambahkan.
  */
 
@@ -40,16 +40,6 @@ function normalisasiImport(string $text): string
     return function_exists('mb_strtolower')
         ? mb_strtolower($text, 'UTF-8')
         : strtolower($text);
-}
-
-/**
- * Normalisasi header Excel.
- */
-function normalisasiHeaderImport(string $text): string
-{
-    $text = preg_replace('/^\xEF\xBB\xBF/', '', trim($text)) ?? trim($text);
-
-    return strtolower(preg_replace('/[^a-z0-9]/i', '', $text) ?? '');
 }
 
 /**
@@ -233,7 +223,7 @@ try {
 
     foreach ($headerRow as $index => $header) {
 
-        $key = normalisasiHeaderImport((string) ($header ?? ''));
+        $key = normalizeSpreadsheetHeader((string) ($header ?? ''));
 
         if (isset($aliases[$key])) {
             $kolom[$aliases[$key]] = $index;
@@ -264,16 +254,16 @@ try {
 
     $cek->bind_param('s', $nama);
 
-    $update = $koneksi->prepare("
-        UPDATE perusahaan
-        SET status_mou = ?
-        WHERE id = ?
+    $simpanStatusMou = $koneksi->prepare("
+        INSERT INTO perusahaan_mou (perusahaan_id, status)
+        VALUES (?, ?)
+        ON DUPLICATE KEY UPDATE status = VALUES(status)
     ");
 
-    $update->bind_param(
-        'si',
-        $statusMou,
-        $idPerusahaanUpdate
+    $simpanStatusMou->bind_param(
+        'is',
+        $idPerusahaanUpdate,
+        $statusMou
     );
 
     $insert = $koneksi->prepare("
@@ -283,21 +273,19 @@ try {
             jurusan,
             alamat,
             penanggung_jawab,
-            no_telepon,
-            status_mou
+            no_telepon
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?)
     ");
 
     $insert->bind_param(
-        'sssssss',
+        'ssssss',
         $nama,
         $sektor,
         $jurusan,
         $alamat,
         $penanggungJawab,
-        $telepon,
-        $statusMou
+        $telepon
     );
 
     // ========================================
@@ -410,7 +398,7 @@ try {
 
             $idPerusahaanUpdate = (int) $idPerusahaan;
 
-            $update->execute();
+            $simpanStatusMou->execute();
 
             $berhasilUpdate++;
 
@@ -474,6 +462,8 @@ try {
         // ========================================
 
         $insert->execute();
+        $idPerusahaanUpdate = (int) $koneksi->insert_id;
+        $simpanStatusMou->execute();
 
         $berhasilTambah++;
     }
@@ -486,7 +476,7 @@ try {
     $transaksiDimulai = false;
 
     $cek->close();
-    $update->close();
+    $simpanStatusMou->close();
     $insert->close();
 
     if ($spreadsheet !== null) {

@@ -34,6 +34,13 @@ function render_pipe_list(string $value): string
     return $html;
 }
 
+function normalizeSpreadsheetHeader(string $header): string
+{
+    return strtolower(
+        preg_replace('/[^a-z0-9]/i', '', trim($header)) ?? ''
+    );
+}
+
 function getBeritaById($koneksi, int $id): ?array
 {
     if ($id <= 0 || !$koneksi) {
@@ -56,15 +63,6 @@ function redirectWithMessage(string $target, string $message = '', string $type 
 
     header('Location: ' . $url);
     exit;
-}
-
-function requireNonEmptyFields(array $fields, string $errorMessage): void
-{
-    foreach ($fields as $field) {
-        if (trim((string) $field) === '') {
-            throw new InvalidArgumentException($errorMessage);
-        }
-    }
 }
 
 function validateString(mixed $value, string $fieldLabel, int $minLength = 1, int $maxLength = 255): string
